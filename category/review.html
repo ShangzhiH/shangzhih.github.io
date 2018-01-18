@@ -1,37 +1,54 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
-        <meta charset="utf-8" />
         <title>Shangzhi HUANG's Blog - Review</title>
-        <link rel="stylesheet" href="/theme/css/main.css" />
+        <meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="shortcut icon" href="http://launchyard.com/images/favicon.png"/>
+        <link rel="stylesheet" href="/theme/css/main.css" type="text/css" />
 
         <!--[if IE]>
-            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="/css/ie.css"/>
+                <script src="/js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="/css/ie6.css"/><![endif]-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js" type="text/javascript"></script>
+
+
 </head>
 
 <body id="index" class="home">
-        <header id="banner" class="body">
-                <h1><a href="/">Shangzhi HUANG's Blog </a></h1>
-                <nav><ul>
-                    <li class="active"><a href="/category/review.html">Review</a></li>
-                </ul></nav>
-        </header><!-- /#banner -->
+	
+  <!--      <header id="banner" class="body">
+                <h1><a href="/"><img src="http://www.launchyard.com/images/logo.png" /></a></h1>
+        </header> -->
+<!-- /#banner -->
+	      <div class="LaunchyardDetail"><p><a href="/"></a><img src="http://www.launchyard.com/images/LY-identity.png" width="100" height="100" alt="LaunchYard logo"><br/>LaunchYard helps launch startups<br/><a href="http://launchyard.com/" >Learn more &rarr;</a></p></div>
 
-            <aside id="featured" class="body">
-                <article>
-                    <h1 class="entry-title"><a href="/my-first-review.html">My First Review</a></h1>
-<footer class="post-info">
-        <abbr class="published" title="2010-12-03T10:20:00+08:00">
-                Published: 五 03 十二月 2010
-        </abbr>
+        
+        
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="/author/shangzhi-huang.html">Shangzhi HUANG</a>
-        </address>
-<p>In <a href="/category/review.html">Review</a>.</p>
+    
+            <aside id="featured">
+                <div class="body">
+                    <article>
+                        <h1 class="entry-title"><a href="/my-first-review.html">My First Review</a></h1>
+<div class="post-info">
+	<ul>
+        <li class="vcard author">
+                 by&nbsp;<a class="url fn" href="/author/shangzhi-huang.html">Shangzhi HUANG</a>
+        </li>
+        <li class="published" title="2010-12-03T10:20:00+08:00">
+          on&nbsp;五 03 十二月 2010
+        </li>
 
-</footer><!-- /.post-info --><h1>CRF</h1>
+	</ul>
+
+</div><!-- /.post-info --><h1>CRF</h1>
 <h2>1. 概率无向图</h2>
 <p>不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。
 状态与状态之间并没有谁推导出谁的先后关系($P(y_n|y_{n-1}, y_{n-2}...y_1)$)，这里我们用的是序列整体的分布$P(y_1,y_2,...y_n)$。</p>
@@ -162,34 +179,26 @@ $$\begin{equation}\begin{aligned}\frac{\partial logp}{\partial w_j} &amp;= \sum<
 $$w_j := w_j - \alpha \frac{\partial logp}{\partial w_j}$$就可以得到最后收敛的参数了。</p>
 <h4>参考资料</h4>
 <p>[1] 统计学习方法 - 李航
-[2] <a href="http://blog.echen.me/2012/01/03/introduction-to-conditional-random-fields/">Introduction to Conditional Random Fields</a> - Edwin Chen</p>                </article>
+[2] <a href="http://blog.echen.me/2012/01/03/introduction-to-conditional-random-fields/">Introduction to Conditional Random Fields</a> - Edwin Chen</p>
+                    </article>
+                </div>
             </aside><!-- /#featured -->
-        <section id="extras" class="body">
-                <div class="blogroll">
-                        <h2>links</h2>
-                        <ul>
-                            <li><a href="http://getpelican.com/">Pelican</a></li>
-                            <li><a href="http://python.org/">Python.org</a></li>
-                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
-                            <li><a href="#">You can modify those links in your config file</a></li>
-                        </ul>
-                </div><!-- /.blogroll -->
-                <div class="social">
-                        <h2>social</h2>
-                        <ul>
-
-                            <li><a href="#">You can add links in your config file</a></li>
-                            <li><a href="#">Another social link</a></li>
-                        </ul>
-                </div><!-- /.social -->
+            
+        
+        <section id="extras" >
+       
+        
         </section><!-- /#extras -->
-
-        <footer id="contentinfo" class="body">
-                <address id="about" class="vcard body">
-                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+	
+        <footer id="contentinfo" >
+                <address id="about" class="vcard ">
+                Proudly powered by <a href="http://getpelican.com/" target="_blank">Pelican</a>, which takes
+                great advantage of <a href="http://python.org" target="_blank">Python</a>. &copy; <a class="url fn" href="http://launchyard.com">LaunchYard</a>
+		
                 </address><!-- /#about -->
+		
 
-                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+                
         </footer><!-- /#contentinfo -->
 
 </body>
