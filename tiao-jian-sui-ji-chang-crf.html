@@ -10,18 +10,18 @@
         <meta property="og:type" content="article" />
         <meta name="twitter:card" content="summary">
 
-<meta name="keywords" content=", Review, " />
+<meta name="keywords" content="机器学习, ss, " />
 
-<meta property="og:title" content="My First Review "/>
-<meta property="og:url" content="/my-first-review.html" />
+<meta property="og:title" content="条件随机场CRF "/>
+<meta property="og:url" content="/tiao-jian-sui-ji-chang-crf.html" />
 <meta property="og:description" content="CRF 1. 概率无向图 不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。 状态与状态之间并没有谁推导出谁的先后关系(\(P(y_n|y_{n-1}, y_{n-2}...y_1)\))，这里我们用的是序列整体的分布\(P(y_1,y_2,...y_n)\)。 因子分解 团： 对于无向图中的一个子集，如果该子集中任意两个点都是有边相连接的，那么这样的子集就叫做该无向图上的一个团 最大团： 对于一个团，如果无法添加另外一个点使得团增大，那么现有的团就是最大团 一个概率无向图总的的联合概率分布\(P(Y)\)可以分解为在其所有最大团上定义的一个势函数的积： $$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$ 其中C是最大团的集合，对于其中每一个最大团，有一个势能函数\(\Phi_C\)，\(Y_C\)为属于这个最大团的节点，\(Z=\sum_Y{\prod_C{\Phi_C(Y_C …" />
 <meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
 <meta property="og:article:author" content="Shangzhi HUANG" />
-<meta property="og:article:published_time" content="2010-12-03T10:20:00+08:00" />
-<meta name="twitter:title" content="My First Review ">
+<meta property="og:article:published_time" content="2018-01-17T19:55:00+08:00" />
+<meta name="twitter:title" content="条件随机场CRF ">
 <meta name="twitter:description" content="CRF 1. 概率无向图 不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。 状态与状态之间并没有谁推导出谁的先后关系(\(P(y_n|y_{n-1}, y_{n-2}...y_1)\))，这里我们用的是序列整体的分布\(P(y_1,y_2,...y_n)\)。 因子分解 团： 对于无向图中的一个子集，如果该子集中任意两个点都是有边相连接的，那么这样的子集就叫做该无向图上的一个团 最大团： 对于一个团，如果无法添加另外一个点使得团增大，那么现有的团就是最大团 一个概率无向图总的的联合概率分布\(P(Y)\)可以分解为在其所有最大团上定义的一个势函数的积： $$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$ 其中C是最大团的集合，对于其中每一个最大团，有一个势能函数\(\Phi_C\)，\(Y_C\)为属于这个最大团的节点，\(Z=\sum_Y{\prod_C{\Phi_C(Y_C …">
 
-        <title>My First Review  · Shangzhi HUANG&#39;s Blog
+        <title>条件随机场CRF  · Shangzhi HUANG&#39;s Blog
 </title>
         <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
@@ -60,7 +60,7 @@
 <article>
 <div class="row-fluid">
     <header class="page-header span10 offset2">
-    <h1><a href="/my-first-review.html"> My First Review  </a></h1>
+    <h1><a href="/tiao-jian-sui-ji-chang-crf.html"> 条件随机场CRF  </a></h1>
     </header>
 </div>
 
@@ -200,7 +200,7 @@ CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的�
 <p>
 假设经验分布为<span class="math">\(\tilde{P}(X)\)</span>,特征函数关于联合分布<span class="math">\(P(Y,X)\)</span>的期望为：
 </p>
-<div class="math">$$\begin{equation}\begin{aligned}E_{P(Y, X)}[f_k] &amp;= \sum_{x,y}P(x,y)\sum_{i=1}^{n+1}f_k(y_{i-1},y_i,x,i) \\\\&amp;= \sum_x\tilde{P}(x)\sum_yP(y|x)\sum_{i=1}^{n+1}f_k(y_{i-1},y_i,x,i)\end{aligned}\end{equation}$$</div>
+<div class="math">$$\begin{aligned}E_{P(Y, X)}[f_k] &amp;= \sum_{x,y}P(x,y)\sum_{i=1}^{n+1}f_k(y_{i-1},y_i,x,i) \\\\&amp;= \sum_x\tilde{P}(x)\sum_yP(y|x)\sum_{i=1}^{n+1}f_k(y_{i-1},y_i,x,i)\end{aligned}$$</div>
 <p>
 后面部分就是条件概率期望的部分。
 注意到线性链CRF的特征函数是定义在<span class="math">\(y_{i-1}y_i\)</span>的边上的，因此概率也拆开为对应边存在的概率</p>
@@ -214,7 +214,7 @@ CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的�
 将其分解到每个位置就将问题转换为</p>
 <div class="math">$$max\sum_i^nw\cdot F_i(y_{i-1}, y_i,x)$$</div>
 <p>
-其中<span class="math">\(w=(w_1, w_2, ..., w_k)\)</span>对应k个特征函数的权重，<span class="math">\(F_i(y_{i-1}, y_i, x) = (f_1(y_{i-1}, y_i, x), f_2(y_{i-1}, y_i, x),...,f_k(y_{i-1}, y_i, x))\)</span>对应每个特征函数在位置i上的值，两向量的乘积就表示从<span class="math">\(y_{i-1}\)</span>到<span class="math">\(y_i\)</span>上的“概率”。
+其中<span class="math">\(w=(w_1, w_2, ..., w_k)\)</span>，对应k个特征函数的权重，<span class="math">\(F_i(y_{i-1}, y_i, x) = (f_1(y_{i-1}, y_i, x), f_2(y_{i-1}, y_i, x),...,f_k(y_{i-1}, y_i, x))\)</span>对应每个特征函数在位置i上的值，两向量的乘积就表示从<span class="math">\(y_{i-1}\)</span>到<span class="math">\(y_i\)</span>上的“概率”。
 注意上面对于整个路径的概率并没有求乘积，而是求和，这是因为<span class="math">\(w\cdot F\)</span>是从<span class="math">\(exp(w\cdot F)\)</span>中提取出来的，求和就等价于整体求乘积。</p>
 <h3>预测算法：</h3>
 <p>对于一条路径，求出所有位置所有状态的组合，最后选择概率最大的，这种方法肯定是不现实的，效率非常低（<span class="math">\(O(n^T)\)</span>）。
@@ -235,15 +235,15 @@ CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的�
 <p>
 采用梯度下降法，对第j个特征函数的权重<span class="math">\(w_j\)</span>求导：
 </p>
-<div class="math">$$\begin{equation}\begin{aligned}\frac{\partial logp}{\partial w_j} &amp;= \sum_{i=1}^nw_jf_j(y_{i-1}, y_i, x, i) - \frac{\sum_{y'}exp(\sum_{k=1}^K\sum_{i=1}^nw_kf_k(y'_{i-1}, y'_i, x, i))\sum_{i=1}^nw_jf_j(y'_{i-1}, y'_i, x, i)}{\sum_{y'}exp(\sum_{k=1}^K\sum_{i=1}^nw_kf_k(y'_{i-1}, y'_i, x, i))} \\\\ &amp;=\sum_{i=1}^nf_j(y_{i-1}, y_i, x, i) - \sum_{y'} p(y'|x) \sum_{i=1}^nf_j(y'_{i-1}, y'_i, x, i)\end{aligned}\end{equation}$$</div>
+<div class="math">$$\begin{aligned}\frac{\partial logp}{\partial w_j} &amp;= \sum_{i=1}^nw_jf_j(y_{i-1}, y_i, x, i) - \frac{\sum_{y'}exp(\sum_{k=1}^K\sum_{i=1}^nw_kf_k(y'_{i-1}, y'_i, x, i))\sum_{i=1}^nw_jf_j(y'_{i-1}, y'_i, x, i)}{\sum_{y'}exp(\sum_{k=1}^K\sum_{i=1}^nw_kf_k(y'_{i-1}, y'_i, x, i))} \\\\ &amp;=\sum_{i=1}^nf_j(y_{i-1}, y_i, x, i) - \sum_{y'} p(y'|x) \sum_{i=1}^nf_j(y'_{i-1}, y'_i, x, i)\end{aligned}$$</div>
 <p>
 有了梯度函数按照梯度负方向重复进行更新：
 </p>
 <div class="math">$$w_j := w_j - \alpha \frac{\partial logp}{\partial w_j}$$</div>
 <p>就可以得到最后收敛的参数了。</p>
 <h4>参考资料</h4>
-<p>[1] 统计学习方法 - 李航
-[2] <a href="http://blog.echen.me/2012/01/03/introduction-to-conditional-random-fields/">Introduction to Conditional Random Fields</a> - Edwin Chen</p>
+<p>[1] 统计学习方法 - 李航</p>
+<p>[2] <a href="http://blog.echen.me/2012/01/03/introduction-to-conditional-random-fields/">Introduction to Conditional Random Fields</a> - Edwin Chen</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
@@ -306,9 +306,15 @@ CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的�
         <section>
         <div class="span2" style="float:right;font-size:0.9em;">
             <h4>Published</h4>
-            <time pubdate="pubdate" datetime="2010-12-03T10:20:00+08:00">12 3, 2010</time>
+            <time pubdate="pubdate" datetime="2018-01-17T19:55:00+08:00"> 1 17, 2018</time>
             <h4>Category</h4>
-            <a class="category-link" href="/categories.html#review-ref">Review</a>
+            <a class="category-link" href="/categories.html#ss-ref">ss</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#ji-qi-xue-xi-ref">机器学习
+                    <span>1</span>
+</a></li>
+            </ul>
 <h4>Contact</h4>
     <a href="#" title="My You can add links in your config file Profile" class="sidebar-social-links" target="_blank">
     <i class="fa fa-you can add links in your config file sidebar-social-links"></i></a>
