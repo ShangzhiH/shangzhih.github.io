@@ -10,16 +10,16 @@
         <meta property="og:type" content="article" />
         <meta name="twitter:card" content="summary">
 
-<meta name="keywords" content="机器学习, ss, " />
+<meta name="keywords" content="算法, 统计机器学习, 概率图模型, 机器学习, " />
 
 <meta property="og:title" content="条件随机场CRF "/>
 <meta property="og:url" content="/tiao-jian-sui-ji-chang-crf.html" />
-<meta property="og:description" content="CRF 1. 概率无向图 不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。 状态与状态之间并没有谁推导出谁的先后关系(\(P(y_n|y_{n-1}, y_{n-2}...y_1)\))，这里我们用的是序列整体的分布\(P(y_1,y_2,...y_n)\)。 因子分解 团： 对于无向图中的一个子集，如果该子集中任意两个点都是有边相连接的，那么这样的子集就叫做该无向图上的一个团 最大团： 对于一个团，如果无法添加另外一个点使得团增大，那么现有的团就是最大团 一个概率无向图总的的联合概率分布\(P(Y)\)可以分解为在其所有最大团上定义的一个势函数的积： $$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$ 其中C是最大团的集合，对于其中每一个最大团，有一个势能函数\(\Phi_C\)，\(Y_C\)为属于这个最大团的节点，\(Z=\sum_Y{\prod_C{\Phi_C(Y_C …" />
+<meta property="og:description" content="1. 概率无向图 不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。 状态与状态之间并没有谁推导出谁的先后关系(\(P(y_n|y_{n-1}, y_{n-2}...y_1)\))，这里我们用的是序列整体的分布\(P(y_1,y_2,...y_n)\)。 因子分解 团： 对于无向图中的一个子集，如果该子集中任意两个点都是有边相连接的，那么这样的子集就叫做该无向图上的一个团 最大团： 对于一个团，如果无法添加另外一个点使得团增大，那么现有的团就是最大团 一个概率无向图总的的联合概率分布\(P(Y)\)可以分解为在其所有最大团上定义的一个势函数的积： $$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$ 其中C是最大团的集合，对于其中每一个最大团，有一个势能函数\(\Phi_C\)，\(Y_C\)为属于这个最大团的节点，\(Z=\sum_Y{\prod_C{\Phi_C(Y_C)}}\)是一个规范化因子 …" />
 <meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
 <meta property="og:article:author" content="Shangzhi HUANG" />
 <meta property="og:article:published_time" content="2018-01-17T19:55:00+08:00" />
 <meta name="twitter:title" content="条件随机场CRF ">
-<meta name="twitter:description" content="CRF 1. 概率无向图 不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。 状态与状态之间并没有谁推导出谁的先后关系(\(P(y_n|y_{n-1}, y_{n-2}...y_1)\))，这里我们用的是序列整体的分布\(P(y_1,y_2,...y_n)\)。 因子分解 团： 对于无向图中的一个子集，如果该子集中任意两个点都是有边相连接的，那么这样的子集就叫做该无向图上的一个团 最大团： 对于一个团，如果无法添加另外一个点使得团增大，那么现有的团就是最大团 一个概率无向图总的的联合概率分布\(P(Y)\)可以分解为在其所有最大团上定义的一个势函数的积： $$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$ 其中C是最大团的集合，对于其中每一个最大团，有一个势能函数\(\Phi_C\)，\(Y_C\)为属于这个最大团的节点，\(Z=\sum_Y{\prod_C{\Phi_C(Y_C …">
+<meta name="twitter:description" content="1. 概率无向图 不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。 状态与状态之间并没有谁推导出谁的先后关系(\(P(y_n|y_{n-1}, y_{n-2}...y_1)\))，这里我们用的是序列整体的分布\(P(y_1,y_2,...y_n)\)。 因子分解 团： 对于无向图中的一个子集，如果该子集中任意两个点都是有边相连接的，那么这样的子集就叫做该无向图上的一个团 最大团： 对于一个团，如果无法添加另外一个点使得团增大，那么现有的团就是最大团 一个概率无向图总的的联合概率分布\(P(Y)\)可以分解为在其所有最大团上定义的一个势函数的积： $$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$ 其中C是最大团的集合，对于其中每一个最大团，有一个势能函数\(\Phi_C\)，\(Y_C\)为属于这个最大团的节点，\(Z=\sum_Y{\prod_C{\Phi_C(Y_C)}}\)是一个规范化因子 …">
 
         <title>条件随机场CRF  · Shangzhi HUANG&#39;s Blog
 </title>
@@ -68,8 +68,7 @@
         <div class="span8 offset2 article-content">
 
             
-            <h1>CRF</h1>
-<h2>1. 概率无向图</h2>
+            <h2>1. 概率无向图</h2>
 <p>不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。
 状态与状态之间并没有谁推导出谁的先后关系(<span class="math">\(P(y_n|y_{n-1}, y_{n-2}...y_1)\)</span>)，这里我们用的是序列整体的分布<span class="math">\(P(y_1,y_2,...y_n)\)</span>。</p>
 <h3>因子分解</h3>
@@ -139,19 +138,25 @@
 <p><img alt="" src="./images/2018-01-15-19-33-22.jpg">
 可以看出CRF和逻辑回归的概率表达式非常相似，因为它们都是属于log-linear模型，不同的是逻辑回归是属于分类也就是说y是一个值，而CRF的y是一个序列，CRF是一个序列版的逻辑回归。
 那么如何将复杂的CRF转换为逻辑回归呢？
-考虑每个位置的特征函数<span class="math">\(f_i(x, i, y_{i-1}, y_{i})\)</span>为<span class="math">\(x_i\)</span>，然后其权重为<span class="math">\(w_i\)</span>，这样就简化成了逻辑回归。
-<strong>HMM</strong></p>
+考虑每个位置的特征函数<span class="math">\(f_i(x, i, y_{i-1}, y_{i})\)</span>为<span class="math">\(x_i\)</span>，然后其权重为<span class="math">\(w_i\)</span>，这样就简化成了逻辑回归。</p>
+<p><strong>HMM</strong></p>
 <p><img alt="" src="./images/2018-01-15-19-36-22.jpg">
 CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的得分，而HMM是用生成的方法先根据数据求<span class="math">\(P(y, x) = p(y_0)\prod_i p(y_i|y_{i-1})p(x_i | y_i)\)</span>。求对数可得：
 </p>
 <div class="math">$$logp(y,x) = logp(y_0) + \sum_i logp(y_i|y_{i-1}) + \sum_i logp(x_i|y_i)$$</div>
 <p>
-这同样也是一个log-linear模型，将CRF中特征函数的权重等价于这些对数值就可以得到一个HMM模型：
-- 对于HMM的转移概率<span class="math">\(p(y_i=b|y_{i-1}=a)\)</span>， 定义CRF的转移特征为<span class="math">\(f(x, i, y_i, y_{i-1}) = 1 $如果\)</span>y_{i-1} = a, y_i = b<span class="math">\(，其权重为\)</span>logp(y_i=b|y_{i-1}=a)<span class="math">\(
-- 对于HMM的发射概率\)</span>p(x_i=b|y_i=a)<span class="math">\(，定义CRF的发射特征为\)</span>f(x, i, y_i, y_{i-1}) = 1<span class="math">\(如果\)</span>x_i=b, y_i=a<span class="math">\(，其权重为\)</span>logp(x_i=b|y_i=a)<span class="math">\(
-这样就将CRF模型转换成了一个HMM模型。除此之外，CRF比HMM的更加强大：
-- HMM的\)</span>x_i<span class="math">\(只与当前的状态\)</span>y_i<span class="math">\(有关，而CRF的整个序列y是和整个输入x相连的
-- HMM的发射概率\)</span>p(x_i|y_i)$是一个0到1的数，一个状态对所有发射值的概率和为1，因为是个概率值，而CRF中特征函数的权重则可以是任意值。这其实是因为<strong>HMM的归一化发生在每一个位置，而CRF的归一化发生在整体序列上，对于中间的过程并不要求严格符合概率分布的形式。</strong></p>
+这同样也是一个log-linear模型，将CRF中特征函数的权重等价于这些对数值就可以得到一个HMM模型：</p>
+<ul>
+<li>对于HMM的转移概率<span class="math">\(p(y_i=b|y_{i-1}=a)\)</span>， 定义CRF的转移特征为<span class="math">\(f(x, i, y_i, y_{i-1}) = 1 $，如果\)</span>y_{i-1} = a, y_i = b<span class="math">\(，其权重为\)</span>logp(y_i=b|y_{i-1}=a)$</li>
+<li>
+<p>对于HMM的发射概率<span class="math">\(p(x_i=b|y_i=a)\)</span>，定义CRF的发射特征为<span class="math">\(f(x, i, y_i, y_{i-1}) = 1\)</span>如果<span class="math">\(x_i=b, y_i=a\)</span>，其权重为<span class="math">\(logp(x_i=b|y_i=a)\)</span>
+这样就将CRF模型转换成了一个HMM模型。除此之外，CRF比HMM的更加强大：</p>
+</li>
+<li>
+<p>HMM的<span class="math">\(x_i\)</span>只与当前的状态<span class="math">\(y_i\)</span>有关，而CRF的整个序列y是和整个输入x相连的</p>
+</li>
+<li>HMM的发射概率<span class="math">\(p(x_i|y_i)\)</span>是一个0到1的数，一个状态对所有发射值的概率和为1，因为是个概率值，而CRF中特征函数的权重则可以是任意值。这其实是因为<strong>HMM的归一化发生在每一个位置，而CRF的归一化发生在整体序列上，对于中间的过程并不要求严格符合概率分布的形式。</strong></li>
+</ul>
 <h2>3. CRF的概率计算</h2>
 <p>概率的计算是说在给定CRF模型P(Y|X), 输入序列x和输出序列y的情况下，计算条件概率<span class="math">\(P(Y_i = y_i|x)\)</span>和<span class="math">\(P(Y_{i-1} = y_{i-1}, Y_i = y_i, x)\)</span>以及相应的数学期望的问题。</p>
 <h3>前向后向算法</h3>
@@ -308,10 +313,16 @@ CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的�
             <h4>Published</h4>
             <time pubdate="pubdate" datetime="2018-01-17T19:55:00+08:00"> 1 17, 2018</time>
             <h4>Category</h4>
-            <a class="category-link" href="/categories.html#ss-ref">ss</a>
+            <a class="category-link" href="/categories.html#ji-qi-xue-xi-ref">机器学习</a>
             <h4>Tags</h4>
             <ul class="list-of-tags tags-in-article">
-                <li><a href="/tags.html#ji-qi-xue-xi-ref">机器学习
+                <li><a href="/tags.html#gai-lu-tu-mo-xing-ref">概率图模型
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#suan-fa-ref">算法
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#tong-ji-ji-qi-xue-xi-ref">统计机器学习
                     <span>1</span>
 </a></li>
             </ul>
