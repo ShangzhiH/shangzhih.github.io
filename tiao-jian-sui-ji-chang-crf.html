@@ -136,12 +136,12 @@
 建立一个CRF，只需要定义一系列的特征函数，这些特征函数的值依赖于整个句子(x)，当前位置(i)和相邻的标签(<span class="math">\(y_{i-1}\)</span>, <span class="math">\(y_{i}\)</span>)，给出这些特征函数对应的权重，学习到这些权重值就得到了CRF的模型。</p>
 <h3>与逻辑回归和HMM的关系</h3>
 <p><strong>逻辑回归</strong></p>
-<p><img alt="" src="./_image/2018-01-15-19-33-22.jpg">
+<p><img alt="" src="./images/2018-01-15-19-33-22.jpg">
 可以看出CRF和逻辑回归的概率表达式非常相似，因为它们都是属于log-linear模型，不同的是逻辑回归是属于分类也就是说y是一个值，而CRF的y是一个序列，CRF是一个序列版的逻辑回归。
 那么如何将复杂的CRF转换为逻辑回归呢？
 考虑每个位置的特征函数<span class="math">\(f_i(x, i, y_{i-1}, y_{i})\)</span>为<span class="math">\(x_i\)</span>，然后其权重为<span class="math">\(w_i\)</span>，这样就简化成了逻辑回归。
 <strong>HMM</strong></p>
-<p><img alt="" src="./_image/2018-01-15-19-36-22.jpg">
+<p><img alt="" src="./images/2018-01-15-19-36-22.jpg">
 CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的得分，而HMM是用生成的方法先根据数据求<span class="math">\(P(y, x) = p(y_0)\prod_i p(y_i|y_{i-1})p(x_i | y_i)\)</span>。求对数可得：
 </p>
 <div class="math">$$logp(y,x) = logp(y_0) + \sum_i logp(y_i|y_{i-1}) + \sum_i logp(x_i|y_i)$$</div>
