@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Wed, 17 Jan 2018 19:55:00 +0800</lastBuildDate><item><title>条件随机场CRF</title><link>/tiao-jian-sui-ji-chang-crf.html</link><description>
+&lt;h2 id="1"&gt;1. 概率无向图&lt;/h2&gt;
+&lt;p&gt;不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。
+状态与状态之间并没有谁推导出谁的先后关系(&lt;span class="math"&gt;\(P(y_n|y_{n-1}, y_{n-2}...y_1)\)&lt;/span&gt;)，这里我们用的是序列整体的分布&lt;span class="math"&gt;\(P(y_1,y_2,...y_n)\)&lt;/span&gt;。&lt;/p&gt;
+&lt;h3 id="_1"&gt;因子分解&lt;/h3&gt;
+&lt;p&gt;&lt;b&gt;团：&lt;/b&gt; 对于无向图中的一个子集，如果该子集中任意两个点都是有边相连接的，那么这样的子集就叫做该无向图上的一个团
+&lt;b&gt;最大团：&lt;/b&gt; 对于一个团，如果无法添加另外一个点使得团增大，那么现有的团就是最大团&lt;/p&gt;
+&lt;p&gt;一个概率无向图总的的联合概率分布&lt;span class="math"&gt;\(P(Y)\)&lt;/span&gt;可以分解为在其所有最大团上定义的一个势函数的积：
+&lt;/p&gt;
+&lt;div class="math"&gt;$$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$&lt;/div&gt;
+&lt;p&gt;
+其中C是最大团的集合，对于其中每一个最大团，有一个势能函数&lt;span class="math"&gt;\(\Phi_C\)&lt;/span&gt;，&lt;span class="math"&gt;\(Y_C\)&lt;/span&gt;为属于这个最大团的节点，&lt;span class="math"&gt;\(Z=\sum_Y{\prod_C{\Phi_C(Y_C)}}\)&lt;/span&gt;是一个规范化因子 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Wed, 17 Jan 2018 19:55:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-01-17:/tiao-jian-sui-ji-chang-crf.html</guid><category>算法</category><category>统计机器学习</category><category>概率图模型</category></item><item><title>指数分布族和广义线性回归</title><link>/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html</link><description>
+&lt;h2 id="_1"&gt;指数分布族&lt;/h2&gt;
+&lt;h3 id="1"&gt;1. 定义&lt;/h3&gt;
+&lt;p&gt;指数分布族不是专指一种分布，而是一系列符合特征的分布的统称。常用的诸如正态分布，伯努利分布，指数分布，泊松分布，gamma分布都属于指数分布族。
+&lt;/p&gt;
+&lt;div class="math"&gt;$$p(y;\theta) = b(y)exp(\eta(\theta)T(y) - A(\theta))$$&lt;/div&gt;
+&lt;p&gt;
+其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;b(y) - underlying measure&lt;/li&gt;
+&lt;li&gt;T(y) - sufficient statistic&lt;/li&gt;
+&lt;li&gt;A(&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;) - log normalizer&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;通常情况下T(y) = y,  A, b, T, &lt;span class="math"&gt;\(\eta\)&lt;/span&gt;给定的不同，就能得到不同的y的分布
+其中的变量y和参数&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;只在&lt;span class="math"&gt;\(T(y)\eta …&lt;/span&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Fri, 05 Jan 2018 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-01-05:/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html</guid><category>概率分布</category><category>统计机器学习</category><category>回归模型</category><category>算法</category></item><item><title>信息论基本概念</title><link>/xin-xi-lun-ji-ben-gai-nian.html</link><description>&lt;p&gt;最近在看《统计自然语言处理》，觉得第二章预备知识里的关于信息论的一些基本概念总结得很不错。虽然对于熵这个词，我接触过很多次，在机器学习里的很多地方也都有涉及到，比如说最大熵模型，决策树训练时的互信息等等。但是有的时候我还是会经常搞混淆，这里简单介绍一下常用的概念。&lt;/p&gt;
+
+&lt;h2 id="_1"&gt;一. 熵&lt;/h2&gt;
+&lt;p&gt;对于离散变量&lt;span class="math"&gt;\(X\)&lt;/span&gt;, 假设其取值空间为&lt;span class="math"&gt;\(R\)&lt;/span&gt;，其概率分布为&lt;span class="math"&gt;\(p(x) = P(X = x), x \in R\)&lt;/span&gt;，那么定义随机变量&lt;span class="math"&gt;\(X\)&lt;/span&gt;的熵为：
+&lt;/p&gt;
+&lt;div class="math"&gt;$$H(X) = - \sum_{x \in R} p(x)log_x (p(x))$$&lt;/div&gt;
+&lt;p&gt;
+约定&lt;span class="math"&gt;\(0log(0) = 0\)&lt;/span&gt;。由于这里使用了2为底，所以该公式定义的熵的单位为二进制单位(比特)，实际情况也有使用其它底数的版本的熵。
+熵又被成为自信息(self-information)，可以将其描述为一个随机变量不稳定的程度 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Sat, 30 Sep 2017 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2017-09-30:/xin-xi-lun-ji-ben-gai-nian.html</guid><category>信息论</category><category>自然语言处理</category></item></channel></rss>

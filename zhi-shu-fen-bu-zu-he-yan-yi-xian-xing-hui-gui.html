@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="概率分布, 统计机器学习, 回归模型, 算法, 机器学习, " />
+
+<meta property="og:title" content="指数分布族和广义线性回归 "/>
+<meta property="og:url" content="/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html" />
+<meta property="og:description" content="指数分布族 1. 定义 指数分布族不是专指一种分布，而是一系列符合特征的分布的统称。常用的诸如正态分布，伯努利分布，指数分布，泊松分布，gamma分布都属于指数分布族。 $$p(y;\theta) = b(y)exp(\eta(\theta)T(y) - A(\theta))$$ 其中： b(y) - underlying measure T(y) - sufficient statistic A(\(\theta\)) - log normalizer 通常情况下T(y) = y, A, b, T, \(\eta\)给定的不同，就能得到不同的y的分布 其中的变量y和参数\(\theta\)只在\(T(y)\eta …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2018-01-05T20:00:00+08:00" />
+<meta name="twitter:title" content="指数分布族和广义线性回归 ">
+<meta name="twitter:description" content="指数分布族 1. 定义 指数分布族不是专指一种分布，而是一系列符合特征的分布的统称。常用的诸如正态分布，伯努利分布，指数分布，泊松分布，gamma分布都属于指数分布族。 $$p(y;\theta) = b(y)exp(\eta(\theta)T(y) - A(\theta))$$ 其中： b(y) - underlying measure T(y) - sufficient statistic A(\(\theta\)) - log normalizer 通常情况下T(y) = y, A, b, T, \(\eta\)给定的不同，就能得到不同的y的分布 其中的变量y和参数\(\theta\)只在\(T(y)\eta …">
+
+        <title>指数分布族和广义线性回归  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html"> 指数分布族和广义线性回归  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+    <div class="span2 table-of-content">
+        <nav>
+        <h4>Contents</h4>
+        <div class="toc">
+<ul>
+<li><a href="#_1">指数分布族</a><ul>
+<li><a href="#1">1. 定义</a></li>
+<li><a href="#2">2. 伯努利分布</a></li>
+<li><a href="#3">3. 高斯分布</a></li>
+<li><a href="#4">4. 其他指数分布</a></li>
+</ul>
+</li>
+<li><a href="#glm">广义线性模型(GLM)</a><ul>
+<li><a href="#1_1">1. 三个假设</a></li>
+<li><a href="#2_1">2. 高斯分布</a></li>
+<li><a href="#3_1">3. 伯努利分布</a></li>
+<li><a href="#4-glm">4. GLM建模过程</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </nav>
+    </div>
+    <div class="span8 article-content">
+
+            
+            
+<h2 id="_1">指数分布族</h2>
+<h3 id="1">1. 定义</h3>
+<p>指数分布族不是专指一种分布，而是一系列符合特征的分布的统称。常用的诸如正态分布，伯努利分布，指数分布，泊松分布，gamma分布都属于指数分布族。
+</p>
+<div class="math">$$p(y;\theta) = b(y)exp(\eta(\theta)T(y) - A(\theta))$$</div>
+<p>
+其中：</p>
+<ul>
+<li>b(y) - underlying measure</li>
+<li>T(y) - sufficient statistic</li>
+<li>A(<span class="math">\(\theta\)</span>) - log normalizer</li>
+</ul>
+<p>通常情况下T(y) = y,  A, b, T, <span class="math">\(\eta\)</span>给定的不同，就能得到不同的y的分布
+其中的变量y和参数<span class="math">\(\theta\)</span>只在<span class="math">\(T(y)\eta(\theta)\)</span>中有联系，T(y)和<span class="math">\(\eta(\theta)\)</span>都是向量形式</p>
+<h3 id="2">2. 伯努利分布</h3>
+<p>伯努利分布的概率密度函数为：
+</p>
+<div class="math">$$p(y;\theta) = \theta^y(1 - \theta)^{1-y} = exp(ylog\theta + (1-y)log(1-\theta) = exp(log\frac{\theta}{1 - \theta}y + log(1-\theta))$$</div>
+<p>
+对应指数分布族的概率密度函数可以发现：</p>
+<ul>
+<li><span class="math">\(b(y) = 1\)</span></li>
+<li><span class="math">\(\eta(\theta) = log\frac{\theta}{1 - \theta}\)</span></li>
+<li><span class="math">\(T(y) = y\)</span></li>
+<li><span class="math">\(A(\theta) = -log(1 - \theta) = log(1 + e^{\eta(\theta)})\)</span></li>
+</ul>
+<h3 id="3">3. 高斯分布</h3>
+<p>对于均值为<span class="math">\(\mu\)</span>，方差为<span class="math">\(\sigma\)</span>的高斯分布的概率密度函数为：
+</p>
+<div class="math">$$p(y;\mu, \sigma) = \frac{1}{\sqrt{2\pi}\sigma} e^{-\frac{(y-\mu)^2}{2\sigma^2}} = \frac{1}{\sqrt{2\pi}}e^{\eta(\mu, \sigma)T(y) - log\sigma - \frac{\mu^2}{2\sigma^2}}$$</div>
+<p>
+对应指数分布族的概率密度函数可以发现:</p>
+<ul>
+<li><span class="math">\(b(y) = \frac{1}{\sqrt{2\pi}}\)</span></li>
+<li><span class="math">\(\eta(\sigma) = [\frac{\mu}{\sigma^2}, -\frac{1}{2\sigma^2}]\)</span></li>
+<li><span class="math">\(T(y) = [y, y^2]\)</span></li>
+<li><span class="math">\(A(\sigma) = \frac{\mu^2}{2\sigma^2} + log\sigma\)</span></li>
+</ul>
+<h3 id="4">4. 其他指数分布</h3>
+<p>还有许多其他分布属于指数分布族，如：</p>
+<ul>
+<li>多项式分布（multinomial），用来对多元分类问题进行建模；</li>
+<li>泊松分布（Poisson），用来对计数过程进行建模，如网站的访客数量、商店的顾客数量等；</li>
+<li>伽马分布（gamma）和指数分布（exponential），用来对时间间隔进行建模，如等车时间等；</li>
+<li>β分布（beta）和Dirichlet分布（Dirichlet），用于概率分布；</li>
+<li>Wishart分布（Wishart），用于协方差矩阵分布。</li>
+</ul>
+<h2 id="glm">广义线性模型(GLM)</h2>
+<p>之前一直知道线性回归，逻辑回归都属于glm，其中线性回归假设服从高斯分布，逻辑回归假设服从伯努利分布，但是为什么要这样并不是非常清楚。</p>
+<h3 id="1_1">1. 三个假设</h3>
+<ul>
+<li>在给定自变量x和参数<span class="math">\(\theta\)</span>的情况下，因变量y服从指数分布族</li>
+<li>给定x，最终目的是求出T(y)的期望E[T(y)|x]</li>
+<li>自然参数<span class="math">\(\eta\)</span>可以表示为自变量x的线性关系，即<span class="math">\(\eta = \theta^T x\)</span></li>
+</ul>
+<p><b>广义线性模型通过拟合y的条件均值/期望(在x和参数<span class="math">\(\theta\)</span>给定的情况下)，并假设y符合指数分布族中的某种分布，从而扩展了标准线性模型</b></p>
+<h3 id="2_1">2. 高斯分布</h3>
+<p>对于高斯分布，y的均值为参数<span class="math">\(\mu\)</span>
+根据上面的推导，<span class="math">\(y = \mu = \eta = \theta^T x\)</span>(假设<span class="math">\(\sigma = 1\)</span>)
+这就和线性回归对于y作高斯分布的假设相呼应，这里的link function是y=x为identity function</p>
+<h3 id="3_1">3. 伯努利分布</h3>
+<p>对于伯努利分布，y的均值为<span class="math">\(\phi\)</span>，就是指数分布族下的唯一参数
+根据上面的推导，<span class="math">\(\eta = log\frac{\phi}{1 - \phi} = \theta^T x\)</span>推导出<span class="math">\(y = \phi = \frac{1}{1 + e^{-\eta}} = \frac{1}{1 + e^{-\theta^T x}}\)</span>
+这也就是逻辑回归的表达式，对应与逻辑回归下y作伯努利分布的假设，此时的link function为<span class="math">\(y = log \frac{x}{1 - x}\)</span>，就是大名鼎鼎的logit函数了。</p>
+<h3 id="4-glm">4. GLM建模过程</h3>
+<p>总结一下GLM的建模过程。</p>
+<ul>
+<li>根据问题在指数分布族中选择一种分布作为对y的假设</li>
+<li>计算该分布下的<span class="math">\(\eta\)</span>，实际上<span class="math">\(\eta = \eta(w^T)\)</span>，其中\<span class="math">\(w^T\)</span>为该分布的真实参数，而<span class="math">\(\eta\)</span>只是以<span class="math">\(w^T\)</span>为参数的一个link function</li>
+<li>计算该分布的期望，将其用<span class="math">\(\eta\)</span>表示，例如上面伯努利分布时的<span class="math">\(y=\phi = \frac{1}{1+e^{-\eta}}\)</span></li>
+<li>根据GLM的假设替换<span class="math">\(\eta = \theta^T x\)</span>即得到GLM模型</li>
+</ul>
+<p>将这些知识都串联起来，就能更好的理解不同回归模型下的前提假设及其link function的选择了。</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+            
+            
+            <hr/>
+            <aside>
+            <nav>
+            <ul class="articles-timeline">
+                <li class="previous-article">« <a href="/xin-xi-lun-ji-ben-gai-nian.html" title="Previous: 信息论基本概念 - 各种熵的解释">信息论基本概念 <small>各种熵的解释</small></a></li>
+                <li class="next-article"><a href="/tiao-jian-sui-ji-chang-crf.html" title="Next: 条件随机场CRF">条件随机场CRF</a> »</li>
+            </ul>
+            </nav>
+            </aside>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2018-01-05T20:00:00+08:00">2018  - 01  - 05</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#ji-qi-xue-xi-ref">机器学习</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#gai-lu-fen-bu-ref">概率分布
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#hui-gui-mo-xing-ref">回归模型
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#suan-fa-ref">算法
+                    <span>2</span>
+</a></li>
+                <li><a href="/tags.html#tong-ji-ji-qi-xue-xi-ref">统计机器学习
+                    <span>2</span>
+</a></li>
+            </ul>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>

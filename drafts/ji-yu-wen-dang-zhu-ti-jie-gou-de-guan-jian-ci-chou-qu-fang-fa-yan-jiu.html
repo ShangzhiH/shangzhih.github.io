@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content=", 关键词提取, " />
+
+<meta property="og:title" content="基于文档主题结构的关键词抽取方法研究 "/>
+<meta property="og:url" content="/drafts/ji-yu-wen-dang-zhu-ti-jie-gou-de-guan-jian-ci-chou-qu-fang-fa-yan-jiu.html" />
+<meta property="og:description" content="1. 引言 关键词标注可以分为： - 关键词抽取 - 关键词分配 抽取和分配的区别在于抽取出的词肯定是文中出现的，而分配则不一定。 - 社会标签推荐 好的文档关键词的特点： - 词是可读的 - 词与文档主题相关 - 词对于文档主题的覆盖度好 难点： - tfidf和textrank都只是在词的维度进行考虑，完全没有考虑和文档主题的联系，文档主题覆盖度差 - 文档中的词和关键词可能不一样，采用硬编码的方式不妥。注意到文档和合理的关键词都是在对同一个事物进行描述，它们理应具有主题一致性。因此可以建立文档中的词与关键词之间的语义关系，推荐语义相关的关键词，而不是一模一样的词 2. 基于文档内部信息构建主题的关键词抽取方法 2.1 候选词选取 切词，去除停用词，这里只考虑单词，不考虑ngram词组 2.2 词汇语义相似度 2.2.1 基于文档内同现关系 设置一个窗口大小w，两个词在这个窗口内同时出现的次数作为相似度。 2.2.2 基于维基百科的相似度 维基百科一个词有概念解释，用百科词作为词典对解释进行tfidf编码，就得到了一个长度为维基百科词条数目的向量，然后根据cos，l1 …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2017-12-21T00:00:00+08:00" />
+<meta name="twitter:title" content="基于文档主题结构的关键词抽取方法研究 ">
+<meta name="twitter:description" content="1. 引言 关键词标注可以分为： - 关键词抽取 - 关键词分配 抽取和分配的区别在于抽取出的词肯定是文中出现的，而分配则不一定。 - 社会标签推荐 好的文档关键词的特点： - 词是可读的 - 词与文档主题相关 - 词对于文档主题的覆盖度好 难点： - tfidf和textrank都只是在词的维度进行考虑，完全没有考虑和文档主题的联系，文档主题覆盖度差 - 文档中的词和关键词可能不一样，采用硬编码的方式不妥。注意到文档和合理的关键词都是在对同一个事物进行描述，它们理应具有主题一致性。因此可以建立文档中的词与关键词之间的语义关系，推荐语义相关的关键词，而不是一模一样的词 2. 基于文档内部信息构建主题的关键词抽取方法 2.1 候选词选取 切词，去除停用词，这里只考虑单词，不考虑ngram词组 2.2 词汇语义相似度 2.2.1 基于文档内同现关系 设置一个窗口大小w，两个词在这个窗口内同时出现的次数作为相似度。 2.2.2 基于维基百科的相似度 维基百科一个词有概念解释，用百科词作为词典对解释进行tfidf编码，就得到了一个长度为维基百科词条数目的向量，然后根据cos，l1 …">
+
+        <title>基于文档主题结构的关键词抽取方法研究  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/drafts/ji-yu-wen-dang-zhu-ti-jie-gou-de-guan-jian-ci-chou-qu-fang-fa-yan-jiu.html"> 基于文档主题结构的关键词抽取方法研究  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+        <div class="span8 offset2 article-content">
+
+            
+            <h2 id="1">1. 引言</h2>
+<p>关键词标注可以分为：
+- 关键词抽取
+- 关键词分配
+抽取和分配的区别在于抽取出的词肯定是文中出现的，而分配则不一定。
+- 社会标签推荐</p>
+<p>好的文档关键词的特点：
+- 词是可读的
+- 词与文档主题相关
+- 词对于文档主题的覆盖度好</p>
+<p>难点：
+- tfidf和textrank都只是在词的维度进行考虑，完全没有考虑和文档主题的联系，文档主题覆盖度差
+- 文档中的词和关键词可能不一样，采用硬编码的方式不妥。注意到文档和合理的关键词都是在对同一个事物进行描述，它们理应具有主题一致性。因此可以建立文档中的词与关键词之间的语义关系，推荐语义相关的关键词，而不是一模一样的词</p>
+<h2 id="2">2. 基于文档内部信息构建主题的关键词抽取方法</h2>
+<h3 id="21">2.1 候选词选取</h3>
+<p>切词，去除停用词，这里只考虑单词，不考虑ngram词组</p>
+<h3 id="22">2.2 词汇语义相似度</h3>
+<h4 id="221">2.2.1 基于文档内同现关系</h4>
+<p>设置一个窗口大小w，两个词在这个窗口内同时出现的次数作为相似度。</p>
+<h4 id="222">2.2.2 基于维基百科的相似度</h4>
+<p>维基百科一个词有概念解释，用百科词作为词典对解释进行tfidf编码，就得到了一个长度为维基百科词条数目的向量，然后根据cos，l1，l2等作为距离度量。</p>
+<h3 id="23">2.3 聚类</h3>
+<p>将词聚类跳出每类的中心词</p>
+<h3 id="24">2.4 中心词扩展</h3>
+<p>选取0个或者多个形容词+名词的名词短语作为候选词，在其中选择包含一个或多个中心词的名词短语</p>
+<h2 id="3">3. 基于隐含主题模型构建主题的关键词抽取方法</h2>
+<p>第二节中基于文档内部信息的方法有很多缺点，文档信息有限，词汇度量和聚类方法对结果有很大的影响。</p>
+<ul>
+<li>基于大量文档数据训练主题模型</li>
+<li>对于新文档依据上述名词短语的模式提取候选关键词</li>
+<li>基于主题模型计算文档和候选关键词的主题分布</li>
+<li>计算文档和关键词的主题相似度，排序得到最高的作为关键词</li>
+</ul>
+<h2 id="4">4. 利用隐含主题模型和文档结构的关键词抽取方法</h2>
+<p>上面的方法没有考虑文章的结构信息。</p>
+            
+            
+            <hr/>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2017-12-21T00:00:00+08:00">2017  - 12  - 21</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#guan-jian-ci-ti-qu-ref">关键词提取</a>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>
