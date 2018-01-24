@@ -253,6 +253,18 @@ article div.article-content ul:not(.articles-timeline) a:hover {
 .article-content dt {
     font-size: inherit;
 }
+.article-content h2 {
+    color: #1E90FF;
+}
+.article-content h3 {
+    color: #00BFFF
+}
+.article-content h4 {
+    color: #8b1013
+}
+.article-content strong,  .article-content b{
+    color: #191970
+}
 .page-header {
     border-bottom: 1px solid #8f8686;
     color: #8B0000;
