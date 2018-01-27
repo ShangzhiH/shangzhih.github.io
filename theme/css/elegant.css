@@ -444,7 +444,7 @@ ul.list-all-articles li time {
 }
 div.blog-archives h2 {
     float: left;
-    position: relative;
+    position: absolute;
     margin:0;
 }
 div.blog-archives article, div.recent-posts article {
