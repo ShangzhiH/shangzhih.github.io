@@ -115,8 +115,8 @@
 <li>T(y) - sufficient statistic</li>
 <li>A(<span class="math">\(\theta\)</span>) - log normalizer</li>
 </ul>
-<p>通常情况下T(y) = y,  A, b, T, <span class="math">\(\eta\)</span>给定的不同，就能得到不同的y的分布
-其中的变量y和参数<span class="math">\(\theta\)</span>只在<span class="math">\(T(y)\eta(\theta)\)</span>中有联系，T(y)和<span class="math">\(\eta(\theta)\)</span>都是向量形式</p>
+<p>通常情况下T(y) = y,  A, b, T, <span class="math">\(\eta\)</span>给定的不同，就能得到不同的y的分布</p>
+<p>其中的变量y和参数<span class="math">\(\theta\)</span>只在<span class="math">\(T(y)\eta(\theta)\)</span>中有联系，T(y)和<span class="math">\(\eta(\theta)\)</span>都是向量形式</p>
 <h3 id="2">2. 伯努利分布</h3>
 <p>伯努利分布的概率密度函数为：
 </p>
@@ -160,18 +160,18 @@
 </ul>
 <p><b>广义线性模型通过拟合y的条件均值/期望(在x和参数<span class="math">\(\theta\)</span>给定的情况下)，并假设y符合指数分布族中的某种分布，从而扩展了标准线性模型</b></p>
 <h3 id="2_1">2. 高斯分布</h3>
-<p>对于高斯分布，y的均值为参数<span class="math">\(\mu\)</span>
-根据上面的推导，<span class="math">\(y = \mu = \eta = \theta^T x\)</span>(假设<span class="math">\(\sigma = 1\)</span>)
-这就和线性回归对于y作高斯分布的假设相呼应，这里的link function是y=x为identity function</p>
+<p>对于高斯分布，y的均值为参数<span class="math">\(\mu\)</span></p>
+<p>根据上面的推导，<span class="math">\(y = \mu = \eta = \theta^T x\)</span>(假设<span class="math">\(\sigma = 1\)</span>)</p>
+<p>这就和线性回归对于y作高斯分布的假设相呼应，这里的link function是y=x为identity function</p>
 <h3 id="3_1">3. 伯努利分布</h3>
-<p>对于伯努利分布，y的均值为<span class="math">\(\phi\)</span>，就是指数分布族下的唯一参数
-根据上面的推导，<span class="math">\(\eta = log\frac{\phi}{1 - \phi} = \theta^T x\)</span>推导出<span class="math">\(y = \phi = \frac{1}{1 + e^{-\eta}} = \frac{1}{1 + e^{-\theta^T x}}\)</span>
-这也就是逻辑回归的表达式，对应与逻辑回归下y作伯努利分布的假设，此时的link function为<span class="math">\(y = log \frac{x}{1 - x}\)</span>，就是大名鼎鼎的logit函数了。</p>
+<p>对于伯努利分布，y的均值为<span class="math">\(\phi\)</span>，就是指数分布族下的唯一参数</p>
+<p>根据上面的推导，<span class="math">\(\eta = log\frac{\phi}{1 - \phi} = \theta^T x\)</span>推导出<span class="math">\(y = \phi = \frac{1}{1 + e^{-\eta}} = \frac{1}{1 + e^{-\theta^T x}}\)</span></p>
+<p>这也就是逻辑回归的表达式，对应与逻辑回归下y作伯努利分布的假设，此时的link function为<span class="math">\(y = log \frac{x}{1 - x}\)</span>，就是大名鼎鼎的logit函数了。</p>
 <h3 id="4-glm">4. GLM建模过程</h3>
 <p>总结一下GLM的建模过程。</p>
 <ul>
 <li>根据问题在指数分布族中选择一种分布作为对y的假设</li>
-<li>计算该分布下的<span class="math">\(\eta\)</span>，实际上<span class="math">\(\eta = \eta(w^T)\)</span>，其中\<span class="math">\(w^T\)</span>为该分布的真实参数，而<span class="math">\(\eta\)</span>只是以<span class="math">\(w^T\)</span>为参数的一个link function</li>
+<li>计算该分布下的<span class="math">\(\eta\)</span>，实际上<span class="math">\(\eta = \eta(w^T)\)</span>，其中<span class="math">\(w^T\)</span>为该分布的真实参数，而<span class="math">\(\eta\)</span>只是以<span class="math">\(w^T\)</span>为参数的一个link function</li>
 <li>计算该分布的期望，将其用<span class="math">\(\eta\)</span>表示，例如上面伯努利分布时的<span class="math">\(y=\phi = \frac{1}{1+e^{-\eta}}\)</span></li>
 <li>根据GLM的假设替换<span class="math">\(\eta = \theta^T x\)</span>即得到GLM模型</li>
 </ul>
@@ -237,7 +237,7 @@
             <aside>
             <nav>
             <ul class="articles-timeline">
-                <li class="previous-article">« <a href="/xin-xi-lun-ji-ben-gai-nian.html" title="Previous: 信息论基本概念 - 各种熵的解释">信息论基本概念 <small>各种熵的解释</small></a></li>
+                <li class="previous-article">« <a href="/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-6.html" title="Previous: 《深度学习与神经网络》笔记6 - 深度学习">《深度学习与神经网络》笔记6 <small>深度学习</small></a></li>
                 <li class="next-article"><a href="/tiao-jian-sui-ji-chang-crf.html" title="Next: 条件随机场CRF">条件随机场CRF</a> »</li>
             </ul>
             </nav>
@@ -249,7 +249,7 @@
             <time pubdate="pubdate" datetime="2018-01-05T20:00:00+08:00">2018  - 01  - 05</time>
             <h4>Category</h4>
             <a class="category-link" href="/categories.html#ji-qi-xue-xi-ref">机器学习
-                <span>(2)</span>
+                <span>(3)</span>
 </a>
             <h4>Tags</h4>
             <ul class="list-of-tags tags-in-article">
@@ -260,7 +260,7 @@
                     <span>1</span>
 </a></li>
                 <li><a href="/tags.html#suan-fa-ref">算法
-                    <span>2</span>
+                    <span>9</span>
 </a></li>
                 <li><a href="/tags.html#tong-ji-ji-qi-xue-xi-ref">统计机器学习
                     <span>2</span>

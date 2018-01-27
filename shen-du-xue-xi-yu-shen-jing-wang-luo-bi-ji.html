@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="算法, 深度学习, 《深度学习与神经网络》笔记, 深度学习, " />
+
+<meta property="og:title" content="《深度学习与神经网络》笔记  - 第六章 - 深度学习 "/>
+<meta property="og:url" content="/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji.html" />
+<meta property="og:description" content="深度神经网络在可以模拟更加复杂的情形，但是在上一章中，我们发现训练深度神经网络的时候会出现梯度消失的问题，从而导致模型训练失败。这一章，将会介绍可以被用在深度学习上的一些技术。 这章的主要内容是介绍一种应用最广泛的深度神经网络：卷积神经网络。我们将会了解到卷积，池化等概念，通过在之前的代码上利用这些技术进行优化达到了惊人的99.67%的准确率。 除此之外，本章还将介绍一些其他的基本神经网络，例如循环神经网络。在介绍完这些之后，还会介绍深度学习技术的发展现状及未来的发展方向。 一. 卷积神经网络 之前我们在进行MNIST数字分类的时候，输入数据是将每张图片按像素展开得到的784维向量，这样训练得到的结果虽然不错，但是仔细想想就会发现它的问题。对于图片来说，不同的不同的像素点之间的距离很远，旧的方法就完全没有考虑像素点之间的空间联系。这一节介绍的卷积神经网络就考虑了这种空间联系，并且训练迅速，在图像分类问题上得到了非常好的效果。 卷积神经网络涉及到三个基本思想：local receptive fields(局部感受野)，shared weights(参数共享)，pooling(池化)，接下来依次介绍。 Local receptive fields: 在之前的神经网络中，输入神经网络的数据是一个多维向量，与输入层连接的隐藏层的每一个神经元都和所有的输入层神经元连接。 这样一副784个像素点的图片中的每一个像素点都是一个输入神经元，后一层的每个神经元和所有这些输入神经元都有连接。 local …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2017-10-02T20:00:00+08:00" />
+<meta name="twitter:title" content="《深度学习与神经网络》笔记  - 第六章 - 深度学习 ">
+<meta name="twitter:description" content="深度神经网络在可以模拟更加复杂的情形，但是在上一章中，我们发现训练深度神经网络的时候会出现梯度消失的问题，从而导致模型训练失败。这一章，将会介绍可以被用在深度学习上的一些技术。 这章的主要内容是介绍一种应用最广泛的深度神经网络：卷积神经网络。我们将会了解到卷积，池化等概念，通过在之前的代码上利用这些技术进行优化达到了惊人的99.67%的准确率。 除此之外，本章还将介绍一些其他的基本神经网络，例如循环神经网络。在介绍完这些之后，还会介绍深度学习技术的发展现状及未来的发展方向。 一. 卷积神经网络 之前我们在进行MNIST数字分类的时候，输入数据是将每张图片按像素展开得到的784维向量，这样训练得到的结果虽然不错，但是仔细想想就会发现它的问题。对于图片来说，不同的不同的像素点之间的距离很远，旧的方法就完全没有考虑像素点之间的空间联系。这一节介绍的卷积神经网络就考虑了这种空间联系，并且训练迅速，在图像分类问题上得到了非常好的效果。 卷积神经网络涉及到三个基本思想：local receptive fields(局部感受野)，shared weights(参数共享)，pooling(池化)，接下来依次介绍。 Local receptive fields: 在之前的神经网络中，输入神经网络的数据是一个多维向量，与输入层连接的隐藏层的每一个神经元都和所有的输入层神经元连接。 这样一副784个像素点的图片中的每一个像素点都是一个输入神经元，后一层的每个神经元和所有这些输入神经元都有连接。 local …">
+
+        <title>《深度学习与神经网络》笔记  - 第六章 - 深度学习  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji.html"> 《深度学习与神经网络》笔记  <small> 第六章 - 深度学习 </small>  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+    <div class="span2 table-of-content">
+        <nav>
+        <h4>Contents</h4>
+        <div class="toc">
+<ul>
+<li><a href="#_1">一. 卷积神经网络</a><ul>
+<li><a href="#local-receptive-fields">Local receptive fields:</a></li>
+<li><a href="#shared-weights-and-biases">Shared weights and biases:</a></li>
+<li><a href="#_2">池化层:</a></li>
+<li><a href="#_3">总览:</a></li>
+<li><a href="#_4">拓展: 卷积神经网络下的反向传播：</a></li>
+</ul>
+</li>
+<li><a href="#_5">二. 卷积神经网络实践</a><ul>
+<li><a href="#relu">使用RELU激活函数</a></li>
+<li><a href="#_6">扩展训练数据</a></li>
+<li><a href="#_7">增加全连接隐藏层</a></li>
+<li><a href="#_8">神经网络的集成</a></li>
+<li><a href="#dropout">为什么只在全连接隐藏层上使用dropout</a></li>
+<li><a href="#_9">为什么可以训练深度网络</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </nav>
+    </div>
+    <div class="span8 article-content">
+
+            <p id="list-of-translations">
+This post is also available in:
+    <a href="/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji.html">cn</a></p>
+
+            
+<p>深度神经网络在可以模拟更加复杂的情形，但是在上一章中，我们发现训练深度神经网络的时候会出现梯度消失的问题，从而导致模型训练失败。这一章，将会介绍可以被用在深度学习上的一些技术。</p>
+<p>这章的主要内容是介绍一种应用最广泛的深度神经网络：卷积神经网络。我们将会了解到卷积，池化等概念，通过在之前的代码上利用这些技术进行优化达到了惊人的99.67%的准确率。</p>
+<p>除此之外，本章还将介绍一些其他的基本神经网络，例如循环神经网络。在介绍完这些之后，还会介绍深度学习技术的发展现状及未来的发展方向。</p>
+<h2 id="_1">一. 卷积神经网络</h2>
+<p>之前我们在进行MNIST数字分类的时候，输入数据是将每张图片按像素展开得到的784维向量，这样训练得到的结果虽然不错，但是仔细想想就会发现它的问题。对于图片来说，不同的不同的像素点之间的距离很远，旧的方法就完全没有考虑像素点之间的空间联系。这一节介绍的卷积神经网络就考虑了这种空间联系，并且训练迅速，在图像分类问题上得到了非常好的效果。
+卷积神经网络涉及到三个基本思想：local receptive fields(局部感受野)，shared weights(参数共享)，pooling(池化)，接下来依次介绍。</p>
+<h3 id="local-receptive-fields">Local receptive fields:</h3>
+<p>在之前的神经网络中，输入神经网络的数据是一个多维向量，与输入层连接的隐藏层的每一个神经元都和所有的输入层神经元连接。</p>
+<p><img alt="sdxxsjwl61" src="./images/sdxxsjwl61.png"/></p>
+<p>这样一副784个像素点的图片中的每一个像素点都是一个输入神经元，后一层的每个神经元和所有这些输入神经元都有连接。
+local receptive fields局部感受野的概念就是后面一层的神经元只会和部分窗口下的输入神经元连接，例如，对于5*5的窗口：</p>
+<p><img alt="sdxxsjwl62" src="./images/sdxxsjwl62.png"/></p>
+<p>我们可以将窗口从左到右，从上到下进行平移，每移动一次，当前窗口下的输入神经元就对应一个隐藏层的神经元。</p>
+<p><img alt="sdxxsjwl63" src="./images/sdxxsjwl63.png"/></p>
+<p><img alt="sdxxsjwl64" src="./images/sdxxsjwl64.png"/></p>
+<p>对于28*28的图像，使用5*5的窗口的话，一共可以移动23*23次，也就是说隐藏层将会有24*24个神经元。
+上面的例子中，每次平移的步长为1，实际中这个步长其实也是可以根据需要改变的。</p>
+<h3 id="shared-weights-and-biases">Shared weights and biases:</h3>
+<p>这里的参数共享说的是对于和输入层连接的24*24个隐藏层神经元，每个隐藏层神经元的参数是一样的，也就是说不同窗口和其对应的隐藏层神经元共用一套参数。对于24*24个隐藏神经元中的第j, k个神经元其输出为：
+</p>
+<div class="math">$$\sigma(b+\sum^4_{l=0} \sum^4_{m=0}w_{l, m}a_{j+l, k+m}) \quad (125)$$</div>
+<p>
+其中<span class="math">\(w_{l,m}\)</span>对应着24*24个神经元中任意神经元与每个5*5窗口下的所有输入神经元连接的5*5个参数。这样就说明，第一个隐藏层中所有的神经元识别的是同一个特征，区别在于该特征出现在原图中的位置不同。基于这些原因，我们也把从输入层到隐藏层的这个映射关系称为特征映射，其中的共享权重和偏差作为决定了这个特征映射，通常也被成为一个核或滤波器。
+上面我们在隐藏层中只用到了一种核，也就是只检测了一个特征，事实上我们也可以使用多个核来检测多个特征：</p>
+<p><img alt="sdxxsjwl65" src="./images/sdxxsjwl65.png"/></p>
+<p>这个例子中就使用了3个5*5的核来检测三个不同的特征。实际中，可能使用更多的特征，比如我们随后的代码中就分别使用了20和40个核。</p>
+<p><img alt="sdxxsjwl66" src="./images/sdxxsjwl66.png"/></p>
+<p>这个例子中的20幅图分别对应了20个不同的5*5核代表的权重，其中黑色方块代表高权重，白色方块代表低权重，这些图上的黑色区域就是该核所检测的特征。在这些特征图上，我们看到有很多自区域存在很明显的黑白分界，说明这里的确存在一些空间上的特征，至于这些特征是什么，我们并不是特别清楚，毕竟它不是非常规则的几何图形。
+卷积的另外一个好处就是减少了需要学习的参数。考虑到最初的神经网络，在使用30个隐藏层神经元的情况下，一共有784*30（权重）+30（偏差）=23550个参数。而现在的话，5*5的核对应26个参数，如果使用20个特征，则有20*26=520个参数，减少了大概40倍。我们有理由相信这将大大减少训练的时间，使得深度网络的训练成为可能。
+(125)式也是“卷积”这个名字的由来，卷积操作就不说了，其实和以前信号系统里学的卷积没什么区别，只是由一维变成了二维情形(图片)，并且由连续积分变成了离散求和。</p>
+<h3 id="_2">池化层:</h3>
+<p>卷积神经网络的另外一个部分就是池化层，池化层的使用发生在卷积层之后，它的作用是对卷积层的输出结果进行简化。
+对于上面中的24*24的卷积层的输出，池化层的每一个窗口单元，例如2*2的窗口，对卷积层结果进行处理。如果使用max-pooling的方法，就是说用这个2*2的窗口内的最大值作为这四个值的代表：</p>
+<p><img alt="sdxxsjwl67" src="./images/sdxxsjwl67.png"/></p>
+<p>通过这样的方法，就将24*24的卷积层输出简化为了12*12的池化层输出。
+池化的作用当然也可以应用在多个特征的情况下，例如下图中3个特征的情况：</p>
+<p><img alt="sdxxsjwl68" src="./images/sdxxsjwl68.png"/></p>
+<p>max-pooling可以看作是一种检测特征在上一层卷积层是否被检测到的方法。随后max-pooling将不再关心该特征在图像中的具体位置，而是处理特征之间的相对位置。通过这样的方法，除掉了很多不明显的特征，显著减小了后一层的参数。
+除了max-pooling以外，还存在其他的池化方法。例如L2-pooling，对于2*2的窗口，它不再是求最大值，而是使用四个数的L2范数代替。虽然和max-pooling有点不一样，但是它们的目的都是为了压缩卷积层输出的信息。</p>
+<h3 id="_3">总览:</h3>
+<p>将上面的卷积层，池化层和输入输出神经元结合起来就得到如下的一个简单的卷积神经网络：</p>
+<p><img alt="sdxxsjwl69" src="./images/sdxxsjwl69.png"/></p>
+<p>虽然结构上和之前有点不一样，但是还是有很大的共同点的。它们都是有简单的单层相互连接起来的，单层由它们自己的参数决定，输入上一层的输出，将自己的输出又作为后一层的输入这样传递下去。
+在后面的内容里，我们将会用随机梯度下降算法和反向传播算法对卷积神经网络进行训练。训练方法大致和之前一样，但是对反向传播过程需要进行一些修改。因为之前的反向传播针对的是全连接的神经网络，而卷积神经网络并是部分连接的。</p>
+<h3 id="_4">拓展: 卷积神经网络下的反向传播：</h3>
+<p>之前的公式bp(1)-bp(4)给出的是全连接神经网络下的反向传播方程。对于由一个输出层，一个卷积层，一个max-pooling层，一个全连接输出层的卷积神经网络，给出该情形下的反向传播方程。</p>
+<h2 id="_5">二. 卷积神经网络实践</h2>
+<p>在了解了卷积神经网络的核心概念之后，再来看看它在实际中的应用。这里的代码中调用了Theano库，一来可以快速的实现卷积神经网络的反向传播算法，另外相比于我们自己的实现神经网络，Theano的计算更快速，使得我们可以实现更复杂的模型。
+先从一个简答的模型开始，只有一个包含100个神经元的隐藏层的神经网络：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">network3</span>
+<span class="kn">from</span> <span class="nn">network3</span> <span class="kn">import</span> <span class="n">Network</span>
+<span class="kn">from</span> <span class="nn">network3</span> <span class="kn">import</span> <span class="n">ConvPoolLayer</span><span class="p">,</span> <span class="n">FullyConnectedLayer</span><span class="p">,</span> <span class="n">SoftmaxLayer</span>
+
+<span class="n">training_data</span><span class="p">,</span> <span class="n">validation_data</span><span class="p">,</span> <span class="n">test_data</span> <span class="o">=</span> <span class="n">network3</span><span class="o">.</span><span class="n">load_data_shared</span><span class="p">()</span>
+<span class="n">mini_batch_size</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">([</span>
+        <span class="n">FullyConnectedLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+        <span class="n">SoftmaxLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span> <span class="n">mini_batch_size</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">training_data</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="n">mini_batch_size</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> 
+            <span class="n">validation_data</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>这里在测试数据上得到了97.8%的准确率，为了避免过拟合的影响，这个准确率是在validation数据上达到最优准确率时对测试数据测得的。
+和之前得到的最好的结果98.04%相比较，主要有两点不同。首先，之前的结果是在使用了正则化的基础上得到的，正则化的确可以改善结果但是并不是很大的改善，所以我们随后再考虑。其次，之前实用的是sigmoid输出层加交叉熵的组合，这里我们实用的是softmax加对数似然损失函数。这两者都可以加速神经网络的训练，后者在图像分类问题上应用的更加普遍。
+接着我们试验更复杂的深度网络看看结果有没有改善。
+我们在隐藏层之前添加一个卷积层，使用5*5的局部窗口，步长为1，共20个特征映射，随后使用2*2的池化窗口：</p>
+<p><img alt="sdxxsjwl610" src="./images/sdxxsjwl610.png"/></p>
+<p>在这个结构中，卷积和池化层可以看作是学习输入图像中的局部空间的特征，随后的全连接的隐藏层的学习则是更抽象的层次，学习整个图像上的全局信息。
+训练该模型：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">([</span>
+        <span class="n">ConvPoolLayer</span><span class="p">(</span><span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="n">mini_batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> 
+                      <span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> 
+                      <span class="n">poolsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+                      <span class="n">FullyConnectedLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">20</span><span class="o">*</span><span class="mi">12</span><span class="o">*</span><span class="mi">12</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+                      <span class="n">SoftmaxLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span> <span class="n">mini_batch_size</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">training_data</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="n">mini_batch_size</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> 
+            <span class="n">validation_data</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>得到了98.78%准确率，比之前的任何结果都要好。
+这个结果还能继续提升吗？我们在现有卷积层和全连接的隐藏层之间再加入一个卷积层，仍然使用5*5的局部接受野和2*2的池化窗口：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">([</span>
+        <span class="n">ConvPoolLayer</span><span class="p">(</span><span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="n">mini_batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> 
+                      <span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> 
+                      <span class="n">poolsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+        <span class="n">ConvPoolLayer</span><span class="p">(</span><span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="n">mini_batch_size</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> 
+                      <span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> 
+                      <span class="n">poolsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+        <span class="n">FullyConnectedLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">40</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+        <span class="n">SoftmaxLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span> <span class="n">mini_batch_size</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">training_data</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="n">mini_batch_size</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> 
+        <span class="n">validation_data</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>这次我们得到了惊人的99.06%的正确率。
+这里我们可能会有两个疑问。第一个问题是第二个卷积层表示了什么？第二个卷积层的输入是第一个卷积层输出的12*12图像，它的像素点表示了局部特征在原始图像中的出现。可以将其看作是原始图片的一个抽象压缩过的版本。由于它仍然存在一些局部空间特征，所以我们仍然可以使用第二个卷积层进行提取。
+第二个问题就是既然是特殊的图像，第一个卷积层处理的原始图片只有一张，这里由于20个特征映射，也就是有20张12*12的图片，第二卷积层应该怎么处理呢？事实上，它对所有20幅图片都是可见的。也就是说，每个神经元处理20张图片中的同一块局部接受野。</p>
+<h3 id="relu">使用RELU激活函数</h3>
+<p>上面的神经网络使用的都是sigmoid激活函数，我们接着试用一下RELU函数看看效果。作者还发现使用L2正则化会优化结果，于是我们使用<span class="math">\(\lambda = 0.1\)</span>的L2正则化:</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">network3</span> <span class="kn">import</span> <span class="n">ReLU</span>
+<span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">([</span>
+        <span class="n">ConvPoolLayer</span><span class="p">(</span><span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="n">mini_batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> 
+                      <span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> 
+                      <span class="n">poolsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> 
+                      <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">),</span>
+        <span class="n">ConvPoolLayer</span><span class="p">(</span><span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="n">mini_batch_size</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> 
+                      <span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> 
+                      <span class="n">poolsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> 
+                      <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">),</span>
+        <span class="n">FullyConnectedLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">40</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">),</span>
+        <span class="n">SoftmaxLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span> <span class="n">mini_batch_size</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">training_data</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="n">mini_batch_size</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> 
+            <span class="n">validation_data</span><span class="p">,</span> <span class="n">test_data</span><span class="p">,</span> <span class="n">lmbda</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>得到了99.23%的准确率，相对于99.06%来说算是一个小的进步。不过，作者表示在他的所有试验中，RELU激活函数整体都优于sigmoid激活函数，因此RELU激活函数是更好的选择。
+是什么使得RELU比sigmoid效果要好呢？很遗憾，目前我们并没有理论指导如何选择激活函数，都是一些经验上或启发式的结论，类似于我们之前讨论过，RELU在输入增大的情况下不会出现saturated的状态，它可以继续学习，所以结果要好于sigmoid函数。</p>
+<h3 id="_6">扩展训练数据</h3>
+<p>另外一个提升训练效果的方法就是增大训练数据集了。最简单的方法就是我们对原图片进行平移，分别向上下左右四个方向平移得到四张图片，于是原始的50000张的训练数据集就增大到了250000张。接着使用之前一样的使用RELU激活函数的结构，得到99.37%的准确率，又提升了一点。当然这个方法还有改进空间，可以通过对图像进行其他的变换更进一步扩大训练数据集。</p>
+<h3 id="_7">增加全连接隐藏层</h3>
+<p>我们先试着增大之前唯一的一个全连接隐藏层的规模，分别测试了300个和1000个神经元的情况，得到了99.46%和99.43%的结果，相对99.37%来说并不是什么大的提升。
+那么如果是增加一层隐藏层呢，仍然是100个神经元的隐藏层：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">([</span>
+        <span class="n">ConvPoolLayer</span><span class="p">(</span><span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="n">mini_batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> 
+                      <span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> 
+                      <span class="n">poolsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> 
+                      <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">),</span>
+        <span class="n">ConvPoolLayer</span><span class="p">(</span><span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="n">mini_batch_size</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> 
+                      <span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> 
+                      <span class="n">poolsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> 
+                      <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">),</span>
+        <span class="n">FullyConnectedLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">40</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">),</span>
+        <span class="n">FullyConnectedLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">),</span>
+        <span class="n">SoftmaxLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span> <span class="n">mini_batch_size</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">expanded_training_data</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="n">mini_batch_size</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> 
+            <span class="n">validation_data</span><span class="p">,</span> <span class="n">test_data</span><span class="p">,</span> <span class="n">lmbda</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>这里的结果是99.43%，同样没有什么明显的提升。试验300和1000的双层的情况，得到99.48%和99.47%，有效果，但是并不显著。
+这是为什么呢？是添加隐藏层真的没有效果还是我们的学习方式出错了呢？我们用之前介绍的dropout的方法尝试减轻过拟合的影响：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">([</span>
+        <span class="n">ConvPoolLayer</span><span class="p">(</span><span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="n">mini_batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> 
+                      <span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> 
+                      <span class="n">poolsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> 
+                      <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">),</span>
+        <span class="n">ConvPoolLayer</span><span class="p">(</span><span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="n">mini_batch_size</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> 
+                      <span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> 
+                      <span class="n">poolsize</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> 
+                      <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">),</span>
+        <span class="n">FullyConnectedLayer</span><span class="p">(</span>
+            <span class="n">n_in</span><span class="o">=</span><span class="mi">40</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">,</span> <span class="n">p_dropout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+        <span class="n">FullyConnectedLayer</span><span class="p">(</span>
+            <span class="n">n_in</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">activation_fn</span><span class="o">=</span><span class="n">ReLU</span><span class="p">,</span> <span class="n">p_dropout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+        <span class="n">SoftmaxLayer</span><span class="p">(</span><span class="n">n_in</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">n_out</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">p_dropout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)],</span> 
+        <span class="n">mini_batch_size</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">expanded_training_data</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="n">mini_batch_size</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> 
+            <span class="n">validation_data</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>这次的结果是99.60%，这次总算是得到了一个不错的提升了。
+这里有两点参数的变化需要说一下。首先是epoch从之前的60改为了40，因为dropout减轻了过拟合，学习过程就缩短了。其次是全连接的隐藏层都使用了1000个神经元，因为dropout在训练过程中会抛弃掉很多神经元，所以适当的增加其规模是有必要的。事实上我们同样测试了300个情形，发现1000个的时候的确效果要更好。</p>
+<h3 id="_8">神经网络的集成</h3>
+<p>由于初始状态的随机性，一个很简单的想法是用上面的方法训练5个不一样的神经网络。其中每个单独的准确率都在96%左右，然后用这5个模型的结果进行投票，少数服从多数，判断一张图片最终的分类。
+这听起来有点简单的不可思议，但是确是神经网络或机器学习上经常使用的方法。在这里也的确获得了提升，得到了99.67%的准确率。也就是说在10000张图片中，我们只识别错了33张，来看一下这33张的结果：</p>
+<p><img alt="sdxxsjwl611" src="./images/sdxxsjwl611.png"/></p>
+<p>可以看到这些都是非常潦草的手写体，即便是正常的人也不一定能全部识别准确，更别说是机器了。要知道我们的机器已经识别准确9967张图片了，已经非常接近正常人的识别水平了。</p>
+<h3 id="dropout">为什么只在全连接隐藏层上使用dropout</h3>
+<p>细心的话可以发现之前的dropout只发生在全连接层上，为什么不对卷积层使用dropout呢？事实上可以这样做，但是没必要。因为卷积层的设计天生就可以防止过拟合。因为共享参数的设置，导致它更多的是从整张图片上去学习规律，而不是仅仅着眼于一些局部的细节。所以对于卷积层，没有必要去使用一些正则化的方法。</p>
+<h3 id="_9">为什么可以训练深度网络</h3>
+<p>之前我们讨论了在神经网络层增加的时候会出现梯度不稳定的问题，我们现在为什么又能训练了呢？事实上，我们并没有避免这个问题，我们只是使用了一些方法来帮助处理：1. 使用卷积神经网络大大减少了需要训练的参数，使得训练更容易 2. 使用了更强大的正则化技术(尤其是dropout)减轻了过拟合 3. 使用了RELU激活函数加速训练 4. 使用GPU加速训练。
+除此之外，我们还使用了其它的一些技术：拓展训练数据集(避免过拟合)；使用正确的损失函数(避免训练速度下降)；使用正确的参数初始化方法(避免由于神经元saturation导致的训练速度下降)。
+这些技术虽然都是简单的基础技术，但是只要应用得到，将它们合理组合起来，就可以得到强大效果。</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+            
+            
+            <hr/>
+            <aside>
+            <nav>
+            <ul class="articles-timeline">
+                <li class="next-article"><a href="/xin-xi-lun-ji-ben-gai-nian.html" title="Next: 信息论基本概念 - 各种熵的解释">信息论基本概念 <small>各种熵的解释</small></a> »</li>
+            </ul>
+            </nav>
+            </aside>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2017-10-02T20:00:00+08:00">2017  - 10  - 02</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#shen-du-xue-xi-ref">深度学习
+                <span>(2)</span>
+</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#shen-du-xue-xi-ref">深度学习
+                    <span>2</span>
+</a></li>
+                <li><a href="/tags.html#shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-ref">《深度学习与神经网络》笔记
+                    <span>2</span>
+</a></li>
+                <li><a href="/tags.html#suan-fa-ref">算法
+                    <span>4</span>
+</a></li>
+            </ul>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>

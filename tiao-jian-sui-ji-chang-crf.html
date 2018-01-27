@@ -118,8 +118,8 @@
             
             
 <h2 id="1">1. 概率无向图</h2>
-<p>不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。
-状态与状态之间并没有谁推导出谁的先后关系(<span class="math">\(P(y_n|y_{n-1}, y_{n-2}...y_1)\)</span>)，这里我们用的是序列整体的分布<span class="math">\(P(y_1,y_2,...y_n)\)</span>。</p>
+<p>不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。</p>
+<p>状态与状态之间并没有谁推导出谁的先后关系(<span class="math">\(P(y_n|y_{n-1}, y_{n-2}...y_1)\)</span>)，这里我们用的是序列整体的分布<span class="math">\(P(y_1,y_2,...y_n)\)</span>。</p>
 <h3 id="_1">因子分解</h3>
 <p><strong>团：</strong> 对于无向图中的一个子集，如果该子集中任意两个点都是有边相连接的，那么这样的子集就叫做该无向图上的一个团
 <strong>最大团：</strong> 对于一个团，如果无法添加另外一个点使得团增大，那么现有的团就是最大团</p>
@@ -127,18 +127,18 @@
 </p>
 <div class="math">$$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$</div>
 <p>
-其中C是最大团的集合，对于其中每一个最大团，有一个势能函数<span class="math">\(\Phi_C\)</span>，<span class="math">\(Y_C\)</span>为属于这个最大团的节点，<span class="math">\(Z=\sum_Y{\prod_C{\Phi_C(Y_C)}}\)</span>是一个规范化因子，目的是为了让<span class="math">\(P(Y)\)</span>构成一个概率分布。
-由于势函数是严格正的，所以一般就定义为指数函数<span class="math">\(exp(-E(Y_C))\)</span></p>
+其中C是最大团的集合，对于其中每一个最大团，有一个势能函数<span class="math">\(\Phi_C\)</span>，<span class="math">\(Y_C\)</span>为属于这个最大团的节点，<span class="math">\(Z=\sum_Y{\prod_C{\Phi_C(Y_C)}}\)</span>是一个规范化因子，目的是为了让<span class="math">\(P(Y)\)</span>构成一个概率分布。</p>
+<p>由于势函数是严格正的，所以一般就定义为指数函数<span class="math">\(exp(-E(Y_C))\)</span></p>
 <p><strong>总结：</strong> 概率无向图模型的联合概率分布可以分解为其所有<code>最大团</code>上的势函数的积。</p>
 <h2 id="2">2. 条件随机场</h2>
 <h3 id="_2">定义</h3>
-<p>CRF里的条件指的是在给定随机变量X的条件下，随机变量Y的马尔科夫随机场。
-通常情况，只使用线性链条件随机场，将其用于标注问题，条件概率为P(Y|X)。其中X是给定的观测序列，Y是需要标注的标注序列(状态序列)。</p>
+<p>CRF里的条件指的是在给定随机变量X的条件下，随机变量Y的马尔科夫随机场。</p>
+<p>通常情况，只使用线性链条件随机场，将其用于标注问题，条件概率为P(Y|X)。其中X是给定的观测序列，Y是需要标注的标注序列(状态序列)。</p>
 <h4 id="_3">一般形式</h4>
 <div class="math">$$P(Y_v|X, Y_w w\neq v) = P(Y_v | X, Y_w w~v)$$</div>
 <p>
-对于任意节点v成立，则称条件概率分布P(Y|X)为条件随机场。
-同HMM的条件概率相比较，可以更好的理解CRF的条件概率定义。首先，在HMM中，观测序列中每个位置的观测值只和它所处的状态有关，而在CRF中，所有的观测序列是作为一个整体X来处理的。其次，对于<span class="math">\(w\neq v\)</span>是说除了v以外的所有点，<span class="math">\(w~v\)</span>是说和v相邻的点，也就是状态序列某一位置的状态y只和与它有连接的状态值有关。</p>
+对于任意节点v成立，则称条件概率分布P(Y|X)为条件随机场。</p>
+<p>同HMM的条件概率相比较，可以更好的理解CRF的条件概率定义。首先，在HMM中，观测序列中每个位置的观测值只和它所处的状态有关，而在CRF中，所有的观测序列是作为一个整体X来处理的。其次，对于<span class="math">\(w\neq v\)</span>是说除了v以外的所有点，<span class="math">\(w~v\)</span>是说和v相邻的点，也就是状态序列某一位置的状态y只和与它有连接的状态值有关。</p>
 <h4 id="_4">线性链形式</h4>
 <p>线性链形式顾名思义就是状态序列<span class="math">\(Y=(Y_1, Y_2, ..., Y_n)\)</span>是线性的，也就是说某一位置的状态只和它前后两个状态相连。
 </p>
@@ -149,12 +149,12 @@
 </p>
 <div class="math">$$P(y|x) = \frac{1}{Z(x)}exp(\sum_{i,k}\lambda_k t_k (y_{i-1}, y_i, x, i) + \sum_{i, l}\mu_l s_l (y_i, x, i)$$</div>
 <p>
-其中<span class="math">\(t_k\)</span>是定义在边上的特征函数，成为<code>转移特征</code>，依赖于当前和前一个位置(构成一个最大团)，<span class="math">\(\lambda_k\)</span>是特征<span class="math">\(t_k\)</span>的权重。<span class="math">\(s_l\)</span>是定义在节点上的特征函数，称为<code>状态特征</code>，依赖于当前位置，<span class="math">\(\mu_l\)</span>为特征<span class="math">\(s_l\)</span>的权重。
-<span class="math">\(t_k\)</span>和<span class="math">\(s_l\)</span>都依赖于位置，是局部特征函数，通常，它们的取值为1或0，当满足特征条件时值为1，反之为0.
-条件随机场完全由特征函数<span class="math">\(t_k\)</span>和<span class="math">\(s_l\)</span>及其对应的权重<span class="math">\(\lambda_k\)</span>和<span class="math">\(\mu_l\)</span>确定。</p>
+其中<span class="math">\(t_k\)</span>是定义在边上的特征函数，成为<code>转移特征</code>，依赖于当前和前一个位置(构成一个最大团)，<span class="math">\(\lambda_k\)</span>是特征<span class="math">\(t_k\)</span>的权重。<span class="math">\(s_l\)</span>是定义在节点上的特征函数，称为<code>状态特征</code>，依赖于当前位置，<span class="math">\(\mu_l\)</span>为特征<span class="math">\(s_l\)</span>的权重。</p>
+<p><span class="math">\(t_k\)</span>和<span class="math">\(s_l\)</span>都依赖于位置，是局部特征函数，通常，它们的取值为1或0，当满足特征条件时值为1，反之为0.</p>
+<p>条件随机场完全由特征函数<span class="math">\(t_k\)</span>和<span class="math">\(s_l\)</span>及其对应的权重<span class="math">\(\lambda_k\)</span>和<span class="math">\(\mu_l\)</span>确定。</p>
 <h3 id="_6">简化形式</h3>
-<p>由参数化形式可是对于每个特征函数，它都会计算在所有位置上的值，于是可以对每个局部特征，在所有位置上求和得到一个全局特征函数。
-汇总K1个转移特征和K2个状态特征：</p>
+<p>由参数化形式可是对于每个特征函数，它都会计算在所有位置上的值，于是可以对每个局部特征，在所有位置上求和得到一个全局特征函数。</p>
+<p>汇总K1个转移特征和K2个状态特征：</p>
 <ul>
 <li><span class="math">\(k = 1, 2, ..., K_1\)</span>时，<span class="math">\(f_k (y_{i-1}, y_i, x, i) = t_k (y_{i-1}, y_i, x, i)\)</span></li>
 <li><span class="math">\(k = K_1 +l, l = 1, 2, ... , K_2\)</span>时， <span class="math">\(f_k (y_{i - 1}, y_i, x, i) = s_l (y_i, x, i)\)</span></li>
@@ -163,8 +163,8 @@
 </p>
 <div class="math">$$f_k (y, x) = \sum_{i=1}^n f_k(y_{i-1}, y_i, x, i), k = 1, 2, ..., K$$</div>
 <p>
-用<span class="math">\(w_k = (\lambda_1, \lambda_2, .., \lambda_{K_1}, \mu_{K_1 + 1}, .., \mu_{K_1 + K_2})\)</span>表示每个特征的权重。
-于是条件随机场可以表示为：
+用<span class="math">\(w_k = (\lambda_1, \lambda_2, .., \lambda_{K_1}, \mu_{K_1 + 1}, .., \mu_{K_1 + K_2})\)</span>表示每个特征的权重。</p>
+<p>于是条件随机场可以表示为：
 </p>
 <div class="math">$$P(y|x) = \frac{1}{Z(x)}exp\sum_{k=1}^K w_k f_k(y, x)$$</div>
 <p>
@@ -176,23 +176,23 @@
 </p>
 <div class="math">$$M_i(y_{i-1}, y_i|x) = exp(W_i (y_{i-1}, y_i | x)) = exp(\sum_{k=1}^K w_k f_k(y_{i-1}, y_i, x, i)$$</div>
 <p>
-假设每个位置上的y有m个取值，则<span class="math">\(M_i(y_{i-1}, y_i)\)</span>就是一个m*m阶的矩阵.
-对应上面的表达式可以发现(规定<span class="math">\(y_0=start, y_{n+1} = stop\)</span>)
+假设每个位置上的y有m个取值，则<span class="math">\(M_i(y_{i-1}, y_i)\)</span>就是一个m*m阶的矩阵.</p>
+<p>对应上面的表达式可以发现(规定<span class="math">\(y_0=start, y_{n+1} = stop\)</span>)
 </p>
 <div class="math">$$P(y|x) = exp(\sum^K_{k=1}\sum^{n+1}_{i=1}w_kf_k(y_{i-1},y_i,x,i) =\prod_{i=1}^{n+1}exp(\sum_{k=1}^Kw_kf_k(y_{i-1},y_i,x,i)=\prod_{i=1}^{n+1}M_i(y_{i-1},y_i|x)$$</div>
 <p>
 对于一个给定的序列，依此选取在每个矩阵中对应的元素就得到该路径的非规范概率。规范化因子则是这些矩阵的矩阵和，也对应着所有路径的非规范概率之和。</p>
-<p><strong>总结</strong>：
-建立一个CRF，只需要定义一系列的特征函数，这些特征函数的值依赖于整个句子(x)，当前位置(i)和相邻的标签(<span class="math">\(y_{i-1}\)</span>, <span class="math">\(y_{i}\)</span>)，给出这些特征函数对应的权重，学习到这些权重值就得到了CRF的模型。</p>
+<p><strong>总结</strong>：</p>
+<p>建立一个CRF，只需要定义一系列的特征函数，这些特征函数的值依赖于整个句子(x)，当前位置(i)和相邻的标签(<span class="math">\(y_{i-1}\)</span>, <span class="math">\(y_{i}\)</span>)，给出这些特征函数对应的权重，学习到这些权重值就得到了CRF的模型。</p>
 <h3 id="hmm">与逻辑回归和HMM的关系</h3>
 <p><strong>逻辑回归</strong></p>
-<p><img alt="逻辑回归与CRF的联系" src="./images/2018-01-15-19-33-22.jpg"/>
-可以看出CRF和逻辑回归的概率表达式非常相似，因为它们都是属于log-linear模型，不同的是逻辑回归是属于分类也就是说y是一个值，而CRF的y是一个序列，CRF是一个序列版的逻辑回归。
-那么如何将复杂的CRF转换为逻辑回归呢？
-考虑每个位置的特征函数<span class="math">\(f_i(x, i, y_{i-1}, y_{i})\)</span>为<span class="math">\(x_i\)</span>，然后其权重为<span class="math">\(w_i\)</span>，这样就简化成了逻辑回归。</p>
+<p><img alt="逻辑回归与CRF的联系" src="./images/2018-01-15-19-33-22.jpg"/></p>
+<p>可以看出CRF和逻辑回归的概率表达式非常相似，因为它们都是属于log-linear模型，不同的是逻辑回归是属于分类也就是说y是一个值，而CRF的y是一个序列，CRF是一个序列版的逻辑回归。</p>
+<p>那么如何将复杂的CRF转换为逻辑回归呢？</p>
+<p>考虑每个位置的特征函数<span class="math">\(f_i(x, i, y_{i-1}, y_{i})\)</span>为<span class="math">\(x_i\)</span>，然后其权重为<span class="math">\(w_i\)</span>，这样就简化成了逻辑回归。</p>
 <p><strong>HMM</strong></p>
-<p><img alt="HMM与CRF的联系" src="./images/2018-01-15-19-36-22.jpg"/>
-CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的得分，而HMM是用生成的方法先根据数据求<span class="math">\(P(y, x) = p(y_0)\prod_i p(y_i|y_{i-1})p(x_i | y_i)\)</span>。求对数可得：
+<p><img alt="HMM与CRF的联系" src="./images/2018-01-15-19-36-22.jpg"/></p>
+<p>CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的得分，而HMM是用生成的方法先根据数据求<span class="math">\(P(y, x) = p(y_0)\prod_i p(y_i|y_{i-1})p(x_i | y_i)\)</span>。求对数可得：
 </p>
 <div class="math">$$logp(y,x) = logp(y_0) + \sum_i logp(y_i|y_{i-1}) + \sum_i logp(x_i|y_i)$$</div>
 <p>
@@ -209,42 +209,50 @@ CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的�
 <h2 id="3-crf">3. CRF的概率计算</h2>
 <p>概率的计算是说在给定CRF模型P(Y|X), 输入序列x和输出序列y的情况下，计算条件概率<span class="math">\(P(Y_i = y_i|x)\)</span>和<span class="math">\(P(Y_{i-1} = y_{i-1}, Y_i = y_i, x)\)</span>以及相应的数学期望的问题。</p>
 <h3 id="_8">前向后向算法</h3>
-<p>类似在HMM模型的情况，这里同样定义一套前向后向算法。
-定义前向概率<span class="math">\(\alpha_i(y_i | x)\)</span>表示在位置i的标记是<span class="math">\(y_i\)</span>并且到位置i的前部分标记序列的非规范化概率，定义后向概率<span class="math">\(\beta_i(y_i|x)\)</span>表示在位置i的标记是<span class="math">\(y_i\)</span>并且从位置i+1到n的后部分标记序列的非规范化概率。
-理解起来的话就是说，前向概率<span class="math">\(\alpha_i(y_i|x)\)</span>表示的是<span class="math">\(\sum_{y_0, y_1, ..., y_{i-1}} P(y_0, y_1, .., y_{i-1}, y_i | x)\)</span>对于除<span class="math">\(y_i\)</span>以外的部分序列的所有情况的和。而后向概率<span class="math">\(\beta_i(y_i|x)\)</span>表示的是<span class="math">\(\sum_{y_{n+1}, y_n, ..., y_{i+1}}P(y_{n+1}, y_n, ..., y_{i+1}, y_i|x)\)</span>除<span class="math">\(y_i\)</span>以外的部分序列的所有情况的和。
-对于后向概率<span class="math">\(\beta_i\)</span>，这里与HMM的情形有点不同，在HMM中，<span class="math">\(\beta_i = P(o_{i+1}, o_{i+2},...|s_i)\)</span>也就是说i时刻的状态是作为先验概率出现的，因为HMM的模型是概率有向图，状态是单向传递的<span class="math">\(P(y_{i+1}|y_i)\)</span>。而CRF中是无向图，两者根据之前矩阵形式的推导，有类似联合概率的形式，才有了以下<span class="math">\(\beta_i\)</span>的递推公式，其中的<span class="math">\(M_{i+1}(y_i, y_{i+1}|x)\)</span>既可以用于正向，也可以用于反向的推导。
-对于<span class="math">\(\alpha_0(y_0|x)\)</span>，定义</p>
+<p>类似在HMM模型的情况，这里同样定义一套前向后向算法。</p>
+<p>定义前向概率<span class="math">\(\alpha_i(y_i | x)\)</span>表示在位置i的标记是<span class="math">\(y_i\)</span>并且到位置i的前部分标记序列的非规范化概率，定义后向概率<span class="math">\(\beta_i(y_i|x)\)</span>表示在位置i的标记是<span class="math">\(y_i\)</span>并且从位置i+1到n的后部分标记序列的非规范化概率。</p>
+<p>理解起来的话就是说，前向概率<span class="math">\(\alpha_i(y_i|x)\)</span>表示的是<span class="math">\(\sum_{y_0, y_1, ..., y_{i-1}} P(y_0, y_1, .., y_{i-1}, y_i | x)\)</span>对于除<span class="math">\(y_i\)</span>以外的部分序列的所有情况的和。而后向概率<span class="math">\(\beta_i(y_i|x)\)</span>表示的是<span class="math">\(\sum_{y_{n+1}, y_n, ..., y_{i+1}}P(y_{n+1}, y_n, ..., y_{i+1}, y_i|x)\)</span>除<span class="math">\(y_i\)</span>以外的部分序列的所有情况的和。</p>
+<p>对于后向概率<span class="math">\(\beta_i\)</span>，这里与HMM的情形有点不同，在HMM中，<span class="math">\(\beta_i = P(o_{i+1}, o_{i+2},...|s_i)\)</span>也就是说i时刻的状态是作为先验概率出现的，因为HMM的模型是概率有向图，状态是单向传递的<span class="math">\(P(y_{i+1}|y_i)\)</span>。而CRF中是无向图，两者根据之前矩阵形式的推导，有类似联合概率的形式，才有了以下<span class="math">\(\beta_i\)</span>的递推公式，其中的<span class="math">\(M_{i+1}(y_i, y_{i+1}|x)\)</span>既可以用于正向，也可以用于反向的推导。</p>
+<p>对于<span class="math">\(\alpha_0(y_0|x)\)</span>，定义</p>
 <ul>
 <li><span class="math">\(y_0 = start\)</span>时，<span class="math">\(\alpha = 1\)</span></li>
-<li>
-<p>else, <span class="math">\(\alpha = 0\)</span>
-其他位置<span class="math">\(\alpha_i(y_i | x)\)</span>，有
-<div class="math">$$\alpha_{i+1}(y_{i+1}|x) = \alpha_i(y_i |x) * M_{i+1}(y_i, y_{i+1}|x)$$</div>
-简化为
-<div class="math">$$\alpha_{i+1}^T(x) = \alpha_i^T(x)M_{i+1}(x)$$</div>
-由于每个位置的y有m个取值，所以这里得到的是个m维列向量。
-对于<span class="math">\(\beta_{n+1}(y_{n+1}|x)\)</span>,定义</p>
-</li>
-<li>
-<p><span class="math">\(y_{n+1} = stop\)</span>时，<span class="math">\(\beta = 1\)</span></p>
-</li>
-<li>else, <span class="math">\(\beta = 0\)</span>
-其他位置<span class="math">\(\beta_i(y_i|x)\)</span>,有
-<div class="math">$$\beta_i(y_i|x)=M_{i+1}(y_i, y_{i+1}|x)\beta_{i+1}(y_{i+1}|x)$$</div>
-简写为：
-<div class="math">$$\beta_i(x) = M_{i+1}(x) * \beta_{i+1}(x)$$</div>
-规范化因子可以得出就是从start到stop的路径的非规范化概率和，相当于：
-<div class="math">$$Z(x) = \alpha_n^T(x) \cdot \vec{1} = \vec{1}^T \cdot \beta_1(x)$$</div>
-稍微说一下个人理解，前向概率最终走到末尾节点<span class="math">\(\alpha_n(x)\)</span>的每一个分量m，对应了一个值<span class="math">\(\alpha_n(y_n = m|x)\)</span>，对各分量求和，得到整个序列的概率和。后向概率最终走到开始节点<span class="math">\(\beta_1(x)\)</span>的每一个分量m，对应了一个值<span class="math">\(y_1 = m\)</span>时，从<span class="math">\(y_2\)</span>到stop的这些路径的概率和，对各分量求和，同样得到整个序列的概率和。</li>
+<li>else, <span class="math">\(\alpha = 0\)</span></li>
 </ul>
+<p>其他位置<span class="math">\(\alpha_i(y_i | x)\)</span>，有
+</p>
+<div class="math">$$\alpha_{i+1}(y_{i+1}|x) = \alpha_i(y_i |x) * M_{i+1}(y_i, y_{i+1}|x)$$</div>
+<p>
+简化为
+</p>
+<div class="math">$$\alpha_{i+1}^T(x) = \alpha_i^T(x)M_{i+1}(x)$$</div>
+<p>
+由于每个位置的y有m个取值，所以这里得到的是个m维列向量。</p>
+<p>对于<span class="math">\(\beta_{n+1}(y_{n+1}|x)\)</span>,定义</p>
+<ul>
+<li><span class="math">\(y_{n+1} = stop\)</span>时，<span class="math">\(\beta = 1\)</span></li>
+<li>else, <span class="math">\(\beta = 0\)</span></li>
+</ul>
+<p>其他位置<span class="math">\(\beta_i(y_i|x)\)</span>,有
+</p>
+<div class="math">$$\beta_i(y_i|x)=M_{i+1}(y_i, y_{i+1}|x)\beta_{i+1}(y_{i+1}|x)$$</div>
+<p>
+简写为：
+</p>
+<div class="math">$$\beta_i(x) = M_{i+1}(x) * \beta_{i+1}(x)$$</div>
+<p>
+规范化因子可以得出就是从start到stop的路径的非规范化概率和，相当于：
+</p>
+<div class="math">$$Z(x) = \alpha_n^T(x) \cdot \vec{1} = \vec{1}^T \cdot \beta_1(x)$$</div>
+<p>
+稍微说一下个人理解，前向概率最终走到末尾节点<span class="math">\(\alpha_n(x)\)</span>的每一个分量m，对应了一个值<span class="math">\(\alpha_n(y_n = m|x)\)</span>，对各分量求和，得到整个序列的概率和。后向概率最终走到开始节点<span class="math">\(\beta_1(x)\)</span>的每一个分量m，对应了一个值<span class="math">\(y_1 = m\)</span>时，从<span class="math">\(y_2\)</span>到stop的这些路径的概率和，对各分量求和，同样得到整个序列的概率和。</p>
 <h3 id="_9">概率计算</h3>
 <p>主要是两个概率<span class="math">\(P(Y_i = y_i|x)\)</span>和<span class="math">\(P(Y_{i-1}=y_{i-1}, Y_i = y_i|x)\)</span>
 </p>
 <div class="math">$$P(Y_i = y_i|x) = \frac{\alpha_i^T(y_i|x)\beta_i(y_i|x)}{Z(x)}$$</div>
 <div class="math">$$P(y_{i-1}, y_i |x) = \frac{\alpha_{i-1}^T(y_{i-1}|x)M_i(y_{i-1},y_i|x)\beta_i(y_i|x)}{Z(x)}$$</div>
 <h3 id="_10">期望计算</h3>
-<p>有了概率的定义，很自然就可以给出特征函数对应的期望。
-特征函数<span class="math">\(f_k\)</span>关于条件分布<span class="math">\(P(Y|X)\)</span>的数学期望是：
+<p>有了概率的定义，很自然就可以给出特征函数对应的期望。</p>
+<p>特征函数<span class="math">\(f_k\)</span>关于条件分布<span class="math">\(P(Y|X)\)</span>的数学期望是：
 </p>
 <div class="math">$$E_{P(Y|X)}[f_k] = \sum_yP(y|x)f_k(y,x) = \sum_{i=1}^{n+1}\sum_{y_{i-1}y_i}f_k(y_{i-1},y_i,x,i)*P(y_{i-1},y_i|x)$$</div>
 <p>
@@ -252,29 +260,29 @@ CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的�
 </p>
 <div class="math">$$\begin{aligned}E_{P(Y, X)}[f_k] &amp;= \sum_{x,y}P(x,y)\sum_{i=1}^{n+1}f_k(y_{i-1},y_i,x,i) \\\\&amp;= \sum_x\tilde{P}(x)\sum_yP(y|x)\sum_{i=1}^{n+1}f_k(y_{i-1},y_i,x,i)\end{aligned}$$</div>
 <p>
-后面部分就是条件概率期望的部分。
-注意到线性链CRF的特征函数是定义在<span class="math">\(y_{i-1}y_i\)</span>的边上的，因此概率也拆开为对应边存在的概率</p>
+后面部分就是条件概率期望的部分。</p>
+<p>注意到线性链CRF的特征函数是定义在<span class="math">\(y_{i-1}y_i\)</span>的边上的，因此概率也拆开为对应边存在的概率</p>
 <h2 id="4-crf">4. CRF的预测算法</h2>
-<p>CRF的预测算法就是在给定CRF模型P(Y|X)和观测序列x的情况下给出概率最大的输出序列，通常情况也就是对于观测序列进行标注。
-用公式表示就是：
+<p>CRF的预测算法就是在给定CRF模型P(Y|X)和观测序列x的情况下给出概率最大的输出序列，通常情况也就是对于观测序列进行标注。</p>
+<p>用公式表示就是：
 </p>
 <div class="math">$$y^* = argmax_y P(Y|X) = argmax_y \frac{exp(w\cdot F(y, x))}{Z} = argmax_y (w\cdot F(y, x))$$</div>
 <p>
-因为只是求概率最大的路径而不是求真实的概率值，所以这里只要求非规范化概率即可，提高了效率。
-将其分解到每个位置就将问题转换为</p>
+因为只是求概率最大的路径而不是求真实的概率值，所以这里只要求非规范化概率即可，提高了效率。</p>
+<p>将其分解到每个位置就将问题转换为</p>
 <div class="math">$$max\sum_i^nw\cdot F_i(y_{i-1}, y_i,x)$$</div>
 <p>
-其中<span class="math">\(w=(w_1, w_2, ..., w_k)\)</span>，对应k个特征函数的权重，<span class="math">\(F_i(y_{i-1}, y_i, x) = (f_1(y_{i-1}, y_i, x), f_2(y_{i-1}, y_i, x),...,f_k(y_{i-1}, y_i, x))\)</span>对应每个特征函数在位置i上的值，两向量的乘积就表示从<span class="math">\(y_{i-1}\)</span>到<span class="math">\(y_i\)</span>上的“概率”。
-注意上面对于整个路径的概率并没有求乘积，而是求和，这是因为<span class="math">\(w\cdot F\)</span>是从<span class="math">\(exp(w\cdot F)\)</span>中提取出来的，求和就等价于整体求乘积。</p>
+其中<span class="math">\(w=(w_1, w_2, ..., w_k)\)</span>，对应k个特征函数的权重，<span class="math">\(F_i(y_{i-1}, y_i, x) = (f_1(y_{i-1}, y_i, x), f_2(y_{i-1}, y_i, x),...,f_k(y_{i-1}, y_i, x))\)</span>对应每个特征函数在位置i上的值，两向量的乘积就表示从<span class="math">\(y_{i-1}\)</span>到<span class="math">\(y_i\)</span>上的“概率”。</p>
+<p>注意上面对于整个路径的概率并没有求乘积，而是求和，这是因为<span class="math">\(w\cdot F\)</span>是从<span class="math">\(exp(w\cdot F)\)</span>中提取出来的，求和就等价于整体求乘积。</p>
 <h3 id="_11">预测算法</h3>
-<p>对于一条路径，求出所有位置所有状态的组合，最后选择概率最大的，这种方法肯定是不现实的，效率非常低（<span class="math">\(O(n^T)\)</span>）。
-对于这种求最优序列的问题，在每个位置有n个状态，总体概率可以拆解为相邻位置的状态转移概率，求整体最优的序列都可以使用维特比算法，也就是一种动态规划求最优解的方法。
-简单描述：</p>
+<p>对于一条路径，求出所有位置所有状态的组合，最后选择概率最大的，这种方法肯定是不现实的，效率非常低（<span class="math">\(O(n^T)\)</span>）。</p>
+<p>对于这种求最优序列的问题，在每个位置有n个状态，总体概率可以拆解为相邻位置的状态转移概率，求整体最优的序列都可以使用维特比算法，也就是一种动态规划求最优解的方法。</p>
+<p>简单描述：</p>
 <ul>
 <li>初始位置t=0，计算每个状态<span class="math">\(y_0\)</span>的概率，就得到n个概率值（假设有n个可能的状态）</li>
 <li>在位置t=1，针对每个状态<span class="math">\(y_1\)</span>，求出使得<span class="math">\(y_0, y_1\)</span>序列概率最大的<span class="math">\(y_0\)</span>,这样又得到n个概率（每个<span class="math">\(y_1\)</span>对应一个<span class="math">\(y_0\)</span>），记录下此时的n个<span class="math">\(y_0\)</span></li>
-<li>依次递推，每个时刻记录n个概率值，当到达最终点的时候，选出概率最大的状态进行回溯就得到最优路径
-通过上面的方法，每个位置都只要计算<span class="math">\(n^2\)</span>次，时间复杂度为<span class="math">\(O(kn^2)\)</span>与之前<span class="math">\(O(n^k)\)</span>相比大为减少。</li>
+<li>依次递推，每个时刻记录n个概率值，当到达最终点的时候，选出概率最大的状态进行回溯就得到最优路径</li>
+<li>通过上面的方法，每个位置都只要计算<span class="math">\(n^2\)</span>次，时间复杂度为<span class="math">\(O(kn^2)\)</span>与之前<span class="math">\(O(n^k)\)</span>相比大为减少。</li>
 </ul>
 <h2 id="5-crf">5. CRF的学习算法</h2>
 <p>CRF模型的学习就是学习每个特征函数的权重，通常情况下采用最大似然估计的方法进行学习。对于单样本的情况，给定x，y给出CRF的模型的条件概率：
@@ -368,7 +376,7 @@ CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的�
             <time pubdate="pubdate" datetime="2018-01-17T19:55:00+08:00">2018  - 01  - 17</time>
             <h4>Category</h4>
             <a class="category-link" href="/categories.html#ji-qi-xue-xi-ref">机器学习
-                <span>(2)</span>
+                <span>(3)</span>
 </a>
             <h4>Tags</h4>
             <ul class="list-of-tags tags-in-article">
@@ -376,7 +384,7 @@ CRF是根据定义的特征函数去求<span class="math">\(P(y|x)\)</span>的�
                     <span>1</span>
 </a></li>
                 <li><a href="/tags.html#suan-fa-ref">算法
-                    <span>2</span>
+                    <span>9</span>
 </a></li>
                 <li><a href="/tags.html#tong-ji-ji-qi-xue-xi-ref">统计机器学习
                     <span>2</span>

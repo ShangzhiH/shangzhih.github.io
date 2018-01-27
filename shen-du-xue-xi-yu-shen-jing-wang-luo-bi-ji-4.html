@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="算法, 深度学习, 《深度学习与神经网络》笔记, 深度学习, " />
+
+<meta property="og:title" content="《深度学习与神经网络》笔记4  - 神经网络可以实现任意函数的直观解释 "/>
+<meta property="og:url" content="/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-4.html" />
+<meta property="og:description" content="神经网络最令人激动的一个性质，就是它可以实现任意功能的函数。而且是即使对于只有一个隐藏层的神经网络，这个结论依然成立。 大部分神经网络的使用者都知道这个性质，但是并不理解为什么神经网络会有这样的性质。而其理论证明对于非数学专业的同学来说并不好理解，所以本章旨在用直观的方式帮助大家理解这个性质。 一. 两个前提 神经网络可以计算任意函数其实是有前提的。 首先要明白的是它并不是可以完全准确的计算原函数的值，但是通过增加隐藏层神经元的值我们可以越来越逼近原函数。就是说对于一个需要实现的函数\(f(x)\)，要求实现精度为\(\epsilon &gt; 0\)，也就是需要足够的隐藏层神经元使得神经网络输出\(g(x)\)满足\(|g(x) - f(x)| &lt; \epsilon\)对所有输入\(x\)。 第二个前提是被模拟的函数是连续函数，不过有的时候对于非连续函数，神经网络得到的连续近似已经足够满足要求了。 二. 单输入单输出的情况 先考虑最基础的单输入单输出的函数情况。为了理解怎么利用神经网络去计算给定函数\(f\)，我们先考虑只有一个隐藏层的情况，其中含有两个神经元。 考虑隐藏层第一个神经元，其输出由\(\sigma (wx+b)\)决定。改变其参数\(w\)和\(b …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2017-09-17T20:00:00+08:00" />
+<meta name="twitter:title" content="《深度学习与神经网络》笔记4  - 神经网络可以实现任意函数的直观解释 ">
+<meta name="twitter:description" content="神经网络最令人激动的一个性质，就是它可以实现任意功能的函数。而且是即使对于只有一个隐藏层的神经网络，这个结论依然成立。 大部分神经网络的使用者都知道这个性质，但是并不理解为什么神经网络会有这样的性质。而其理论证明对于非数学专业的同学来说并不好理解，所以本章旨在用直观的方式帮助大家理解这个性质。 一. 两个前提 神经网络可以计算任意函数其实是有前提的。 首先要明白的是它并不是可以完全准确的计算原函数的值，但是通过增加隐藏层神经元的值我们可以越来越逼近原函数。就是说对于一个需要实现的函数\(f(x)\)，要求实现精度为\(\epsilon &gt; 0\)，也就是需要足够的隐藏层神经元使得神经网络输出\(g(x)\)满足\(|g(x) - f(x)| &lt; \epsilon\)对所有输入\(x\)。 第二个前提是被模拟的函数是连续函数，不过有的时候对于非连续函数，神经网络得到的连续近似已经足够满足要求了。 二. 单输入单输出的情况 先考虑最基础的单输入单输出的函数情况。为了理解怎么利用神经网络去计算给定函数\(f\)，我们先考虑只有一个隐藏层的情况，其中含有两个神经元。 考虑隐藏层第一个神经元，其输出由\(\sigma (wx+b)\)决定。改变其参数\(w\)和\(b …">
+
+        <title>《深度学习与神经网络》笔记4  - 神经网络可以实现任意函数的直观解释  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-4.html"> 《深度学习与神经网络》笔记4  <small> 神经网络可以实现任意函数的直观解释 </small>  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+    <div class="span2 table-of-content">
+        <nav>
+        <h4>Contents</h4>
+        <div class="toc">
+<ul>
+<li><a href="#_1">一. 两个前提</a></li>
+<li><a href="#_2">二. 单输入单输出的情况</a></li>
+<li><a href="#_3">三. 一般情形：多输入多输出情况</a><ul>
+<li><a href="#_4">拓展：</a></li>
+</ul>
+</li>
+<li><a href="#sigmoid">四. 使用sigmoid以外的神经元</a><ul>
+<li><a href="#_5">拓展：</a></li>
+</ul>
+</li>
+<li><a href="#_6">五. 修正阶跃函数</a></li>
+<li><a href="#_7">六.总结</a></li>
+</ul>
+</div>
+        </nav>
+    </div>
+    <div class="span8 article-content">
+
+            
+            
+<p>神经网络最令人激动的一个性质，就是它可以实现任意功能的函数。而且是即使对于只有一个隐藏层的神经网络，这个结论依然成立。</p>
+<p>大部分神经网络的使用者都知道这个性质，但是并不理解为什么神经网络会有这样的性质。而其理论证明对于非数学专业的同学来说并不好理解，所以本章旨在用直观的方式帮助大家理解这个性质。</p>
+<h2 id="_1">一. 两个前提</h2>
+<p>神经网络可以计算任意函数其实是有前提的。</p>
+<p>首先要明白的是它并不是可以完全准确的计算原函数的值，但是通过增加隐藏层神经元的值我们可以越来越逼近原函数。就是说对于一个需要实现的函数<span class="math">\(f(x)\)</span>，要求实现精度为<span class="math">\(\epsilon &gt; 0\)</span>，也就是需要足够的隐藏层神经元使得神经网络输出<span class="math">\(g(x)\)</span>满足<span class="math">\(|g(x) - f(x)| &lt; \epsilon\)</span>对所有输入<span class="math">\(x\)</span>。</p>
+<p>第二个前提是被模拟的函数是连续函数，不过有的时候对于非连续函数，神经网络得到的连续近似已经足够满足要求了。</p>
+<h2 id="_2">二. 单输入单输出的情况</h2>
+<p>先考虑最基础的单输入单输出的函数情况。为了理解怎么利用神经网络去计算给定函数<span class="math">\(f\)</span>，我们先考虑只有一个隐藏层的情况，其中含有两个神经元。</p>
+<p><img alt="" src="./images/sdxxsjwl41.png"/></p>
+<p>考虑隐藏层第一个神经元，其输出由<span class="math">\(\sigma (wx+b)\)</span>决定。改变其参数<span class="math">\(w\)</span>和<span class="math">\(b\)</span>可以发现如下规律：</p>
+<ul>
+<li>改变b不会使函数形状发生改变，只会使其左右偏移。因为<span class="math">\(f(x) = \frac{1}{1+e^{wx+b+b_0}} = \frac{1}{e^{w(x+\frac{b_0}{w}) + b}}\)</span>，<span class="math">\(b_0&gt;0\)</span>时即<span class="math">\(b\)</span>增大时，相当于图像向左移动，<span class="math">\(b_0&lt;0\)</span>时即<span class="math">\(b\)</span>减小时，相当于图像向右移动。</li>
+<li>改变w则会改变函数的形状，因为<span class="math">\(f(x) = \frac{1}{1+e^{(w+w_0)x+b}} = \frac{1}{1+e^{wx\frac{w+w_0}{w} + b}}\)</span>，相当于在横轴上进行了放缩。当<span class="math">\(|w|\)</span>(<span class="math">\(w&lt;0\)</span>的时候，函数会在x轴上反转，不过不影响我们理解)变的越来越大的时候，函数就会变的越来越陡峭。实际中观察，当<span class="math">\(w=100\)</span>左右时，函数的陡峭程度已经接近于阶跃函数了。</li>
+</ul>
+<p><img alt="" src="./images/sdxxsjwl42.png"/></p>
+<p>继续增大<span class="math">\(w\)</span>的值使得其输出更加接近阶跃函数：</p>
+<p><img alt="" src="./images/sdxxsjwl43.png"/></p>
+<p>当我们对隐藏层的神经元的输出进行加权求和的时候，分析阶跃函数要比分析sigmoid函数容易。我们很容易可以知道两个阶跃函数的和是什么形式，但是对于两个sigmoid函数就没有这么容易得到。所以我们先假设这些神经元输出函数就是阶跃函数，当然这也是一种近似，我们随后再看这和真正的情况相比会有什么影响。</p>
+<p>再考虑另外一个问题，我们知道标准的<span class="math">\(\sigma (z)\)</span>的中点在<span class="math">\(z=0\)</span>处，当它近似为一个阶跃函数的时候，阶跃点在哪呢？容易知道就是在<span class="math">\(wx+b = 0\)</span>处，即<span class="math">\(s = -\frac{b}{w}\)</span>。于是对于已经近似被认为是阶跃函数的神经元就可以只用一个参数<span class="math">\(s = -\frac{b}{w}\)</span>来代替之前的两个参数<span class="math">\(w\)</span>和<span class="math">\(b\)</span>。</p>
+<p>接着再来考虑整个神经网络的情况。</p>
+<p><img alt="" src="./images/sdxxsjwl44.png"/></p>
+<p>右边展示的是加权输出的结果<span class="math">\(w_1 a_1 + w_2 a_2\)</span>，其中<span class="math">\(a_1\)</span>和<span class="math">\(a_2\)</span>分别是隐藏层两个神经元的输出。不过注意到这里神经网络最终的输出为<span class="math">\(\sigma (w_1 a_1 + w_2 a_2 +b)\)</span>。</p>
+<p>通过调节这些参数可以观察到：</p>
+<ul>
+<li>调节<span class="math">\(s_1\)</span>的大小<span class="math">\(s_2\)</span>分别控制上下两个神经元的激活前后顺序。例如<span class="math">\(s_1&lt;s_2\)</span>的情况下，右边函数的第一个阶梯由第一个神经元输出决定，因为它先被激活，第二个阶梯才是两者之和</li>
+<li>调节<span class="math">\(w_1\)</span>和<span class="math">\(w_2\)</span>分别控制两个神经元输出在输出神经元的权重，当其中一个为0时，只剩下一个输入，右边的函数也显示为只有一个阶跃函数。</li>
+</ul>
+<p>最后，试着让<span class="math">\(w_1 = 0.8, w_2 = -0.8\)</span>，然后<span class="math">\(s_1 = 0.4, s_2 = 0.6\)</span>就得到一个在(0.4, 0.6)上的门函数：</p>
+<p><img alt="" src="./images/sdxxsjwl45.png"/></p>
+<p>如果我们固定<span class="math">\(s_1\)</span>和<span class="math">\(s_2\)</span>，然后<span class="math">\(w_1 = -w_2\)</span>，这样就可以将门函数看作是只有一个参数<span class="math">\(h\)</span>的模型，其中<span class="math">\(h = w_1\)</span>，对应着就是门函数的“门梁”的位置。</p>
+<p>通过组合神经元我们就可以轻易得到两个门函数组合的情况：</p>
+<p><img alt="" src="./images/sdxxsjwl46.png"/></p>
+<p>同样的方法，我们可以构造任意数量任意高度的门函数。因为对于[0,1]这个区间的划分是可以有无限多N个的，只要使用N对隐藏层神经元就，然后分别配上对应的<span class="math">\(h\)</span>就可以达到要求了。</p>
+<p><img alt="" src="./images/sdxxsjwl47.png"/></p>
+<p>上图就是一个五个宽度一样的门函数的情形，高度由各自的参数<span class="math">\(h\)</span>决定。但是仅仅这样就能说明神经网络可以计算任意函数吗？看下面这个例子：</p>
+<p><img alt="" src="./images/sdxxsjwl48.png"/></p>
+<p>这个函数来自：
+</p>
+<div class="math">$$f(x)=0.2 + 0.4x^2 + 0.3x sin(15x) + 0.05 cos(50x) \quad (113)$$</div>
+<p>
+看上去这个函数形式和神经网络完全没什么联系，接下来就来看看神经网络是怎么去近似计算它的。</p>
+<p>前面提到过<span class="math">\(w_1 a_1 + w_2 a_2 + ...\)</span>并不是神经网络最终输出，最终输出为<span class="math">\(\sigma (\sum_j w_j a_j + b)\)</span>，那么为了让最终输出为需要的函数<span class="math">\(f(x)\)</span>，就要求<span class="math">\(\sigma\)</span>函数的输入为<span class="math">\(\sigma^{-1} (f(x))\)</span>，即隐藏层输出的加权和为<span class="math">\(\sigma^{-1} (f(x))\)</span>，其中<span class="math">\(\sigma^{-1}\)</span>为<span class="math">\(\sigma\)</span>的反函数。</p>
+<p><img alt="" src="./images/sdxxsjwl49.png"/></p>
+<p>于是只要有方法可以让隐藏层输出和近似等于上面反函数，就相当于神经网络的最终输出近似等于<span class="math">\(f(x)\)</span>了。对于上面五个门函数的情形，通过调节各自的<span class="math">\(h\)</span>得到符号近似要求的结果：</p>
+<p><img alt="" src="./images/sdxxsjwl410.png"/></p>
+<p>这虽然只是一个粗略的近似，结果也不唯一，但是只要通过增加门函数的个数，即增加隐藏层神经元的个数，就可以让结果越来越精确。将这个得到的模型转换到我们的神经网络参数上，隐藏层的<span class="math">\(w\)</span>取了很大的数<span class="math">\(w=1000\)</span>，由于<span class="math">\(s=-\frac{b}{w}=0.2\)</span>，得到<span class="math">\(b = -1000*0.2=-200\)</span>。</p>
+<p>输出层的权重由<span class="math">\(h\)</span>决定，例如第一个<span class="math">\(h=-1.3\)</span>，说明它代表的两个权重分别为-1.3和1.3，以此类推，输出层的bias这里被设置为0。</p>
+<p>这样就完成了通过构造一个神经网络来逼近目标函数的目的了，而且通过增加隐藏层神经元的个数可以使得这个近似结果更加准确。事实上，我们的目标函数<span class="math">\(f(x)=0.2+0.4x^2+0.3sin(15x)+0.05cos(50x)\)</span>的形式无关紧要，本质上我们使用一个单层神经网络构建了一个lookup表，不同区间对应不同的值，区间分的越细小，就越准确。</p>
+<h2 id="_3">三. 一般情形：多输入多输出情况</h2>
+<p>先考虑两个输入的情况：</p>
+<p><img alt="" src="./images/sdxxsjwl411.png"/></p>
+<p>我们将<span class="math">\(x\)</span>和<span class="math">\(y\)</span>看作是变量，其加权输出和为因变量，这样就将之前的平面图像转变为了3d图像，不妨先设<span class="math">\(w_2 = 0\)</span>，这样图像为：</p>
+<p><img alt="" src="./images/sdxxsjwl412.png"/></p>
+<p>可以看到平行于x轴的任意截面都是之前看到的平面上的曲线形式。同样的原理，改变<span class="math">\(w_1\)</span>和<span class="math">\(b\)</span>分别改变曲线的形状和位置。同样将<span class="math">\(w_1\)</span>设定为一个很大的数，曲线转变为阶跃函数，位置为<span class="math">\(s_x = -\frac{b}{w_1}\)</span>：</p>
+<p><img alt="" src="./images/sdxxsjwl413.png"/></p>
+<p>这里对应着<span class="math">\(w_1 = 1000, w_2 = 0\)</span>。同样可以设定<span class="math">\(w_2 = 1000, w_1 = 0\)</span>这样就成了平行于y轴的曲线：</p>
+<p><img alt="" src="./images/sdxxsjwl414.png"/></p>
+<p>接着通过组合，我们得到了对应门函数的一个3d情况：</p>
+<p><img alt="" src="./images/sdxxsjwl415.png"/></p>
+<p>注意这里的y并没有起到作用，和y相连的权重都被设置成了0。类似也有只有y的版本，将和x的相连的权重设置为0:</p>
+<p><img alt="" src="./images/sdxxsjwl416.png"/></p>
+<p>如果我们将这两个方向垂直的门函数相加呢：</p>
+<p><img alt="" src="./images/sdxxsjwl417.png"/></p>
+<p>改变<span class="math">\(h\)</span>的大小可以改变图像的高度，很容易可以知道中间最高的地方是边上的两倍高。我们于是想到能否用中间的高度作为中间区间上的值，这种方法去将定义域分割成一个个区间呢，然后每个区间对应一个值，区间分的越细就越逼近原函数。类似于之前单输入的情况，这次是一个二维的lookup表。</p>
+<p>但是这就需要我们得到的是一个下图类似的塔函数：</p>
+<p><img alt="" src="./images/sdxxsjwl418.png"/></p>
+<p>但是我们得到的情况是除了中间是高的（<span class="math">\(2h\)</span>），边上并不是平的，也有一定的高度（<span class="math">\(h\)</span>），并不满足塔函数的条件。怎么将其转变为塔函数的形状呢？注意到，这里只是隐藏层的加权输出和，并不是输出神经元的输出，也就是说还有一个<span class="math">\(\sigma\)</span>函数的作用没有考虑，就可以尝试调节输出神经元的bias<span class="math">\(b\)</span>来进行调节。</p>
+<p>考虑门函数的输出值由<span class="math">\(h\)</span>决定，我们可以得到神经网络的输出值（不再是隐藏层的输出了）中间区域的值近似为<span class="math">\(f_{max} = \frac{1}{1+e^{-(2h+b)}}\)</span>，边上区域的值近似为<span class="math">\(f_{min} = \frac{1}{1+e^{-(h+b)}}\)</span>。我们想要<span class="math">\(f_{max}\)</span>能够近似等于需要的值<span class="math">\(g\)</span>，这种情况下得到条件一：<span class="math">\(2h+b=c\)</span>，其中<span class="math">\(c\)</span>为一个常数。又为了让<span class="math">\(f_{min} \approx 0\)</span>，就需要条件二：<span class="math">\(h+b&lt;&lt;0\)</span>。这样就可以通过调节<span class="math">\(h\)</span>与<span class="math">\(b\)</span>的值使得这两个条件都成立，因为只要<span class="math">\(h\)</span>足够大，<span class="math">\(h+b = c - h\)</span>就会足够小。不妨选择<span class="math">\(h=10, b \approx -\frac{3h}{2}\)</span>，得到：</p>
+<p><img alt="" src="./images/sdxxsjwl419.png"/></p>
+<p>注意到这里的图像是输出神经元的输出，也就是经过<span class="math">\(\sigma\)</span>函数后的结果。可以看到，这已经得到了一个形式不错的塔函数了，继续增加<span class="math">\(h\)</span>的值，调节<span class="math">\(b=-\frac{3h}{2}\)</span>，效果会更加明显。</p>
+<p>接着我们将两个类似这样的神经网络组合去得到两个塔函数：</p>
+<p><img alt="" src="./images/sdxxsjwl420.png"/></p>
+<p>每个塔函数对应着第二个隐藏层的每个神经元的输出，调节两个<span class="math">\(w\)</span>的值可以分别调节其高度。同样的方式我们可以得到任意多个自定义高度的塔函数，每个塔函数对应2维平面上的一个区域，通过这样的2维lookup就可以使得第二个隐藏层的加权输出可以近似等价于任意关于两个变量的函数<span class="math">\(f(x,y)\)</span>。</p>
+<p>但是这毕竟不是输出层的输出，于是类似的方法我们使用<span class="math">\(\sigma\)</span>函数的反函数，让第二个隐藏层加权输出等价于<span class="math">\(\sigma^{-1} (f(x,y))\)</span>即可。</p>
+<p>如果输入变量个数多余两个呢？</p>
+<p>先看一下三个变量的情况<span class="math">\(x_1, x_2, x_3\)</span>。类似于上面的情况，下面这个神经网络可以得到一个四维空间上的塔函数：</p>
+<p><img alt="" src="./images/sdxxsjwl421.png"/></p>
+<p>这里<span class="math">\(x_1,x_2,x_3\)</span>为神经网络的输入，<span class="math">\(s_1,t_1,s_2,t_2\)</span>都是控制门函数的位置，其中第一层隐藏层的权重已经足够大了使得它们各自的输出为阶跃函数，然后各自的偏差由<span class="math">\(b=-sw\)</span>得到。然后第二层隐藏层的权重全部为<span class="math">\(h\)</span>和<span class="math">\(-h\)</span>，然后不妨令其bias为<span class="math">\(-\frac{5h}{2}\)</span>，验证仍然满足之前构造塔函数的条件<span class="math">\(h+b = -\frac{3h}{2} &lt;&lt; 0\)</span>和<span class="math">\(3h+b = \frac{h}{2} = c\)</span>(c为一常数)。</p>
+<p>随着增大<span class="math">\(h\)</span>到一定程度，这个神经网络于是就相当于对于3维上一块区域<span class="math">\(x_1 \in (s_1,t_1), x_2 \in (s_2, t_2), x_3 \in (s_3, t_3)\)</span>，其值为1，其他任意位置为0的塔函数。</p>
+<p>通过组合这样的神经网络就可以将多个塔函数相组合就可以近似替代任意三个变量的函数。同样的想法可以拓展到<span class="math">\(m\)</span>维空间，只要记得将进行组合处的神经元bias设置为<span class="math">\((-m+\frac{1}{2})h\)</span>使得函数形式为中间凸起，旁边为0。</p>
+<p>这样就得到了使用神经网络逼近任意输出为一维的函数的方法了。但是神经网络的输出经常是多维的<span class="math">\(f(x_1, ..., x_m) \in R^n\)</span>，例如前面的MNIST问题时输出为10维，这种情况怎么处理呢？</p>
+<p>这种情况可以看作是<span class="math">\(n\)</span>个独立的函数：<span class="math">\(f^1 (x_1, ..., x_,m), f^2 (x_1, ..., x_m)\)</span>，我们分别设计神经网络近似表示<span class="math">\(f_1, f_2\)</span>等等，然后简单的将它们组合即可。</p>
+<h3 id="_4">拓展：</h3>
+<p>上面介绍了如何用两个隐藏层的神经网络去近似表示函数，能否证明只需要一层隐藏层就可以完成这样的设计？试着在两个输入的情况下，依次证明：(a)除了x轴，y轴以外，可以构造任意方向的阶跃函数；(b)通过将大量的(a)中的函数叠加，可以得到一个底面形状不再是长方形而是圆形的塔函数；(c)使用这些圆形的塔函数，可以近似表示任意函数。</p>
+<p>(a)：</p>
+<p>先看一下之前得到的方向为什么是x轴，y轴，或者说这些方向是由什么决定的。<span class="math">\(\frac{1}{1+e^{-(w_1 x+ w_2 y +b)}}\)</span>，之前选择w_2为0时，得到的阶跃函数时x轴方向的，可以发现阶跃函数的方向是和直线<span class="math">\(w_1 x+ w_2 y +b = 0\)</span>垂直的方向。所以说只要根据需要的方向构造与该方向垂直的直线<span class="math">\(w_1 x + w_2 y + b = 0\)</span>中的<span class="math">\(w_1\)</span>和<span class="math">\(w_2\)</span>即可，也就是说现在的阶跃函数的构造不仅仅依靠一个输入神经元，而是两个都需要。</p>
+<p>(b):</p>
+<p>两个长方形垂直相交的重叠部分是方形，如果三个，四个呢？这个也许不好想象，但是换一个思路，对一个长方形绕着其中心旋转，中间不变的部分就是以中心为圆心的内切圆，所以只要组合足够多不同方向的(a)中阶跃函数，就可以得到近似圆形底面的塔函数。</p>
+<p>(c)：</p>
+<p>长方形区域很容易可以拼成一块大的区域，但是圆形却不行，它们之间总是有缝隙的。可以通过本文后面部分介绍的方法，将这些未覆盖的部分当成是“失败区域”，使用函数近似表示原函数的<span class="math">\(\frac{1}{M}\)</span>，每次移动<span class="math">\(\frac{1}{M}\)</span>单位个步长，最后叠加就得到覆盖满所有区域的目标函数。</p>
+<p>这里按照作者给出的提示解答完了这三步，但是我还是不大清楚这和能用一个隐藏层有什么联系，因为圆形的塔函数依然面临之前的一个问题，就是除了中间高的区域外，还存在边上的不为0的区域，还是要依靠一个神经元将其转变为真正的塔的形式，中间凸出，边缘为0。我理解的一个隐藏层可以解决的原因是类似于在进行傅立叶级数展开的时候，我们将函数表示成一组三角函数基函数的线性叠加。其实任意连续函数都可以看作为一组基函数的叠加，然后在一个隐藏层选择合适的基函数叠加即可。</p>
+<h2 id="sigmoid">四. 使用sigmoid以外的神经元</h2>
+<p>前面已经证明了以sigmoid神经元为基础的神经网络可以计算任意函数。回忆一下sigmoid函数的形式，对于输入<span class="math">\(z=\sum_j w_j x_j +b\)</span>，<span class="math">\(\sigma(z)\)</span>的形式为：</p>
+<p><img alt="" src="./images/sdxxsjwl422.png"/></p>
+<p>如果将其换成一个不一样的激活函数<span class="math">\(s(z)\)</span>:</p>
+<p><img alt="" src="./images/sdxxsjwl423.png"/></p>
+<p>会出现什么情况呢？</p>
+<p>同样得方法，我们用这个函数也可以得到阶跃函数。试着增大<span class="math">\(w=100\)</span>：</p>
+<p><img alt="" src="./images/sdxxsjwl424.png"/></p>
+<p>类似于sigmoid函数的情况，新的激活函数一样会收缩，随着<span class="math">\(w\)</span>的继续增大，它最终也会成为一个阶跃函数的近似表示。然后通过改变<span class="math">\(b\)</span>的值就能实现对该阶跃函数的移动。使用之前一样的方法就可以构造神经网络近似表示所需的目标函数。</p>
+<p>那么是不是所有的激活函数<span class="math">\(s(z)\)</span>都满足这样的要求可以得到阶跃函数呢？事实上只需要<span class="math">\(s(z)\)</span>在<span class="math">\(z\rightarrow -\infty\)</span>和<span class="math">\(z \rightarrow \infty\)</span>时极限存在，并且这两个极限的值不相等即可。相等的话就不是阶跃了，而是一个“平”的常量函数了。激活函数满足这些性质之后，神经网络就可以逼近任意函数了。</p>
+<h3 id="_5">拓展：</h3>
+<p><strong>拓展一：</strong></p>
+<p>证明之前介绍的RELU神经元不满足上述的条件，但是RELU函数一样可以构造上述神经网络近似表示任意函数。</p>
+<p>答案：</p>
+<p>RELU在<span class="math">\(x&gt;0\)</span>时是一个线性增长的函数，当<span class="math">\(x\rightarrow \infty\)</span>时，<span class="math">\(RELU(x) \rightarrow \infty\)</span>，极限值并不存在，所以不满足要求。</p>
+<p>虽然一个RELU函数按照之前改变参数的方法怎么也变不成阶跃函数，但是可以通过两个RELU函数相叠加得到。对于<span class="math">\(y=wx\)</span>和<span class="math">\(y=-wx+b(k&gt;0)\)</span>，后者相对前者向右移动了<span class="math">\(\frac{b}{w}\)</span>，于是两者相加得到了一个分段函数
+</p>
+<div class="math">$$s(x) = \left\{\begin{align*} &amp; 0 \quad if x \leqslant 0 \\ &amp; wx \quad if 0&lt;x\leqslant \frac{b}{w} \\ &amp; b \quad if x &gt; \frac{b}{w} \end{align*}\right.$$</div>
+<p>
+通过增大<span class="math">\(w\)</span>就可以减小<span class="math">\(\frac{b}{w}\)</span>从而让这个分段函数中间增长的部分变的更窄，使之近似为阶跃函数。</p>
+<p><strong>拓展二：</strong></p>
+<p>考虑激活函数为线性函数<span class="math">\(s(z)=z\)</span>的神经元，证明该函数不满足上述条件，也无法构造上述神经网络近似表示任意函数。</p>
+<p>答案：</p>
+<p>这个函数在<span class="math">\(x\rightarrow \infty\)</span>和<span class="math">\(x \rightarrow -\infty\)</span>处的极限都不存在，显然不满足上面的条件。</p>
+<p>线性函数自身不具有这样的性质，线性函数的线性组合还是连续的线性函数，依然是无法满足阶跃函数的要求的。</p>
+<h2 id="_6">五. 修正阶跃函数</h2>
+<p>之前已经证明了我们通过对神经元进行组合得到近似的阶跃函数，但这始终是近似表示，其中还存在一段函数并非阶跃函数的“失败区域”：</p>
+<p><img alt="" src="./images/sdxxsjwl425.png"/></p>
+<p>虽然通过增大wegiths，可以使得这块区域越来越窄，也就是说与阶跃函数的差别越来越小。不过还有其他的处理这个问题的方法的话当然就更好了。</p>
+<p>事实上，这个问题并不难解决。设想对于一个一维函数<span class="math">\(f(x)\)</span>，按照之前的方法，我们需要隐藏层的输出可以表示成：</p>
+<p><img alt="" src="./images/sdxxsjwl426.png"/></p>
+<p>按照之前的方法，我们使用一系列的门函数去表示这个函数：</p>
+<p><img alt="" src="./images/sdxxsjwl427.png"/></p>
+<p>可以看到，只要门函数足够多，门的宽度足够窄就可以使得对目标函数的近似表示越好，除了在交界处的“失败区域”。</p>
+<p>这次我们不用上面的近似，我们使用目标函数值的一半作为近似对象，<span class="math">\(\sigma ^{-1}(\frac{f(x)}{2})\)</span>:</p>
+<p><img alt="" src="./images/sdxxsjwl428.png"/></p>
+<p>接着使用另外一套隐藏层去近似表示这样的函数：它是上面门函数组成的函数横向平移半个门宽度得到的：</p>
+<p><img alt="" src="./images/sdxxsjwl429.png"/></p>
+<p>当我们把这两个函数叠加到一起的时候就会得到一个<span class="math">\(\sigma ^{-1}(f(x))\)</span>的近似。这个近似虽然还是会存在“失败区域”，但是比之前的近似已经好多了。这是因为，对于一个点在一个近似函数的“失败区域”时，它将不会出现在另一个近似函数的“失败区域”。</p>
+<p>通过减小每次移动的步长为窗口的<span class="math">\(\frac{1}{M}\)</span>，将M个<span class="math">\(\sigma^ {-1}(f(x)/M)\)</span>的近似函数叠加，即得到更好的原始函数的近似表示。</p>
+<h2 id="_7">六.总结</h2>
+<p>这一章描述了神经网络拟合函数的普遍性，但是这当然不是实际中我们使用神经网络计算的方式。不过它让我们知道以后在面对一个问题的时候，不是去怀疑神经网络能不能表示这个函数，而是考虑更重要的事，怎么才能找到一个这个函数的好的近似。</p>
+<p>我们的讨论用了两层神经元，不过一层神经元也可以完成这样的工作。那我们为什么还要去用那些层数更多的深度神经网络呢？</p>
+<p>理论上这是可能的，不过实际上我们有很多理由相信深度网络更好。在第一章已经讨论过，现实中的问题和知识体系往往是由浅入深的层级关系，而深度网络的层级结构就非常切合这一点。例如对于图像识别的问题，只是着眼于单个像素点的理解当然是不够的，我们更希望它能够识别出更复杂的模式：从简单的线条到复杂的几何形状等等。在随后的章节也会看到，深度网络对于这种层级的问题处理结果的确要好于浅层网络。</p>
+<p>总之就是，单层的神经网络就已经可以计算任何函数，但是经验告诉我们，在解决现实问题上，深度网络更加适合。</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+            
+            
+            <hr/>
+            <aside>
+            <nav>
+            <ul class="articles-timeline">
+                <li class="previous-article">« <a href="/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-3.html" title="Previous: 《深度学习与神经网络》笔记3 - 如何提高神经网络学习算法的效果">《深度学习与神经网络》笔记3 <small>如何提高神经网络学习算法的效果</small></a></li>
+                <li class="next-article"><a href="/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-5.html" title="Next: 《深度学习与神经网络》笔记5 - 深度神经网络学习过程中的梯度消失问题">《深度学习与神经网络》笔记5 <small>深度神经网络学习过程中的梯度消失问题</small></a> »</li>
+            </ul>
+            </nav>
+            </aside>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2017-09-17T20:00:00+08:00">2017  - 09  - 17</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#shen-du-xue-xi-ref">深度学习
+                <span>(6)</span>
+</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#shen-du-xue-xi-ref">深度学习
+                    <span>6</span>
+</a></li>
+                <li><a href="/tags.html#shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-ref">《深度学习与神经网络》笔记
+                    <span>6</span>
+</a></li>
+                <li><a href="/tags.html#suan-fa-ref">算法
+                    <span>9</span>
+</a></li>
+            </ul>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>
