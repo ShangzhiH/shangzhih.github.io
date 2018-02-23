@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="过拟合, Paper Reading, 机器学习, 机器学习, " />
+
+<meta property="og:title" content="Early Stopping "/>
+<meta property="og:url" content="/early-stopping.html" />
+<meta property="og:description" content="1. early stopping简介 1.1 介绍 在机器学习中经常会遇到过拟合的问题，特别是对于神经网络这种参数非常多，表达能力非常强的复杂模型来说。经常就是随着训练过程的迭代，loss在训练数据上越来越小。看上去我们的模型越来越精确了，但是实际情况却是，我们的模型的泛化能力经常会变的越来越差，也就是说对于新的数据，模型的表现并不见的会好。 通常解决过拟合都是设法简化模型，这可以通过减少模型的参数个数或者减少单个参数的大小。 减少模型的参数个数，决策树里的剪枝，CNN里的weight sharing等都属于这种方法。 减少单个参数的大小，回归里的L1，L2正则化，nn里的weight decay等和我们本文要讲的early stopping都属于这种方法。 1.2 基本的early stopping 最基本的early stopping就是将训练数据分出一部分作为验证集，然后每次训练迭代结束时，在验证集上检验一下模型的精度，作为模型的泛化误差。理想情况下，随着训练进行，训练误差越来越小，验证集的误差也越来越小，直到某个时间点时，出现过拟合，然后在验证集上误差开始上升。这个时候我们就停止训练，采用上一次训练的模型作为最终模型。 这种方法是假设验证集和真实情况是符合同样的分布 …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2017-10-15T00:00:00+08:00" />
+<meta name="twitter:title" content="Early Stopping ">
+<meta name="twitter:description" content="1. early stopping简介 1.1 介绍 在机器学习中经常会遇到过拟合的问题，特别是对于神经网络这种参数非常多，表达能力非常强的复杂模型来说。经常就是随着训练过程的迭代，loss在训练数据上越来越小。看上去我们的模型越来越精确了，但是实际情况却是，我们的模型的泛化能力经常会变的越来越差，也就是说对于新的数据，模型的表现并不见的会好。 通常解决过拟合都是设法简化模型，这可以通过减少模型的参数个数或者减少单个参数的大小。 减少模型的参数个数，决策树里的剪枝，CNN里的weight sharing等都属于这种方法。 减少单个参数的大小，回归里的L1，L2正则化，nn里的weight decay等和我们本文要讲的early stopping都属于这种方法。 1.2 基本的early stopping 最基本的early stopping就是将训练数据分出一部分作为验证集，然后每次训练迭代结束时，在验证集上检验一下模型的精度，作为模型的泛化误差。理想情况下，随着训练进行，训练误差越来越小，验证集的误差也越来越小，直到某个时间点时，出现过拟合，然后在验证集上误差开始上升。这个时候我们就停止训练，采用上一次训练的模型作为最终模型。 这种方法是假设验证集和真实情况是符合同样的分布 …">
+
+        <title>Early Stopping  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/early-stopping.html"> Early Stopping  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+    <div class="span2 table-of-content">
+        <nav>
+        <h4>Contents</h4>
+        <div class="toc">
+<ul>
+<li><a href="#1-early-stopping">1. early stopping简介</a><ul>
+<li><a href="#11">1.1 介绍</a></li>
+<li><a href="#12-early-stopping">1.2 基本的early stopping</a></li>
+<li><a href="#13">1.3 真实情况</a></li>
+</ul>
+</li>
+<li><a href="#2-early-stopping">2 怎样更好的使用early stopping</a><ul>
+<li><a href="#21-stopping">2.1 常用的stopping标准</a><ul>
+<li><a href="#211-gl">2.1.1 第一类标准(GL)</a></li>
+<li><a href="#212-pq">2.1.2 第二类标准(PQ)</a></li>
+<li><a href="#213-up">2.1.3 第三类标准(UP)</a></li>
+</ul>
+</li>
+<li><a href="#22-early-stopping">2.2 如何选择early stopping的准则</a></li>
+</ul>
+</li>
+<li><a href="#_1">参考资料</a></li>
+</ul>
+</div>
+        </nav>
+    </div>
+    <div class="span8 article-content">
+
+            
+            
+<h2 id="1-early-stopping">1. early stopping简介</h2>
+<h3 id="11">1.1 介绍</h3>
+<p>在机器学习中经常会遇到过拟合的问题，特别是对于神经网络这种参数非常多，表达能力非常强的复杂模型来说。经常就是随着训练过程的迭代，loss在训练数据上越来越小。看上去我们的模型越来越精确了，但是实际情况却是，我们的模型的泛化能力经常会变的越来越差，也就是说对于新的数据，模型的表现并不见的会好。</p>
+<p>通常解决过拟合都是设法简化模型，这可以通过<code>减少模型的参数个数</code>或者<code>减少单个参数的大小</code>。</p>
+<p>减少模型的参数个数，决策树里的剪枝，CNN里的weight sharing等都属于这种方法。</p>
+<p>减少单个参数的大小，回归里的L1，L2正则化，nn里的weight decay等和我们本文要讲的early stopping都属于这种方法。</p>
+<h3 id="12-early-stopping">1.2 基本的early stopping</h3>
+<p>最基本的early stopping就是将训练数据分出一部分作为验证集，然后每次训练迭代结束时，在验证集上检验一下模型的精度，作为模型的泛化误差。理想情况下，随着训练进行，训练误差越来越小，验证集的误差也越来越小，直到某个时间点时，出现过拟合，然后在验证集上误差开始上升。这个时候我们就停止训练，采用上一次训练的模型作为最终模型。</p>
+<p><img alt="" src="./images/2018-02-22-10-59-14.jpg"/></p>
+<p>这种方法是假设验证集和真实情况是符合同样的分布，模型在验证集上的误差就是泛化误差的一种估计。从而避免了在训练集上一味追求高精度而产生的过拟合。</p>
+<h3 id="13">1.3 真实情况</h3>
+<p>如果真的损失函数曲线都像上图那样平滑，那自然基本的early stopping当然是完全够用的。但是现实中，往往是如下图这样的非常不平滑的。</p>
+<p><img alt="" src="./images/2018-02-22-11-06-55.jpg"/></p>
+<p>我们可以看到，这其中有非常多的局部最小值。而且在validation error达到最小值之前，它发生了多次的上升下降的波动。这就导致我们很难取舍early stopping点，取得早了可能错过了后续的更优点，取得晚了可能已经发生过拟合了，而且也会导致效率下降，进行了更多次无用的训练。本文就是针对这样的难点，讨论一下到底应该怎样更有效的进行early stopping。</p>
+<h2 id="2-early-stopping">2 怎样更好的使用early stopping</h2>
+<p>我们想知道什么时候应该停止训练，就需要有对应的stopping标准。通常情况下我们所看中的就是最低的泛化误差和最好的性价比（例如：给定误差下所需要的最少的训练次数，给定训练时间的情况下所能获得的最低误差）。</p>
+<h3 id="21-stopping">2.1 常用的stopping标准</h3>
+<p>stopping标准有很多，这里考虑其中的三种。在介绍它们之前，先给出一些基本定义。E为损失函数（或者说误差），<span class="math">\(E_{tr}(t)\)</span>是在epoch t时的训练误差，<span class="math">\(E_{va}(t)\)</span>是在epoch t时的验证误差，<span class="math">\(E_{te}(t)\)</span>是在epoch t时的测试误差。不过真实情况下，测试误差通常是不知道的，是未知的新数据。</p>
+<h4 id="211-gl">2.1.1 第一类标准(GL)</h4>
+<p>定义epoch t内最优的验证误差为<span class="math">\(E_{opt}(t)\)</span>:
+</p>
+<div class="math">$$E_{opt}(t) := min_{t'\leq t} E_{va}(t')$$</div>
+<p>
+接着再定义一个generalization loss，它是一个相对泛化误差与最优误差的比：
+</p>
+<div class="math">$$GL(t) = 100 * (\frac{E_{va}(t)}{E_{opt}(t)} - 1)$$</div>
+<p>
+这个定义表示当前epoch t时获得的验证误差与过去的t个epoch里的最优验证误差的比，显然这个值越大，说明越可能出现了过拟合，应该进行early stopping。</p>
+<p>于是可以得到第一个stopping的标准：</p>
+<p><strong>当GL超过一个阈值的时候，进行early stopping</strong></p>
+<p>定义为：</p>
+<p><span class="math">\(GL_\alpha\)</span>: 在epoch t时如果发现<span class="math">\(GL(t) &gt; \alpha\)</span>则停止训练。</p>
+<h4 id="212-pq">2.1.2 第二类标准(PQ)</h4>
+<p>通常情况下，如果训练误差还是处于下降迅速的情况下，我们并不希望此时根据第一类标准过早的让训练终止。因为在训练误差下降迅速的时候，GL有很大概率会在随后的训练过程中被修复，重新下降。我们的假设是过拟合只发生在训练误差已经下降很缓慢的情况下。</p>
+<p>转化为公式，我们定义一个长度为k的训练序列组，用来表示n+1, n+2, ..., n+k的k个epoch的训练情况，其中n是k的整数倍，随着训练过程进行，在进行了一系列的训练序列组之后，得到：
+</p>
+<div class="math">$$P_k(t) = 1000 * (\frac{\sum^t_{t' = t - k + 1}E_{tr}(t')}{k\cdot min^t_{t' = t - k + 1}E_{tr}(t')} - 1)$$</div>
+<p>
+可以看出，这个值体现是当前训练的稳定程度，如果训练误差处于剧烈变化的时候，这个值就偏大，如果趋于平稳，则这个值偏小。于是可以用这个值的大小来表示当前训练所处的阶段，结合第一类标准中的<span class="math">\(GL_\alpha\)</span>，可以得到第二个stopping的标准：</p>
+<p><strong>使用GL和progress的比值</strong></p>
+<p>定义为：</p>
+<p><span class="math">\(PQ_\alpha\)</span>:在epoch t时的训练序列组中有，<span class="math">\(\frac{GL(t)}{P_k(t)}&gt;\alpha\)</span>则停止训练。</p>
+<p>由于<span class="math">\(GL(t)\)</span>越大越可能出现过拟合，而<span class="math">\(P_k(t)\)</span>越小越说明训练已经趋于稳定，所以说比值越大说明越可能出现的情况时，训练已经稳定下出现的过拟合。因此使用比值作为early stopping的标准是合理的。</p>
+<h4 id="213-up">2.1.3 第三类标准(UP)</h4>
+<p>第三类标准和之前两种都截然不同，根据的是：</p>
+<p><strong>当GL在连续的s个训练序列组中增长</strong></p>
+<p>这个想法根据的是当验证集的误差在过去的连续s个训练序列组上增长了不止一次，我们假设这样的现象已经说明过拟合开始了，而不管此时的GL到底是大是小。</p>
+<p>尽管有这些标准在限制，但是还是无法保证算法的终止。通常我们可以设置最大的epoch数，或者指定当progress小于0.1时强制进行early stopping，选择当前获得的在验证集上最佳的模型。</p>
+<h3 id="22-early-stopping">2.2 如何选择early stopping的准则</h3>
+<p>总体上说不同的准则之间差别不大，但是慢的准则要好于快的准则，但是也要权衡所需要的时间。
+作者随后总结了如下一些准则：</p>
+<ul>
+<li>除非耗费大量时间获取少量的模型精度改善是有必要的（eg: 4%的表现提升需要耗费4倍的时间），否则就使用快速的early stopping准则。</li>
+<li>要想最大概率找到好的结果(相对的是获取最佳的平均表现)，使用GL准则</li>
+<li>获取最佳的平均表现，如果过拟合不严重就使用PQ，否则用UP</li>
+</ul>
+<h2 id="_1">参考资料</h2>
+<p>[1] <a href="http://page.mi.fu-berlin.de/prechelt/Biblio/stop_tricks1997.pdf">Early Stopping but when</a> - Lutz Prechelt</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+            
+            
+            <hr/>
+            <aside>
+            <nav>
+            <ul class="articles-timeline">
+                <li class="previous-article">« <a href="/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-6.html" title="Previous: 《深度学习与神经网络》笔记6 - 深度学习">《深度学习与神经网络》笔记6 <small>深度学习</small></a></li>
+                <li class="next-article"><a href="/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html" title="Next: 指数分布族和广义线性回归">指数分布族和广义线性回归</a> »</li>
+            </ul>
+            </nav>
+            </aside>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2017-10-15T00:00:00+08:00">2017  - 10  - 15</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#ji-qi-xue-xi-ref">机器学习
+                <span>(4)</span>
+</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#guo-ni-he-ref">过拟合
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#ji-qi-xue-xi-ref">机器学习
+                    <span>2</span>
+</a></li>
+                <li><a href="/tags.html#paper-reading-ref">Paper Reading
+                    <span>1</span>
+</a></li>
+            </ul>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>

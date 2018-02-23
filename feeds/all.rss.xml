@@ -24,7 +24,17 @@
 &lt;li&gt;A(&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;) - log normalizer&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;通常情况下T(y) = y,  A, b, T, &lt;span class="math"&gt;\(\eta\)&lt;/span&gt;给定的不同，就能得到不同的y的分布&lt;/p&gt;
-&lt;p&gt;其中的变量y和参数&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;只在&lt;span class="math"&gt;\(T(y)\eta …&lt;/span&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Fri, 05 Jan 2018 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-01-05:/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html</guid><category>概率分布</category><category>统计机器学习</category><category>回归模型</category><category>算法</category></item><item><title>《深度学习与神经网络》笔记6</title><link>/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-6.html</link><description>
+&lt;p&gt;其中的变量y和参数&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;只在&lt;span class="math"&gt;\(T(y)\eta …&lt;/span&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Fri, 05 Jan 2018 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-01-05:/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html</guid><category>概率分布</category><category>统计机器学习</category><category>回归模型</category><category>算法</category></item><item><title>Early Stopping</title><link>/early-stopping.html</link><description>
+&lt;h2 id="1-early-stopping"&gt;1. early stopping简介&lt;/h2&gt;
+&lt;h3 id="11"&gt;1.1 介绍&lt;/h3&gt;
+&lt;p&gt;在机器学习中经常会遇到过拟合的问题，特别是对于神经网络这种参数非常多，表达能力非常强的复杂模型来说。经常就是随着训练过程的迭代，loss在训练数据上越来越小。看上去我们的模型越来越精确了，但是实际情况却是，我们的模型的泛化能力经常会变的越来越差，也就是说对于新的数据，模型的表现并不见的会好。&lt;/p&gt;
+&lt;p&gt;通常解决过拟合都是设法简化模型，这可以通过&lt;code&gt;减少模型的参数个数&lt;/code&gt;或者&lt;code&gt;减少单个参数的大小&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;减少模型的参数个数，决策树里的剪枝，CNN里的weight sharing等都属于这种方法。&lt;/p&gt;
+&lt;p&gt;减少单个参数的大小，回归里的L1，L2正则化，nn里的weight decay等和我们本文要讲的early stopping都属于这种方法。&lt;/p&gt;
+&lt;h3 id="12-early-stopping"&gt;1.2 基本的early stopping&lt;/h3&gt;
+&lt;p&gt;最基本的early stopping就是将训练数据分出一部分作为验证集，然后每次训练迭代结束时，在验证集上检验一下模型的精度，作为模型的泛化误差。理想情况下，随着训练进行，训练误差越来越小，验证集的误差也越来越小，直到某个时间点时，出现过拟合，然后在验证集上误差开始上升。这个时候我们就停止训练，采用上一次训练的模型作为最终模型。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="./images/2018-02-22-10-59-14.jpg"/&gt;&lt;/p&gt;
+&lt;p&gt;这种方法是假设验证集和真实情况是符合同样的分布 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Sun, 15 Oct 2017 00:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2017-10-15:/early-stopping.html</guid><category>过拟合</category><category>Paper Reading</category><category>机器学习</category></item><item><title>《深度学习与神经网络》笔记6</title><link>/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-6.html</link><description>
 &lt;p&gt;深度神经网络在可以模拟更加复杂的情形，但是在上一章中，我们发现训练深度神经网络的时候会出现梯度消失的问题，从而导致模型训练失败。这一章，将会介绍可以被用在深度学习上的一些技术。&lt;/p&gt;
 &lt;p&gt;这章的主要内容是介绍一种应用最广泛的深度神经网络：卷积神经网络。我们将会了解到卷积，池化等概念，通过在之前的代码上利用这些技术进行优化达到了惊人的99.67%的准确率。&lt;/p&gt;
 &lt;p&gt;除此之外，本章还将介绍一些其他的基本神经网络，例如循环神经网络。在介绍完这些之后，还会介绍深度学习技术的发展现状及未来的发展方向。&lt;/p&gt;

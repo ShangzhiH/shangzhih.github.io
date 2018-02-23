@@ -5,28 +5,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/</loc>
-<lastmod>2018-01-27T18:30:55-00:00</lastmod>
+<lastmod>2018-02-23T16:26:20-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/archives.html</loc>
-<lastmod>2018-01-27T18:30:55-00:00</lastmod>
+<lastmod>2018-02-23T16:26:20-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/tags.html</loc>
-<lastmod>2018-01-27T18:30:55-00:00</lastmod>
+<lastmod>2018-02-23T16:26:20-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/categories.html</loc>
-<lastmod>2018-01-27T18:30:55-00:00</lastmod>
+<lastmod>2018-02-23T16:26:20-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -41,6 +41,13 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html</loc>
 <lastmod>2018-01-05T20:00:00+08:00</lastmod>
+<changefreq>monthly</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/early-stopping.html</loc>
+<lastmod>2017-10-15T00:00:00+08:00</lastmod>
 <changefreq>monthly</changefreq>
 <priority>0.5</priority>
 </url>
@@ -158,6 +165,27 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
+<loc>/tag/guo-ni-he.html</loc>
+<lastmod>2017-10-15T00:00:00+08:06</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/tag/paper-reading.html</loc>
+<lastmod>2017-10-15T00:00:00+08:06</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/tag/ji-qi-xue-xi.html</loc>
+<lastmod>2017-10-15T00:00:00+08:06</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
 <loc>/tag/shen-du-xue-xi.html</loc>
 <lastmod>2017-10-02T20:00:00+08:06</lastmod>
 <changefreq>daily</changefreq>
@@ -215,13 +243,6 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/tag/wen-ben-fen-lei.html</loc>
-<lastmod>2017-08-05T20:00:00+08:06</lastmod>
-<changefreq>daily</changefreq>
-<priority>0.5</priority>
-</url>
-
-<url>
-<loc>/tag/ji-qi-xue-xi.html</loc>
 <lastmod>2017-08-05T20:00:00+08:06</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
