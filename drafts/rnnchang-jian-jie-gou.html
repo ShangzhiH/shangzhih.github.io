@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="算法, RNN, 深度学习, 深度学习, " />
+
+<meta property="og:title" content="RNN常见结构 "/>
+<meta property="og:url" content="/drafts/rnnchang-jian-jie-gou.html" />
+<meta property="og:description" content="介绍 深度学习中，虽然CNN除了被经常用来进行图像相关的任务外，也可以作为一种特征提取的方法用在NLP任务中。但是在NLP任务中，更多的我们还是使用RNN模型，本文就简单介绍几种常用的RNN结构。 基本RNN 不同于在CNN模型中，网络的状态只决定于输入。在RNN中，最明显的一个特征就是它还决定于上一个时刻的状态，因此RNN经常被用来处理序列问题，被用在序列性质非常明显的NLP任务上。 基本的RNN结构如下： 它跟CNN和DNN区别最大的地方就在于这些前馈神经网络是个有向无环图的模型(DAG)，而在RNN中是至少包含一个环的，在时间上进行展开我们可以更明显的看到这种特性： 公式可以表示为： $$\begin{aligned}&amp; h^t = tanh(W_{hx}x^t + W_{hh}h^{t-1}+b_h) \\\\ &amp;o^t = softmax(W_{oh}h^t + b_o) \end{aligned}$$ 其中\(x^t\)是t时刻的输入 …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2018-03-18T20:55:00+08:00" />
+<meta name="twitter:title" content="RNN常见结构 ">
+<meta name="twitter:description" content="介绍 深度学习中，虽然CNN除了被经常用来进行图像相关的任务外，也可以作为一种特征提取的方法用在NLP任务中。但是在NLP任务中，更多的我们还是使用RNN模型，本文就简单介绍几种常用的RNN结构。 基本RNN 不同于在CNN模型中，网络的状态只决定于输入。在RNN中，最明显的一个特征就是它还决定于上一个时刻的状态，因此RNN经常被用来处理序列问题，被用在序列性质非常明显的NLP任务上。 基本的RNN结构如下： 它跟CNN和DNN区别最大的地方就在于这些前馈神经网络是个有向无环图的模型(DAG)，而在RNN中是至少包含一个环的，在时间上进行展开我们可以更明显的看到这种特性： 公式可以表示为： $$\begin{aligned}&amp; h^t = tanh(W_{hx}x^t + W_{hh}h^{t-1}+b_h) \\\\ &amp;o^t = softmax(W_{oh}h^t + b_o) \end{aligned}$$ 其中\(x^t\)是t时刻的输入 …">
+
+        <title>RNN常见结构  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/drafts/rnnchang-jian-jie-gou.html"> RNN常见结构  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+    <div class="span2 table-of-content">
+        <nav>
+        <h4>Contents</h4>
+        <div class="toc">
+<ul>
+<li><a href="#_1">介绍</a></li>
+<li><a href="#rnn">基本RNN</a></li>
+<li><a href="#rnn-bptt">RNN的反向传播 -- BPTT</a></li>
+<li><a href="#rnn_1">RNN的梯度爆炸/消失</a><ul>
+<li><a href="#_2">处理梯度消失/爆炸的方法</a></li>
+</ul>
+</li>
+<li><a href="#brnn">BRNN</a></li>
+<li><a href="#lstm">LSTM</a><ul>
+<li><a href="#lstm_1">LSTM核心思想</a></li>
+<li><a href="#lstm_2">LSTM中的三个门</a></li>
+</ul>
+</li>
+<li><a href="#_3">参考资料</a></li>
+</ul>
+</div>
+        </nav>
+    </div>
+    <div class="span8 article-content">
+
+            
+            
+<h2 id="_1">介绍</h2>
+<p>深度学习中，虽然CNN除了被经常用来进行图像相关的任务外，也可以作为一种特征提取的方法用在NLP任务中。但是在NLP任务中，更多的我们还是使用RNN模型，本文就简单介绍几种常用的RNN结构。</p>
+<h2 id="rnn">基本RNN</h2>
+<p>不同于在CNN模型中，网络的状态只决定于输入。在RNN中，最明显的一个特征就是它还决定于上一个时刻的状态，因此RNN经常被用来处理序列问题，被用在序列性质非常明显的NLP任务上。</p>
+<p>基本的RNN结构如下：</p>
+<p><img alt="" src="./images/2018-03-18-19-42-00.jpg"/></p>
+<p>它跟CNN和DNN区别最大的地方就在于这些前馈神经网络是个<code>有向无环图</code>的模型(DAG)，而在RNN中是至少包含一个环的，在时间上进行展开我们可以更明显的看到这种特性：</p>
+<p><img alt="" src="./images/2018-03-18-19-45-05.jpg"/></p>
+<p>公式可以表示为：
+</p>
+<div class="math">$$\begin{aligned}&amp; h^t = tanh(W_{hx}x^t + W_{hh}h^{t-1}+b_h) \\\\ &amp;o^t = softmax(W_{oh}h^t + b_o) \end{aligned}$$</div>
+<p>
+其中<span class="math">\(x^t\)</span>是t时刻的输入，在NLP任务中，通常代表一句话中第t位置处的字。隐藏层的状态h不光决定于当前的输入，还决定于前一个时间t-1的状态，通过矩阵<span class="math">\(W_{hh}\)</span>联系t-1的状态和当前状态，通过<span class="math">\(W_{hx}\)</span>联系当前输入<span class="math">\(x^t\)</span>和当前状态，这里的激活函数通常可以使用tanh函数。对于t时刻的输出通常可以使用一个softmax回归，参数矩阵为<span class="math">\(W_{oh}\)</span>。</p>
+<h2 id="rnn-bptt">RNN的反向传播 -- BPTT</h2>
+<p>可以看到，类似于CNN在不同位置上共享卷积矩阵的参数，RNN在不同时刻t是共享参数的。对于不同时刻t，使用的是同样的<span class="math">\(W_{hh}, W_{oh}\)</span>。对于RNN的反向传播有自己的一套算法BPTT，BP是反向传播，TT是Through Time。在介绍BPTT之前，先回忆一下在DNN中的反向传播。DNN的结构如下：</p>
+<p><img alt="" src="./images/2018-03-18-22-22-53.jpg"/></p>
+<p>可以看到，前向过程的公式为：
+</p>
+<div class="math">$$\begin{aligned} &amp;z^1 = W^1x+b^1 \\\\ &amp; a^1 = \sigma(z^1) \\\\ &amp;... \\\\&amp;z^L = W^La^{L-1}+b^{L-1}\\\\&amp;a^L = \sigma(z^L) \end{aligned}$$</div>
+<p>
+方向传播的话先定义一个中间变量:
+</p>
+<div class="math">$$\delta^l = \frac{\partial{C}}{\partial{z^l}}$$</div>
+<p>
+代表损失函数C关于第l层的未激活输出<span class="math">\(z^l\)</span>的偏导数，然后对于任意一层的参数<span class="math">\(W^l\)</span>的偏导数为：
+</p>
+<div class="math">$$\frac{\partial{C}}{\partial{W^l}} = \frac{\partial{C}}{\partial{z^l}}\frac{\partial{z^l}}{\partial{w^l}}$$</div>
+<p>
+其中<span class="math">\(\frac{\partial{z^l}}{\partial{w^l}}\)</span>为<span class="math">\(a^{l-1}\)</span>，这个在一次前向过程中已经全部求得，反向传播要做的事就是通过一次反向过程求得所有的<span class="math">\(\frac{\partial{C}}{\partial{z^l}}\)</span>，也就是所有层的<span class="math">\(\delta{l}\)</span>。</p>
+<p>通过求导的链式法则：
+</p>
+<div class="math">$$\delta^{l-1} = \frac{\partial{C}}{\partial{z^{l-1}}} = \frac{\partial{a^{l-1}}}{\partial{z^{l-1}}}\frac{\partial{z^l}}{\partial{a^{l-1}}}\frac{\partial{C}}{\partial{z^l}}=\sigma'(z^{l-1})\cdot(W^l)^T\delta^l$$</div>
+<p>
+于是可以得到类似于前向过程的反向过程公式：
+</p>
+<div class="math">$$\begin{aligned} &amp;&amp;\delta^L = \sigma'(z^L)\cdot \triangledown C(a^L)\\\\ &amp;&amp; \delta^{L-1} = \sigma'(z^{L-1})\cdot(W^L)^T\delta^L\end{aligned}$$</div>
+<p>
+可以看到，前向过程是从第1层一直到第L层进行计算，而这里是从第L层到第1层计算每层的<span class="math">\(\delta^l\)</span>，所以这种算法被称为反向传播算法。</p>
+<p>讲完了DNN的情况，这里再来理解RNN的情况。RNN的特殊在于时间t引入。将RNN沿时间进行展开：</p>
+<p><img alt="" src="./images/2018-03-18-23-20-46.jpg"/></p>
+<p>可以发现，RNN展开后的结构和DNN的结构原理上是一样的。只是在DNN中，链接发生在相邻的隐藏层上面。而在RNN中，链接发生在相邻时间上。</p>
+<p>然后DNN每一层的参数是不一样的，而在RNN中一个序列样本下，不同时间上的参数是一致的。在这种情况下，如果我们最后考虑的损失函数只和最末尾的t时刻的输出<span class="math">\(o^t\)</span>相关的话（情感分析，文本分类等都属于这种情况），在进行参数<span class="math">\(\beta\)</span>的更新时需要考虑每个时刻t上的损失函数对<span class="math">\(\beta\)</span>的梯度之和，即：
+</p>
+<div class="math">$$\frac{\partial{C^t}}{\partial{\beta}} = \sum_k \frac{\partial{C^t}}{\partial{\beta^k}}$$</div>
+<p>
+这里的<span class="math">\(\beta^k\)</span>是参数在时间k上的状态，可以看作是DNN中的第k层的参数，于是利用反向传播可以求出每个时刻k的偏导数。但是实际上不同时刻k的参数<span class="math">\(\beta\)</span>是一个统一的参数，因此需要进行累加作为对参数<span class="math">\(\beta\)</span>总的偏导数。</p>
+<p>如果我们考虑的损失函数和每个时刻的输出都有关（序列标注等属于这种情况），即<span class="math">\(C = f(C^1, C^2, ..., C^{t-1}, C^t)\)</span>，则有：
+</p>
+<div class="math">$$\frac{\partial{C}}{\partial{\beta}} = \sum_{k=1}^t\frac{\partial{C^k}}{\partial{\beta}}\frac{\partial C}{\partial{C^k}}$$</div>
+<p>
+对于其中的每一时刻<span class="math">\(\frac{\partial C^k}{\partial \beta}\)</span>，都需要考虑k时刻以前所有的对<span class="math">\(\beta\)</span>的偏导数的和：
+</p>
+<div class="math">$$\frac{\partial C^k}{\partial \beta}= \sum_{j=1}^k \frac{\partial C^k}{\partial \beta^j}$$</div>
+<p>
+于是得到，关于<span class="math">\(\beta\)</span>的总的导数为：
+</p>
+<div class="math">$$\frac{\partial{C}}{\partial{\beta}} = \sum_{k=1}^t\sum_{j=1}^k \frac{\partial C^k}{\partial \beta^j}\frac{\partial C}{\partial{C^k}}$$</div>
+<h2 id="rnn_1">RNN的梯度爆炸/消失</h2>
+<p>可以看到RNN的BPTT算法与DNN的BP算法非常相似，只是前者发生在时间上，后者发生在隐藏层上。那么对于时间跨度很长的情况，BPTT就很可能会发生梯度爆炸或者梯度消失的情况。</p>
+<p><strong>激活函数</strong>：</p>
+<p>像DNN一样，如果激活函数是<span class="math">\(\sigma\)</span>函数或者tanh函数，进行反向传播的时候很容易就会导致梯度很小，产生梯度消失的问题。</p>
+<p><strong>参数<span class="math">\(W_{hh}\)</span></strong>：</p>
+<p>不同于DNN中每层的参数是不一样的，RNN中的参数<span class="math">\(W_{hh}\)</span>每个时刻是一个参数，所以在进行反向传播的时候会进行<span class="math">\(W_{hh}\)</span>的累乘。</p>
+<p>当<span class="math">\(W_{hh}\)</span>为对角阵时，我们就有结论：</p>
+<ul>
+<li>当对角线元素小于1，则其幂次会趋近于0，进而导致梯度消失</li>
+<li>当对角线元素大雨1，则其幂次会趋近于无穷大，进而导致梯度爆炸</li>
+</ul>
+<p>当<span class="math">\(W_{hh}\)</span>不是对角阵时，对矩阵进行随机初始化。观察累乘后的分布如下：</p>
+<p><img alt="" src="./images/2018-03-19-15-37-01.jpg"/></p>
+<p>可以看到，经过一定次数的相乘以后，大部分的数值都是趋近于绝对值大的数，要么趋近于0。这就分别对应了梯度爆炸和梯度消失的情况。</p>
+<p>理论上，<span class="math">\(W_{hh}\)</span>是个方阵，简化问题，假设它是可以进行对角化的，那么可以分解为<span class="math">\(Q\sum Q^{-1}\)</span>，其中的<span class="math">\(\sum\)</span>也是对角矩阵，累乘的话同样会发生上面讨论的对角阵相乘的情况。</p>
+<h3 id="_2">处理梯度消失/爆炸的方法</h3>
+<p><strong>梯度消失</strong>：</p>
+<p>传统的使用RELU等激活函数的方法有效，但是存在更好的RNN架构直接就可以解决这样的问题，比如下文中要介绍的LSTM，GRU等。</p>
+<p><strong>梯度爆炸</strong>：</p>
+<p>通常还是使用Gradient Clipping，在梯度大于一个阈值的时候，进行动态的放缩，将它限制在一定范围内。</p>
+<h2 id="brnn">BRNN</h2>
+<p>BRNN就是Bi-directional RNN，双向的RNN。前面的讨论都是单向的，从前到后，双向就是多了一层，从后到前：</p>
+<p><img alt="" src="./images/2018-03-19-17-06-50.jpg"/></p>
+<p>对于每一个时刻t，它隐藏层的状态不光决定于前向层经过该时刻带来的状态h1，还决定于后向层经过该时刻带来的状态h2，然后进行链接[h1, h2]得到的就是在时刻t上的状态。两层可以分别保留各自的参数<span class="math">\(W_{hh}\)</span>，虽然使用不同的维度在理论上是可以的，但是实际上通常前向层和反向层保持维度一致。</p>
+<p>这种模型带来的好处是显而易见的，它不光能够考虑当前时间受前面时间的影响，还能考虑受后面时间的影响，看几个简单的例子来感受一下：</p>
+<ul>
+<li>在命名实体识别中，“我们爱吃红烧肉”，根据前向层很容易根据<code>爱吃</code>推断<code>红烧肉</code>是一道菜名，但是在“红烧肉很好吃”中，如果只根据前向，就比较难判断了，这个时候如果加上后向层，就可以根据<code>很好吃</code>判断它前面的字段<code>红烧肉</code>是菜名了。</li>
+<li>在情感分析中，“这个公园好美啊，尽管有一点拥挤”，如果只看前向可能会比较倾向于把这个句子判断为负情感，但是如果加上反向的特征的话，就更容易判断争取，识别为正情感。</li>
+</ul>
+<p>当然上面的例子只是简要说明一下双向的好处，实际的算法肯定不是这么浅显直观的计算的。</p>
+<p>既然BRNN只是在RNN的基础上反向加了一层，本质是一样的，只是训练的时候考虑两层的参数，这里就不再重复介绍了。</p>
+<h2 id="lstm">LSTM</h2>
+<p>前面的讨论表明理论上RNN在考虑前后文联系的时候可以发挥不错的作用，尤其是当相关信息的位置间隔比较短的时候：</p>
+<p><img alt="" src="./images/2018-03-19-18-03-33.png"/></p>
+<p>但是根据前一小节的讨论，当相关信息的位置间隔越来越长的时候，由于存在梯度消失的问题，在基础RNN上进行这样的参数学习非常困难的。</p>
+<p>LSTM，long short term网络的出现就解决了这样的问题，它可以非常轻松的学习到序列中的长期依赖信息。</p>
+<p>LSTM通常指的是里面的RNN网络中的LSTM Cell，类似于下图：</p>
+<p><img alt="" src="./images/2018-03-19-19-10-29.png"/></p>
+<p>普通的RNN Cell，并没有中间那么复杂的链接，基本就是一个隐藏层+激活函数（通常使用tanh），而在在上图的LSTM Cell中有四个进行交互的层，后面可以看到这些是LSTM中的各种功能的门函数。</p>
+<h3 id="lstm_1">LSTM核心思想</h3>
+<p>LSTM中很重要的信息载体就是其每时刻的细胞状态，它会沿着水平线上传播。它在整个链上传播的过程中，会进行一些简单的线性操作。</p>
+<p><img alt="" src="./images/2018-03-19-19-24-47.png"/></p>
+<p>这些线性操作会使得信息可以增加或者减少，而决定信息是如何增加或者减少的话就要依靠LSTM中定义的各种门函数。每个门可以理解为一个开关，0表示不通过，1表示通过，0到1之间的数表示部分通过，因此门函数使用sigmoid神经网络层代替，在sigmoid输出一个值后进行pointwise的操作：</p>
+<p><img alt="" src="./images/2018-03-19-19-27-27.png"/></p>
+<h3 id="lstm_2">LSTM中的三个门</h3>
+<h2 id="_3">参考资料</h2>
+<p>[1] <a href="http://speech.ee.ntu.edu.tw/~tlkagk/talk.html">Understanding Deep Learning in One Day</a> - 李宏毅</p>
+<p>[2] <a href="https://zhuanlan.zhihu.com/data-miner">当我们在谈论数据挖掘</a> - 余文毅</p>
+<p>[3] <a href="http://colah.github.io/posts/2015-08-Understanding-LSTMs/">Understanding LSTM Networks</a> - Christopher Olah</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+            
+            
+            <hr/>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2018-03-18T20:55:00+08:00">2018  - 03  - 18</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#shen-du-xue-xi-ref">深度学习
+                <span>(6)</span>
+</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#rnn-ref">RNN
+</a></li>
+                <li><a href="/tags.html#shen-du-xue-xi-ref">深度学习
+                    <span>6</span>
+</a></li>
+                <li><a href="/tags.html#suan-fa-ref">算法
+                    <span>9</span>
+</a></li>
+            </ul>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>
