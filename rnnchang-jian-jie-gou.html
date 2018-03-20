@@ -14,12 +14,12 @@
 
 <meta property="og:title" content="RNN常见结构 "/>
 <meta property="og:url" content="/rnnchang-jian-jie-gou.html" />
-<meta property="og:description" content="介绍 深度学习中，虽然CNN除了被经常用来进行图像相关的任务外，也可以作为一种特征提取的方法用在NLP任务中。但是在NLP任务中，更多的我们还是使用RNN模型，本文就简单介绍几种常用的RNN结构。 基本RNN 不同于在CNN模型中，网络的状态只决定于输入。在RNN中，最明显的一个特征就是它还决定于上一个时刻的状态，因此RNN经常被用来处理序列问题，被用在序列性质非常明显的NLP任务上。 基本的RNN结构如下： 它跟CNN和DNN区别最大的地方就在于这些前馈神经网络是个有向无环图的模型(DAG)，而在RNN中是至少包含一个环的，在时间上进行展开我们可以更明显的看到这种特性： 公式可以表示为： $$\begin{aligned}&amp; h^t = tanh(W_{hx}x^t + W_{hh}h^{t-1}+b_h) \\\\ &amp;o^t = softmax(W_{oh}h^t + b_o) \end{aligned}$$ 其中\(x^t\)是t时刻的输入 …" />
+<meta property="og:description" content="1. 介绍 深度学习中，虽然CNN除了被经常用来进行图像相关的任务外，也可以作为一种特征提取的方法用在NLP任务中。但是在NLP任务中，更多的我们还是使用RNN模型，本文就简单介绍几种常用的RNN结构。 2. 基本RNN 不同于在CNN模型中，网络的状态只决定于输入。在RNN中，最明显的一个特征就是它还决定于上一个时刻的状态，因此RNN经常被用来处理序列问题，被用在序列性质非常明显的NLP任务上。 基本的RNN结构如下： 它跟CNN和DNN区别最大的地方就在于这些前馈神经网络是个有向无环图的模型(DAG)，而在RNN中是至少包含一个环的，在时间上进行展开我们可以更明显的看到这种特性： 公式可以表示为： $$\begin{aligned}&amp; h^t = tanh(W_{hx}x^t + W_{hh}h^{t-1}+b_h) \\\\ &amp;o^t = softmax(W_{oh}h^t + b_o) \end{aligned}$$ 其中\(x …" />
 <meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
 <meta property="og:article:author" content="Shangzhi HUANG" />
 <meta property="og:article:published_time" content="2018-02-16T20:55:00+08:00" />
 <meta name="twitter:title" content="RNN常见结构 ">
-<meta name="twitter:description" content="介绍 深度学习中，虽然CNN除了被经常用来进行图像相关的任务外，也可以作为一种特征提取的方法用在NLP任务中。但是在NLP任务中，更多的我们还是使用RNN模型，本文就简单介绍几种常用的RNN结构。 基本RNN 不同于在CNN模型中，网络的状态只决定于输入。在RNN中，最明显的一个特征就是它还决定于上一个时刻的状态，因此RNN经常被用来处理序列问题，被用在序列性质非常明显的NLP任务上。 基本的RNN结构如下： 它跟CNN和DNN区别最大的地方就在于这些前馈神经网络是个有向无环图的模型(DAG)，而在RNN中是至少包含一个环的，在时间上进行展开我们可以更明显的看到这种特性： 公式可以表示为： $$\begin{aligned}&amp; h^t = tanh(W_{hx}x^t + W_{hh}h^{t-1}+b_h) \\\\ &amp;o^t = softmax(W_{oh}h^t + b_o) \end{aligned}$$ 其中\(x^t\)是t时刻的输入 …">
+<meta name="twitter:description" content="1. 介绍 深度学习中，虽然CNN除了被经常用来进行图像相关的任务外，也可以作为一种特征提取的方法用在NLP任务中。但是在NLP任务中，更多的我们还是使用RNN模型，本文就简单介绍几种常用的RNN结构。 2. 基本RNN 不同于在CNN模型中，网络的状态只决定于输入。在RNN中，最明显的一个特征就是它还决定于上一个时刻的状态，因此RNN经常被用来处理序列问题，被用在序列性质非常明显的NLP任务上。 基本的RNN结构如下： 它跟CNN和DNN区别最大的地方就在于这些前馈神经网络是个有向无环图的模型(DAG)，而在RNN中是至少包含一个环的，在时间上进行展开我们可以更明显的看到这种特性： 公式可以表示为： $$\begin{aligned}&amp; h^t = tanh(W_{hx}x^t + W_{hh}h^{t-1}+b_h) \\\\ &amp;o^t = softmax(W_{oh}h^t + b_o) \end{aligned}$$ 其中\(x …">
 
         <title>RNN常见结构  · Shangzhi HUANG&#39;s Blog
 </title>
@@ -81,35 +81,35 @@
         <h4>Contents</h4>
         <div class="toc">
 <ul>
-<li><a href="#_1">介绍</a></li>
-<li><a href="#rnn">基本RNN</a></li>
-<li><a href="#rnn-bptt">RNN的反向传播 -- BPTT</a></li>
-<li><a href="#rnn_1">RNN的梯度爆炸/消失</a><ul>
-<li><a href="#_2">处理梯度消失/爆炸的方法</a></li>
+<li><a href="#1">1. 介绍</a></li>
+<li><a href="#2-rnn">2. 基本RNN</a></li>
+<li><a href="#3-rnn-bptt">3. RNN的反向传播 -- BPTT</a></li>
+<li><a href="#4-rnn">4. RNN的梯度爆炸/消失</a><ul>
+<li><a href="#_1">处理梯度消失/爆炸的方法</a></li>
 </ul>
 </li>
-<li><a href="#brnn">BRNN</a></li>
-<li><a href="#lstm">LSTM</a><ul>
-<li><a href="#lstm_1">LSTM核心思想</a></li>
-<li><a href="#lstm_2">LSTM中的三个门</a><ul>
-<li><a href="#_3">遗忘门</a></li>
-<li><a href="#_4">输入门</a></li>
-<li><a href="#_5">输出门</a></li>
-<li><a href="#lstm_3">LSTM结构的个人理解</a></li>
+<li><a href="#5-brnn">5. BRNN</a></li>
+<li><a href="#6-lstm">6. LSTM</a><ul>
+<li><a href="#61-lstm">6.1 LSTM核心思想</a></li>
+<li><a href="#62-lstm">6.2 LSTM中的三个门</a><ul>
+<li><a href="#_2">遗忘门</a></li>
+<li><a href="#_3">输入门</a></li>
+<li><a href="#_4">输出门</a></li>
+<li><a href="#lstm">LSTM结构的个人理解</a></li>
 </ul>
 </li>
-<li><a href="#lstm_4">LSTM的变体</a><ul>
+<li><a href="#63-lstm">6.3 LSTM的变体</a><ul>
 <li><a href="#peephole-connection">peephole connection</a></li>
 <li><a href="#coupled-forget-gate-and-input-gate">coupled forget gate and input gate</a></li>
 </ul>
 </li>
-<li><a href="#lstm_5">LSTM与梯度消失</a></li>
+<li><a href="#64-lstm">6.4 LSTM与梯度消失</a></li>
 </ul>
 </li>
-<li><a href="#gru">GRU</a></li>
-<li><a href="#_6">结构的选择</a></li>
-<li><a href="#_7">结论</a></li>
-<li><a href="#_8">参考资料</a></li>
+<li><a href="#7-gru">7. GRU</a></li>
+<li><a href="#8">8. 结构的选择</a></li>
+<li><a href="#9">9. 结论</a></li>
+<li><a href="#_5">参考资料</a></li>
 </ul>
 </div>
         </nav>
@@ -118,9 +118,9 @@
 
             
             
-<h2 id="_1">介绍</h2>
+<h2 id="1">1. 介绍</h2>
 <p>深度学习中，虽然CNN除了被经常用来进行图像相关的任务外，也可以作为一种特征提取的方法用在NLP任务中。但是在NLP任务中，更多的我们还是使用RNN模型，本文就简单介绍几种常用的RNN结构。</p>
-<h2 id="rnn">基本RNN</h2>
+<h2 id="2-rnn">2. 基本RNN</h2>
 <p>不同于在CNN模型中，网络的状态只决定于输入。在RNN中，最明显的一个特征就是它还决定于上一个时刻的状态，因此RNN经常被用来处理序列问题，被用在序列性质非常明显的NLP任务上。</p>
 <p>基本的RNN结构如下：</p>
 <p><img alt="" src="./images/2018-03-18-19-42-00.jpg"/></p>
@@ -131,7 +131,7 @@
 <div class="math">$$\begin{aligned}&amp; h^t = tanh(W_{hx}x^t + W_{hh}h^{t-1}+b_h) \\\\ &amp;o^t = softmax(W_{oh}h^t + b_o) \end{aligned}$$</div>
 <p>
 其中<span class="math">\(x^t\)</span>是t时刻的输入，在NLP任务中，通常代表一句话中第t位置处的字。隐藏层的状态h不光决定于当前的输入，还决定于前一个时间t-1的状态，通过矩阵<span class="math">\(W_{hh}\)</span>联系t-1的状态和当前状态，通过<span class="math">\(W_{hx}\)</span>联系当前输入<span class="math">\(x^t\)</span>和当前状态，这里的激活函数通常可以使用tanh函数。对于t时刻的输出通常可以使用一个softmax回归，参数矩阵为<span class="math">\(W_{oh}\)</span>。</p>
-<h2 id="rnn-bptt">RNN的反向传播 -- BPTT</h2>
+<h2 id="3-rnn-bptt">3. RNN的反向传播 -- BPTT</h2>
 <p>可以看到，类似于CNN在不同位置上共享卷积矩阵的参数，RNN在不同时刻t是共享参数的。对于不同时刻t，使用的是同样的<span class="math">\(W_{hh}, W_{oh}\)</span>。对于RNN的反向传播有自己的一套算法BPTT，BP是反向传播，TT是Through Time。在介绍BPTT之前，先回忆一下在DNN中的反向传播。DNN的结构如下：</p>
 <p><img alt="" src="./images/2018-03-18-22-22-53.jpg"/></p>
 <p>可以看到，前向过程的公式为：
@@ -175,7 +175,7 @@
 于是得到，关于<span class="math">\(\beta\)</span>的总的导数为：
 </p>
 <div class="math">$$\frac{\partial{C}}{\partial{\beta}} = \sum_{k=1}^t\sum_{j=1}^k \frac{\partial C^k}{\partial \beta^j}\frac{\partial C}{\partial{C^k}}$$</div>
-<h2 id="rnn_1">RNN的梯度爆炸/消失</h2>
+<h2 id="4-rnn">4. RNN的梯度爆炸/消失</h2>
 <p>可以看到RNN的BPTT算法与DNN的BP算法非常相似，只是前者发生在时间上，后者发生在隐藏层上。那么对于时间跨度很长的情况，BPTT就很可能会发生梯度爆炸或者梯度消失的情况。</p>
 <p><strong>激活函数</strong>：</p>
 <p>像DNN一样，如果激活函数是<span class="math">\(\sigma\)</span>函数或者tanh函数，进行反向传播的时候很容易就会导致梯度很小，产生梯度消失的问题。</p>
@@ -190,12 +190,12 @@
 <p><img alt="" src="./images/2018-03-19-15-37-01.jpg"/></p>
 <p>可以看到，经过一定次数的相乘以后，大部分的数值都是趋近于绝对值大的数，要么趋近于0。这就分别对应了梯度爆炸和梯度消失的情况。</p>
 <p>理论上，<span class="math">\(W_{hh}\)</span>是个方阵，简化问题，假设它是可以进行对角化的，那么可以分解为<span class="math">\(Q\sum Q^{-1}\)</span>，其中的<span class="math">\(\sum\)</span>也是对角矩阵，累乘的话同样会发生上面讨论的对角阵相乘的情况。</p>
-<h3 id="_2">处理梯度消失/爆炸的方法</h3>
+<h3 id="_1">处理梯度消失/爆炸的方法</h3>
 <p><strong>梯度消失</strong>：</p>
 <p>传统的使用RELU等激活函数的方法有效，但是存在更好的RNN架构直接就可以解决这样的问题，比如下文中要介绍的LSTM，GRU等。</p>
 <p><strong>梯度爆炸</strong>：</p>
 <p>通常还是使用Gradient Clipping，在梯度大于一个阈值的时候，进行动态的放缩，将它限制在一定范围内。</p>
-<h2 id="brnn">BRNN</h2>
+<h2 id="5-brnn">5. BRNN</h2>
 <p>BRNN就是Bi-directional RNN，双向的RNN。前面的讨论都是单向的，从前到后，双向就是多了一层，从后到前：</p>
 <p><img alt="" src="./images/2018-03-19-17-06-50.jpg"/></p>
 <p>对于每一个时刻t，它隐藏层的状态不光决定于前向层经过该时刻带来的状态h1，还决定于后向层经过该时刻带来的状态h2，然后进行链接[h1, h2]得到的就是在时刻t上的状态。两层可以分别保留各自的参数<span class="math">\(W_{hh}\)</span>，虽然使用不同的维度在理论上是可以的，但是实际上通常前向层和反向层保持维度一致。</p>
@@ -206,7 +206,7 @@
 </ul>
 <p>当然上面的例子只是简要说明一下双向的好处，实际的算法肯定不是这么浅显直观的计算的。</p>
 <p>既然BRNN只是在RNN的基础上反向加了一层，本质是一样的，只是训练的时候考虑两层的参数，这里就不再重复介绍了。</p>
-<h2 id="lstm">LSTM</h2>
+<h2 id="6-lstm">6. LSTM</h2>
 <p>前面的讨论表明理论上RNN在考虑前后文联系的时候可以发挥不错的作用，尤其是当相关信息的位置间隔比较短的时候：</p>
 <p><img alt="" src="./images/2018-03-19-18-03-33.png"/></p>
 <p>但是根据前一小节的讨论，当相关信息的位置间隔越来越长的时候，由于存在梯度消失的问题，在基础RNN上进行这样的参数学习非常困难的。</p>
@@ -214,17 +214,17 @@
 <p>LSTM通常指的是里面的RNN网络中的LSTM Cell，类似于下图：</p>
 <p><img alt="" src="./images/2018-03-19-19-10-29.png"/></p>
 <p>普通的RNN Cell，并没有中间那么复杂的链接，基本就是一个隐藏层+激活函数（通常使用tanh），而在在上图的LSTM Cell中有四个进行交互的层，后面可以看到这些是LSTM中的各种功能的门函数。</p>
-<h3 id="lstm_1">LSTM核心思想</h3>
+<h3 id="61-lstm">6.1 LSTM核心思想</h3>
 <p>LSTM中很重要的信息载体就是其每时刻的细胞状态，它会沿着水平线上传播。它在整个链上传播的过程中，会进行一些简单的线性操作。</p>
 <p><img alt="" src="./images/2018-03-19-19-24-47.png"/></p>
 <p>这些线性操作会使得信息可以增加或者减少，而决定信息是如何增加或者减少的话就要依靠LSTM中定义的各种门函数。每个门可以理解为一个开关，0表示不通过，1表示通过，0到1之间的数表示部分通过，因此门函数使用sigmoid神经网络层代替，在sigmoid输出一个值后进行pointwise的操作：</p>
 <p><img alt="" src="./images/2018-03-19-19-27-27.png"/></p>
-<h3 id="lstm_2">LSTM中的三个门</h3>
-<h4 id="_3">遗忘门</h4>
+<h3 id="62-lstm">6.2 LSTM中的三个门</h3>
+<h4 id="_2">遗忘门</h4>
 <p>在LSTM的第一步中要决定过去的信息需要遗忘多少，保留多少，遗忘们就起到这样的作用。它通过一个参数矩阵<span class="math">\(W_f\)</span>（f代表forget），作用于上一个隐藏层的状态<span class="math">\(h_{t-1}\)</span>和当前输入<span class="math">\(x_t\)</span>，然后通过sigmoid函数得到一个[0, 1]的数：</p>
 <p><img alt="" src="./images/2018-03-19-19-48-26.png"/></p>
 <p>回到具体的语言模型情况，考虑当前的细胞状态<span class="math">\(C_{t-1}\)</span>包含当前<code>主语</code>的性别，我们想要预测合适的<code>代词</code>。如果当前的输入<span class="math">\(x_t\)</span>包含新的<code>主语</code>，这个时候就要通过遗忘门来忘掉旧的<code>主语</code>。</p>
-<h4 id="_4">输入门</h4>
+<h4 id="_3">输入门</h4>
 <p>知道了要忘掉哪些信息后，就要决定记住哪些新的输入信息了。</p>
 <p>首先新的信息依靠一个参数矩阵<span class="math">\(W_C\)</span>和tanh激活函数，然后哪些信息需要记忆依靠的是类似遗忘门的sigmoid神经层计算的一个输入门函数。</p>
 <p><img alt="" src="./images/2018-03-19-20-06-38.png"/></p>
@@ -233,13 +233,13 @@
 <p><img alt="" src="./images/2018-03-19-20-08-28.png"/></p>
 <p>可以看到新的细胞状态有两个部分，一个是有旧的细胞状态带来的，一个是有新的输入信息带来的。</p>
 <p>语言模型的例子里，我们希望模型新的细胞状态能记住新的<code>主语</code>的性别。</p>
-<h4 id="_5">输出门</h4>
+<h4 id="_4">输出门</h4>
 <p>在得到了新的细胞状态<span class="math">\(C_t\)</span>后，就能够直接通过激活函数(tanh)得到我们的输出了。不过这里我们仍然要一个门控制输出哪些信息，同样使用sigmoid神经层：</p>
 <p><img alt="" src="./images/2018-03-19-22-46-56.png"/></p>
 <p>在语言模型的例子里，有可能是看到一个<code>代词</code>就选择输出一个跟<code>动词</code>有关的信息。</p>
-<h4 id="lstm_3">LSTM结构的个人理解</h4>
+<h4 id="lstm">LSTM结构的个人理解</h4>
 <p>通过上面LSTM结构的解析，我们可以看到网络的输出和计算三个门的值所使用的都是<span class="math">\(h_t\)</span>。于是可以这样理解，在LSTM网络沿着时间传播的过程中，细胞状态<span class="math">\(C_t\)</span>时刻保存着最重要的信息。然后上一时刻的网络输出<span class="math">\(h_{t-1}\)</span>和当前的网络输入<span class="math">\(x_t\)</span>通过对应的矩阵计算得到三个门的值。输入门和遗忘门负责合并过去细胞状态和当前新信息，输出门负责控制对更新后的细胞状态的<code>选择性输出</code>。当前时刻的输出又被用来进行下一时刻三个门的计算。</p>
-<h3 id="lstm_4">LSTM的变体</h3>
+<h3 id="63-lstm">6.3 LSTM的变体</h3>
 <p>上面的LSTM是标准的LSTM结构，下面讨论几个变体。</p>
 <h4 id="peephole-connection">peephole connection</h4>
 <p><img alt="" src="./images/2018-03-19-23-47-12.png"/></p>
@@ -249,7 +249,7 @@
 <p>不同一开始遗忘门和输入门分别计算，coupled就是只计算遗忘门<span class="math">\(f_t\)</span>，然后输入门就是<span class="math">\(1-f_t\)</span>。</p>
 <p><img alt="" src="./images/2018-03-19-23-54-22.png"/></p>
 <p>在这种情况下，当遗忘门确定的时候，输入门也同时被确定。当我们要保留旧细胞状态的时候(<span class="math">\(f_t = 1\)</span>)，新信息就完全不会被加入。当我们要遗忘旧细胞状态的时候(<span class="math">\(f_t = 0\)</span>)，新的细胞状态完全由新信息决定。</p>
-<h3 id="lstm_5">LSTM与梯度消失</h3>
+<h3 id="64-lstm">6.4 LSTM与梯度消失</h3>
 <p>在描述LSTM的一开始，就说了它可以处理在长期记忆上产生的梯度消失问题，它具体是怎们做的呢？</p>
 <p>先看一下LSTM反向传播时<span class="math">\(\delta^k = \frac{\partial C^t}{\partial c^k}\)</span>是怎么传播的：
 </p>
@@ -261,18 +261,18 @@
 <div class="math">$$\delta^{k-1} = \delta^k (f^t + ...)$$</div>
 <p>
 上面的省略号是一些无关部分，不影响我们的分析。可以看到，当<span class="math">\(f^t = 1\)</span>时，省略号那部分无论多小，梯度都是可以很容易反向传播的。此时，即使是学习长期记忆也不会发生梯度消失问题。当<span class="math">\(f^t=0\)</span>时，上一时刻的信号不影响到当前时刻，<span class="math">\(f^t\)</span>在这里控制着梯度传递到前一时刻的衰减程度，和它在遗忘门上的功能是一致的。</p>
-<h2 id="gru">GRU</h2>
+<h2 id="7-gru">7. GRU</h2>
 <p>GRU和LSTM有着一定的相似性，算是一个简化版本的LSTM。它将遗忘门和输入门合并为更新门，因此只有两个门。而且它没有细胞状态<span class="math">\(C_t\)</span>的流动，只保留隐藏状态<span class="math">\(H_t\)</span>。</p>
 <p><img alt="" src="./images/2018-03-20-11-01-34.png"/></p>
 <p>上图中的<span class="math">\(r_t\)</span>是reset gate 重置门，它负责对过去的隐藏状态<span class="math">\(h_{t-1}\)</span>进行取舍，以用来计算新的候选隐藏状态<span class="math">\(\tilde{h_t}\)</span>。不同于LSTM中，门函数是作用于tanh激活的计算结果，这里的重置门直接作用于计算过程中的<span class="math">\(h_{t-1}，\)</span>可以看到如果<span class="math">\(r_t=0\)</span>，在计算<span class="math">\(\tilde{h_t}\)</span>时，完全受当前输入<span class="math">\(x_t\)</span>的影响。</p>
 <p><span class="math">\(z_t\)</span>是更新门，它负责选择<span class="math">\(h_{t-1}\)</span>在新的输出<span class="math">\(h_t\)</span>中所要记住的信息，注意到这里旧的信息和新的信息的合并是coupled。</p>
-<h2 id="_6">结构的选择</h2>
+<h2 id="8">8. 结构的选择</h2>
 <p>上面讲了LSTM，GRU及其很多变体，<a href="https://link.jianshu.com/?t=http://arxiv.org/pdf/1503.04069.pdf">Greff, et al.(2015)</a>给出了一些流行变体的比较，结论是它们基本一致。其它的一些论文比较，也通常只是发现在具体任务上，某些结构可能会优于某些结构，但是总的来说，并没有哪个结构一定是最好的。</p>
 <p>至于LSTM和GRU的选择，通常效果也差不多，不过GRU有更少的参数，相对来说容易训练，过拟合的情况也会好很多，更适用于训练数据较少的情形。</p>
-<h2 id="_7">结论</h2>
+<h2 id="9">9. 结论</h2>
 <p>目前看来RNN架构的发展是要弱于CNN的，不过LSTM和GRU解决了RNN中长期依赖的问题，在RNN中取得了巨大的成功。由于RNN常用的结构少于CNN，这里就用一篇文章总结了一下常见RNN的结构。不过论模型的难度的话，无论是理论还是应用，RNN都是要难于CNN的。</p>
 <p>LSTM的出现算得上是RNN中一个突破性的进展，接下来可能attention机制是一个很重要的研究热点。自己今后也要多多关注和学习这一方面的内容。</p>
-<h2 id="_8">参考资料</h2>
+<h2 id="_5">参考资料</h2>
 <p>[1] <a href="http://speech.ee.ntu.edu.tw/~tlkagk/talk.html">Understanding Deep Learning in One Day</a> - 李宏毅</p>
 <p>[2] <a href="https://zhuanlan.zhihu.com/data-miner">当我们在谈论数据挖掘</a> - 余文毅</p>
 <p>[3] <a href="http://colah.github.io/posts/2015-08-Understanding-LSTMs/">Understanding LSTM Networks</a> - Christopher Olah</p>
