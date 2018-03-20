@@ -5,29 +5,36 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/</loc>
-<lastmod>2018-03-19T19:35:08-00:00</lastmod>
+<lastmod>2018-03-20T14:13:01-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/archives.html</loc>
-<lastmod>2018-03-19T19:35:08-00:00</lastmod>
+<lastmod>2018-03-20T14:13:01-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/tags.html</loc>
-<lastmod>2018-03-19T19:35:08-00:00</lastmod>
+<lastmod>2018-03-20T14:13:01-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/categories.html</loc>
-<lastmod>2018-03-19T19:35:08-00:00</lastmod>
+<lastmod>2018-03-20T14:13:01-00:00</lastmod>
 <changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/rnnchang-jian-jie-gou.html</loc>
+<lastmod>2018-02-16T20:55:00+08:00</lastmod>
+<changefreq>monthly</changefreq>
 <priority>0.5</priority>
 </url>
 
@@ -124,14 +131,28 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/category/shen-du-xue-xi.html</loc>
-<lastmod>2017-10-02T20:00:00+08:06</lastmod>
+<lastmod>2018-02-16T20:55:00+08:06</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/tag/suan-fa.html</loc>
-<lastmod>2018-01-17T19:55:00+08:06</lastmod>
+<lastmod>2018-02-16T20:55:00+08:06</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/tag/rnn.html</loc>
+<lastmod>2018-02-16T20:55:00+08:06</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/tag/shen-du-xue-xi.html</loc>
+<lastmod>2018-02-16T20:55:00+08:06</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -181,13 +202,6 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>/tag/ji-qi-xue-xi.html</loc>
 <lastmod>2017-10-15T00:00:00+08:06</lastmod>
-<changefreq>daily</changefreq>
-<priority>0.5</priority>
-</url>
-
-<url>
-<loc>/tag/shen-du-xue-xi.html</loc>
-<lastmod>2017-10-02T20:00:00+08:06</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -250,7 +264,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/author/shangzhi-huang.html</loc>
-<lastmod>2018-01-17T19:55:00+08:06</lastmod>
+<lastmod>2018-02-16T20:55:00+08:06</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

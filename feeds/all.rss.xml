@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Wed, 17 Jan 2018 19:55:00 +0800</lastBuildDate><item><title>条件随机场CRF</title><link>/tiao-jian-sui-ji-chang-crf.html</link><description>
+<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Fri, 16 Feb 2018 20:55:00 +0800</lastBuildDate><item><title>RNN常见结构</title><link>/rnnchang-jian-jie-gou.html</link><description>
+&lt;h2 id="_1"&gt;介绍&lt;/h2&gt;
+&lt;p&gt;深度学习中，虽然CNN除了被经常用来进行图像相关的任务外，也可以作为一种特征提取的方法用在NLP任务中。但是在NLP任务中，更多的我们还是使用RNN模型，本文就简单介绍几种常用的RNN结构。&lt;/p&gt;
+&lt;h2 id="rnn"&gt;基本RNN&lt;/h2&gt;
+&lt;p&gt;不同于在CNN模型中，网络的状态只决定于输入。在RNN中，最明显的一个特征就是它还决定于上一个时刻的状态，因此RNN经常被用来处理序列问题，被用在序列性质非常明显的NLP任务上。&lt;/p&gt;
+&lt;p&gt;基本的RNN结构如下：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="./images/2018-03-18-19-42-00.jpg"/&gt;&lt;/p&gt;
+&lt;p&gt;它跟CNN和DNN区别最大的地方就在于这些前馈神经网络是个&lt;code&gt;有向无环图&lt;/code&gt;的模型(DAG)，而在RNN中是至少包含一个环的，在时间上进行展开我们可以更明显的看到这种特性：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="./images/2018-03-18-19-45-05.jpg"/&gt;&lt;/p&gt;
+&lt;p&gt;公式可以表示为：
+&lt;/p&gt;
+&lt;div class="math"&gt;$$\begin{aligned}&amp;amp; h^t = tanh(W_{hx}x^t + W_{hh}h^{t-1}+b_h) \\\\ &amp;amp;o^t = softmax(W_{oh}h^t + b_o) \end{aligned}$$&lt;/div&gt;
+&lt;p&gt;
+其中&lt;span class="math"&gt;\(x^t\)&lt;/span&gt;是t时刻的输入 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Fri, 16 Feb 2018 20:55:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-02-16:/rnnchang-jian-jie-gou.html</guid><category>算法</category><category>RNN</category><category>深度学习</category></item><item><title>条件随机场CRF</title><link>/tiao-jian-sui-ji-chang-crf.html</link><description>
 &lt;h2 id="1"&gt;1. 概率无向图&lt;/h2&gt;
 &lt;p&gt;不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。&lt;/p&gt;
 &lt;p&gt;状态与状态之间并没有谁推导出谁的先后关系(&lt;span class="math"&gt;\(P(y_n|y_{n-1}, y_{n-2}...y_1)\)&lt;/span&gt;)，这里我们用的是序列整体的分布&lt;span class="math"&gt;\(P(y_1,y_2,...y_n)\)&lt;/span&gt;。&lt;/p&gt;
