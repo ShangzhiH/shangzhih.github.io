@@ -92,7 +92,8 @@
 <li><a href="#324-attention">3.2.4 Attention机制的本质</a></li>
 </ul>
 </li>
-<li><a href="#33-self-attention">3.3 Self-Attention模型</a></li>
+<li><a href="#33-global-attentionlocal-attention">3.3 Global Attention和Local Attention</a></li>
+<li><a href="#34-self-attention">3.4 Self-Attention模型</a></li>
 </ul>
 </li>
 <li><a href="#4-attention">4. Attention机制的应用</a></li>
@@ -138,7 +139,7 @@
 <h3 id="32-attention">3.2 Attention模型</h3>
 <p>在上面框架介绍中，我们可以发现，对于每个输出<span class="math">\(y_i\)</span>的预测，它们使用的是同一个语义编码C，这其实是很反直觉的。因为在人进行翻译的时候，比如说在翻译Tom chases Jerry这句话时，我们在翻译“汤姆”中文时肯定更关注“Tom”的英文，而不是一整句话的英文。</p>
 <p>换句话说，就是人在翻译每个词的时候，注意力在原句子中是有所侧重的，而不是漫无目的的随机搜索，处理长的句子时，这种聚焦特定词的行为更加明显。</p>
-<p>于是很自然的想到引入一个attention模型，来表示这种注意力对不同词的侧重。比如说，在翻译“杰瑞”的时候，对source中不同词有这样的分布：(Tom, 0.3), (Chases, 0.2), (Jerry, 0.5)，通过这种概率分布分配attention的方式称为<code>soft attention</code>，与之对应的，设定1或者0表示attention的方式称为<code>hard attention</code>。其中，soft attention使用更加广泛。</p>
+<p>于是很自然的想到引入一个attention模型，来表示这种注意力对不同词的侧重。比如说，在翻译“杰瑞”的时候，对source中不同词有这样的分布：(Tom, 0.3), (Chases, 0.2), (Jerry, 0.5)，通过这种概率分布分配attention的方式称为<code>soft attention</code>。与之对应的是<code>hard attention</code>，Hard Attention是一个随机的过程。Hard Attention不会选择整个encoder的输出做为其输入，Hard Attention会依概率Si来采样输入端的隐状态一部分来进行计算，而不是整个encoder的隐状态。为了实现梯度的反向传播，需要采用蒙特卡洛采样的方法来估计模块的梯度。两种Attention架构都有各自的优势，但目前更多的研究和应用还是更倾向于使用Soft Attention，因为其可以直接求导，进行梯度反向传播。</p>
 <h4 id="321-attention">3.2.1 Attention概率分布的计算</h4>
 <p>借用之前的encoder-decoder框架，如下图：</p>
 <p><img alt="" src="./images/2018-03-30-15-03-17.jpg"/></p>
@@ -196,7 +197,19 @@
 </p>
 <div class="math">$$Attention(Query, Source) = \sum_{i=1}^L a_i \cdot Value_i$$</div>
 <p>目前绝大多数的使用attention的方法都可以抽象为这三个过程。</p>
-<h3 id="33-self-attention">3.3 Self-Attention模型</h3>
+<h3 id="33-global-attentionlocal-attention">3.3 Global Attention和Local Attention</h3>
+<p>Global Attention就是上面介绍的普通的attention，这个<code>Global</code>体现在它在计算Attention的时候需要考虑所有的source进行计算。在source非常长的时候，这种方法肯定会带来一定的效率问题。</p>
+<p>因此，为了提高效率，Local Attention就应运而生了。</p>
+<p><img alt="" src="./images/2018-03-30-22-23-05.jpg"/></p>
+<p>从上图看到，在计算attention的时候会先根据target中当前预测词的隐状态<span class="math">\(h_t\)</span>去计算一个source中对齐的位置<span class="math">\(p_t\)</span>：
+</p>
+<div class="math">$$p_t = S \cdot sigmoid(v^T_p tanh(W_ph_t))$$</div>
+<p>
+S表示source的长度，sigmoid函数的值域是[0, 1]，这样<span class="math">\(p_t\)</span>就可以对应source上任意的位置。其中<span class="math">\(v_p和<div class="math">$$W_p$都是模型的参数。在确定里位置后，就可以只针对$p_t$左右的一个窗口，考虑它们的attention效果了：
+$$</div>a_t(s) = attention(h_t, \overline{h}_s)exp(-\frac{(s-p_t)^2}{2\sigma^2})\)</span><span class="math">\(
+上面s是表示位置，然后后面用了一个类似高斯分布形式对偏离中心点\)</span>p_t$的attention进行降权。</p>
+<p>Global attention和local attention各有优劣，不过实际使用时还是global attention更加普遍。因为local attention存在两个主要问题：1. 当source句子长度不长时，local attention并没有带来计算上的优势。2. <span class="math">\(p_t\)</span>位置预测的准确率无法保证，导致计算local attention的准确率下降。</p>
+<h3 id="34-self-attention">3.4 Self-Attention模型</h3>
 <p>在了解了attention模型的基本概念后，再简单讲一下最近非常热门的self attention模型。self attention模型也被称为intra attention模型，在最近一年得到了很多应用，尤其是在google机器翻译团队在2017年6月发表的Attention is All You Need上得到了大量使用，并取得了非常好的成绩。</p>
 <p>在前面讲普通attention的时候，source和target是不同的，而在self attention上，自注意力说明的就是两个是一样的，即target = source情况下的attention机制。也可以被看作是在source自身内部或者target自身内部发生的attention机制。</p>
 <p>常规的attention，其机制很容易理解，比如在机器翻译上就是进行对齐，判断当前要预测的词和source中哪些词关系更大。但是在self attention中，该怎么理解呢？换句话说，self attention学到了哪些特征呢？</p>
@@ -211,12 +224,13 @@
 <p><img alt="" src="./images/2018-03-30-19-22-59.jpg"/></p>
 <p>上图是在进行语音识别的时候，不同的输出字符和音频信息对应的attention，该场景符合典型的encoder-decoder框架，而且使用attention的方法也和机器翻译中使用方法非常相似。不过相对来说，语音识别的attention不会选择比较远的信息，毕竟音频和它的文字是顺序对应的。</p>
 <h2 id="5">5.总结</h2>
-<p>attention理解起来是不难的，而且它的本意非常符合直觉。选择对当前预测最关联的信息来进行预测明显要比随机选择或者选择所有冗长的信息来预测更容易得到好的结果。</p>
-<p>而且Attention机制的使用越来越频繁，很多都取得了不错的效果。在读论文的过程中，发现越来越多的任务都喜欢加入attention，专门学习一下基础知识就显得很有必要了。</p>
+<p>基础的attention机制理解起来是不难的，而且它的本意非常符合直觉。选择对当前预测最关联的信息来进行预测明显要比随机选择或者选择所有冗长的信息来预测更容易得到好的结果。</p>
+<p>近年来Attention机制的使用越来越频繁，很多都取得了不错的效果。在读论文的过程中，发现越来越多的任务都喜欢加入attention，而且很多时候都会进行各种各样的变形或者tricks，如果不是很了解的话，对于论文的阅读会造成一定的障碍。因此专门学习一下attention的基础知识就显得很有必要了。</p>
 <p>本文主要是自己学习attention机制的一个笔记，最后提了一点关于self attention机制的内容，但是这并不代表self attention不重要，相反这一块的应用越来越主流。不过这一块以后会专门抽出来在讲google那篇论文的时候讲一下。</p>
 <h2 id="_1">参考资料</h2>
 <p>[1] <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a> - Ashish Vaswani, et al</p>
 <p>[2] <a href="https://blog.csdn.net/qq_40027052/article/details/78421155">深度学习中的注意力机制</a> - 张俊林</p>
+<p>[3] <a href="https://zhuanlan.zhihu.com/p/31547842">深度学习中Attention Mechanism详细介绍：原理、分类及应用</a> - lqfarmer</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
