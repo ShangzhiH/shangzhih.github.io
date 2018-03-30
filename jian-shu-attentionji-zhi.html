@@ -177,17 +177,17 @@
 <p>第一个阶段，将Query和每一个key进行计算<span class="math">\(F(Query, Key_i)\)</span>，得到该query和每个value的相关性<span class="math">\(s_i\)</span>。这个相关性有很多种求法，下面列举一些：</p>
 <ul>
 <li>
-<p>dot
-    <span class="math">\(f(Q, K_i) = Q^TK_i\)</span>，这种方法是直接将Query和每个<span class="math">\(K_i\)</span>做向量点乘，注意到，这样就必须要求两者的向量维度是一致的。</p>
+<p>dot</p>
+<p><span class="math">\(f(Q, K_i) = Q^TK_i\)</span>，这种方法是直接将Query和每个<span class="math">\(K_i\)</span>做向量点乘，注意到，这样就必须要求两者的向量维度是一致的。</p>
 </li>
 <li>
-<p>general
-    <span class="math">\(f(Q, K_i) = Q^T W_a K_i\)</span>，因为引入了一个中间矩阵<span class="math">\(W_a\)</span>，就不再强制要求<span class="math">\(Q\)</span>和<span class="math">\(K_i\)</span>的向量维度一致，这也是被称为general的原因。</p>
+<p>general</p>
+<p><span class="math">\(f(Q, K_i) = Q^T W_a K_i\)</span>，因为引入了一个中间矩阵<span class="math">\(W_a\)</span>，就不再强制要求<span class="math">\(Q\)</span>和<span class="math">\(K_i\)</span>的向量维度一致，这也是被称为general的原因。
+- concat</p>
+<p><span class="math">\(f(Q, K_i) = W_a[Q;K_i]\)</span>,先将两者进行拼接，再和<span class="math">\(W_a\)</span>求积。
+- perceptron</p>
+<p><span class="math">\(f(Q, K_i) =v^T_a tanh(W_a Q + U_aK_i)\)</span>，这里用了三个矩阵和tanh函数。</p>
 </li>
-<li>concat
-    <span class="math">\(f(Q, K_i) = W_a[Q;K_i]\)</span>,先将两者进行拼接，再和<span class="math">\(W_a\)</span>求积。</li>
-<li>perceptron
-    <span class="math">\(f(Q, K_i) =v^T_a tanh(W_a Q + U_aK_i)\)</span>，这里用了三个矩阵和tanh函数。</li>
 </ul>
 <p>第二个阶段就是将第一个阶段得到的相关性，进行softmax归一化，使其符合概率分布的形式<span class="math">\(a_i\)</span>。
 </p>
@@ -215,8 +215,8 @@
 <p>而且Attention机制的使用越来越频繁，很多都取得了不错的效果。在读论文的过程中，发现越来越多的任务都喜欢加入attention，专门学习一下基础知识就显得很有必要了。</p>
 <p>本文主要是自己学习attention机制的一个笔记，最后提了一点关于self attention机制的内容，但是这并不代表self attention不重要，相反这一块的应用越来越主流。不过这一块以后会专门抽出来在讲google那篇论文的时候讲一下。</p>
 <h2 id="_1">参考资料</h2>
-<p>[1] <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a> - Ashish Vaswani, et al
-[2] <a href="https://blog.csdn.net/qq_40027052/article/details/78421155">深度学习中的注意力机制</a> - 张俊林</p>
+<p>[1] <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a> - Ashish Vaswani, et al</p>
+<p>[2] <a href="https://blog.csdn.net/qq_40027052/article/details/78421155">深度学习中的注意力机制</a> - 张俊林</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
