@@ -37,7 +37,16 @@
 &lt;li&gt;A(&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;) - log normalizer&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;通常情况下T(y) = y,  A, b, T, &lt;span class="math"&gt;\(\eta\)&lt;/span&gt;给定的不同，就能得到不同的y的分布&lt;/p&gt;
-&lt;p&gt;其中的变量y和参数&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;只在&lt;span class="math"&gt;\(T(y)\eta …&lt;/span&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Fri, 05 Jan 2018 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-01-05:/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html</guid><category>概率分布</category><category>统计机器学习</category><category>回归模型</category><category>算法</category></item><item><title>Early Stopping</title><link>/early-stopping.html</link><description>
+&lt;p&gt;其中的变量y和参数&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;只在&lt;span class="math"&gt;\(T(y)\eta …&lt;/span&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Fri, 05 Jan 2018 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-01-05:/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html</guid><category>概率分布</category><category>统计机器学习</category><category>回归模型</category><category>算法</category></item><item><title>简述Attention机制</title><link>/jian-shu-attentionji-zhi.html</link><description>
+&lt;h2 id="1"&gt;1. 介绍&lt;/h2&gt;
+&lt;p&gt;最近两年，Attention Model在深度学习上得到了广泛应用，在诸如NLP，图像识别，语音识别等很多领域都得到了很大的发展。&lt;/p&gt;
+&lt;p&gt;本文简要总结一下自己学习过程中对注意力机制的理解，再顺便介绍一下最近比较热门的self-attention自注意力模型，文中很多图片来自张俊林博士的博客《深度学习中的注意力机制》。&lt;/p&gt;
+&lt;h2 id="2"&gt;2. 视觉注意力&lt;/h2&gt;
+&lt;p&gt;在2014年当时还在巴黎六大做实习的时候，我第一次了解到视觉注意力这个东西。相关研究表明，人类在看到一张图片的时候，为了获取其中的信息，比如说判断图片的分类，我们是不会像计算机一样扫描每一个像素点提取特征。大脑会控制眼睛去扫描图片中的几个“重要区域”，比如下图：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="./images/2018-03-30-13-47-09.jpg"/&gt;&lt;/p&gt;
+&lt;p&gt;但是如何知道大脑对于“重要区域”的划分，这就是一个很困难的问题了。当时研究的就是怎么用计算机算法，针对一张图片生成它对应的视觉热力图。由于在CNN大热之前，当时做图像分类不像现在都是end-to-end的，还是先人为构造各种图像特征，常用的有SIFT，HOG等，然后根据这些特征在图中出现的位置，找出它在热力图上的值，进行加权求和，然后通过一些分类算法，SVM，LR等等。&lt;/p&gt;
+&lt;p&gt;当时除了用一些常用的亮度，色度，颜色梯度等信息外，还用了眼动仪用来采集人类在看图片时的关注点，事实证明如果算法模拟的热力图能很好的代表图中重要区域，对特征进行合理加权的话，就可以很好的提升分类的准确性。&lt;/p&gt;
+&lt;p&gt;不过这种非端到端的方式有的时候很难去评价好坏，因为涉及的流程太多了 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Fri, 10 Nov 2017 19:55:00 +0800</pubDate><guid isPermaLink="false">tag:None,2017-11-10:/jian-shu-attentionji-zhi.html</guid><category>算法</category><category>Attention</category><category>深度学习</category></item><item><title>Early Stopping</title><link>/early-stopping.html</link><description>
 &lt;h2 id="1-early-stopping"&gt;1. early stopping简介&lt;/h2&gt;
 &lt;h3 id="11"&gt;1.1 介绍&lt;/h3&gt;
 &lt;p&gt;在机器学习中经常会遇到过拟合的问题，特别是对于神经网络这种参数非常多，表达能力非常强的复杂模型来说。经常就是随着训练过程的迭代，loss在训练数据上越来越小。看上去我们的模型越来越精确了，但是实际情况却是，我们的模型的泛化能力经常会变的越来越差，也就是说对于新的数据，模型的表现并不见的会好。&lt;/p&gt;

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="算法, Attention, 深度学习, 深度学习, " />
+
+<meta property="og:title" content="简述Attention机制  - 及其在深度学习中的应用 "/>
+<meta property="og:url" content="/jian-shu-attentionji-zhi.html" />
+<meta property="og:description" content="1. 介绍 最近两年，Attention Model在深度学习上得到了广泛应用，在诸如NLP，图像识别，语音识别等很多领域都得到了很大的发展。 本文简要总结一下自己学习过程中对注意力机制的理解，再顺便介绍一下最近比较热门的self-attention自注意力模型，文中很多图片来自张俊林博士的博客《深度学习中的注意力机制》。 2. 视觉注意力 在2014年当时还在巴黎六大做实习的时候，我第一次了解到视觉注意力这个东西。相关研究表明，人类在看到一张图片的时候，为了获取其中的信息，比如说判断图片的分类，我们是不会像计算机一样扫描每一个像素点提取特征。大脑会控制眼睛去扫描图片中的几个“重要区域”，比如下图： 但是如何知道大脑对于“重要区域”的划分，这就是一个很困难的问题了。当时研究的就是怎么用计算机算法，针对一张图片生成它对应的视觉热力图。由于在CNN大热之前，当时做图像分类不像现在都是end-to-end的，还是先人为构造各种图像特征，常用的有SIFT，HOG等，然后根据这些特征在图中出现的位置，找出它在热力图上的值，进行加权求和，然后通过一些分类算法，SVM，LR等等。 当时除了用一些常用的亮度，色度，颜色梯度等信息外，还用了眼动仪用来采集人类在看图片时的关注点，事实证明如果算法模拟的热力图能很好的代表图中重要区域，对特征进行合理加权的话，就可以很好的提升分类的准确性。 不过这种非端到端的方式有的时候很难去评价好坏，因为涉及的流程太多了 …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2017-11-10T19:55:00+08:00" />
+<meta name="twitter:title" content="简述Attention机制  - 及其在深度学习中的应用 ">
+<meta name="twitter:description" content="1. 介绍 最近两年，Attention Model在深度学习上得到了广泛应用，在诸如NLP，图像识别，语音识别等很多领域都得到了很大的发展。 本文简要总结一下自己学习过程中对注意力机制的理解，再顺便介绍一下最近比较热门的self-attention自注意力模型，文中很多图片来自张俊林博士的博客《深度学习中的注意力机制》。 2. 视觉注意力 在2014年当时还在巴黎六大做实习的时候，我第一次了解到视觉注意力这个东西。相关研究表明，人类在看到一张图片的时候，为了获取其中的信息，比如说判断图片的分类，我们是不会像计算机一样扫描每一个像素点提取特征。大脑会控制眼睛去扫描图片中的几个“重要区域”，比如下图： 但是如何知道大脑对于“重要区域”的划分，这就是一个很困难的问题了。当时研究的就是怎么用计算机算法，针对一张图片生成它对应的视觉热力图。由于在CNN大热之前，当时做图像分类不像现在都是end-to-end的，还是先人为构造各种图像特征，常用的有SIFT，HOG等，然后根据这些特征在图中出现的位置，找出它在热力图上的值，进行加权求和，然后通过一些分类算法，SVM，LR等等。 当时除了用一些常用的亮度，色度，颜色梯度等信息外，还用了眼动仪用来采集人类在看图片时的关注点，事实证明如果算法模拟的热力图能很好的代表图中重要区域，对特征进行合理加权的话，就可以很好的提升分类的准确性。 不过这种非端到端的方式有的时候很难去评价好坏，因为涉及的流程太多了 …">
+
+        <title>简述Attention机制  - 及其在深度学习中的应用  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/jian-shu-attentionji-zhi.html"> 简述Attention机制  <small> 及其在深度学习中的应用 </small>  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+    <div class="span2 table-of-content">
+        <nav>
+        <h4>Contents</h4>
+        <div class="toc">
+<ul>
+<li><a href="#1">1. 介绍</a></li>
+<li><a href="#2">2. 视觉注意力</a></li>
+<li><a href="#3-attention">3. 深度学习中的Attention模型</a><ul>
+<li><a href="#31-encoder-decoder">3.1 encoder-decoder框架</a></li>
+<li><a href="#32-attention">3.2 Attention模型</a><ul>
+<li><a href="#321-attention">3.2.1 Attention概率分布的计算</a></li>
+<li><a href="#322-attention">3.2.2 Attention概率分布的使用</a></li>
+<li><a href="#323-attention">3.2.3 理解Attention模型的含义</a></li>
+<li><a href="#324-attention">3.2.4 Attention机制的本质</a></li>
+</ul>
+</li>
+<li><a href="#33-self-attention">3.3 Self-Attention模型</a></li>
+</ul>
+</li>
+<li><a href="#4-attention">4. Attention机制的应用</a></li>
+<li><a href="#5">5.总结</a></li>
+<li><a href="#_1">参考资料</a></li>
+</ul>
+</div>
+        </nav>
+    </div>
+    <div class="span8 article-content">
+
+            
+            
+<h2 id="1">1. 介绍</h2>
+<p>最近两年，Attention Model在深度学习上得到了广泛应用，在诸如NLP，图像识别，语音识别等很多领域都得到了很大的发展。</p>
+<p>本文简要总结一下自己学习过程中对注意力机制的理解，再顺便介绍一下最近比较热门的self-attention自注意力模型，文中很多图片来自张俊林博士的博客《深度学习中的注意力机制》。</p>
+<h2 id="2">2. 视觉注意力</h2>
+<p>在2014年当时还在巴黎六大做实习的时候，我第一次了解到视觉注意力这个东西。相关研究表明，人类在看到一张图片的时候，为了获取其中的信息，比如说判断图片的分类，我们是不会像计算机一样扫描每一个像素点提取特征。大脑会控制眼睛去扫描图片中的几个“重要区域”，比如下图：</p>
+<p><img alt="" src="./images/2018-03-30-13-47-09.jpg"/></p>
+<p>但是如何知道大脑对于“重要区域”的划分，这就是一个很困难的问题了。当时研究的就是怎么用计算机算法，针对一张图片生成它对应的视觉热力图。由于在CNN大热之前，当时做图像分类不像现在都是end-to-end的，还是先人为构造各种图像特征，常用的有SIFT，HOG等，然后根据这些特征在图中出现的位置，找出它在热力图上的值，进行加权求和，然后通过一些分类算法，SVM，LR等等。</p>
+<p>当时除了用一些常用的亮度，色度，颜色梯度等信息外，还用了眼动仪用来采集人类在看图片时的关注点，事实证明如果算法模拟的热力图能很好的代表图中重要区域，对特征进行合理加权的话，就可以很好的提升分类的准确性。</p>
+<p>不过这种非端到端的方式有的时候很难去评价好坏，因为涉及的流程太多了，很可能你的热力图生成的不错，但是由于后面机器学习算法的问题却导致结果下降或者提升不突出。</p>
+<h2 id="3-attention">3. 深度学习中的Attention模型</h2>
+<p>上面介绍的视觉注意力本质上是深度学习中注意力模型的雏形，不过在深度学习中，并不用特意的单独去生成热力图，而是在端到端的训练中就能直接获取到这些特征，不得不感叹现在的计算能力真是牛逼，各种复杂模型都往上堆，居然也能训练收敛，放在以前简直不敢想。</p>
+<p>在介绍深度学习的attention模型之前，先讲一下encoder-decoder框架。我自己平时主要也是做NLP任务的，在后面attention介绍时，基本都是以这套编码-解码框架为应用场景的，当然attention的思想是独立于框架的，在其它模型上一样可以使用。</p>
+<h3 id="31-encoder-decoder">3.1 encoder-decoder框架</h3>
+<p>编码解码模型在NLP领域上应用非常广泛，在机器翻译，文本生成，问答系统等任务上都取得了突破性的成果。</p>
+<p><img alt="" src="./images/2018-03-30-14-23-12.jpg"/></p>
+<p>直观上可以这样理解，比如在机器翻译时，我们有待翻译文本source和翻译后文本target：
+</p>
+<div class="math">$$source = (x_1, x_2, .., x_m), target = (y_1, y_2, ..., y_n)$$</div>
+<p>
+由于source和target长度在机器翻译时基本不一样<span class="math">\(n \neq m\)</span>，在序列标注时经常使用的对齐的模型肯定是不适用的。这里采用的方法是先用一个编码器对总的输入source进行编码，生成一个语义编码C，或者也可以称为输入的上下文信息context:
+</p>
+<div class="math">$$C = f(x_1, x_2, ...,x_m)$$</div>
+<p>
+可以将其看作，人在看完这句话后，在大脑中的一个“理解”。然后根据这个“理解”去进行翻译，就对应着解码的部分了：
+</p>
+<div class="math">$$y_i = g(C, y_1, y_2, ..., y_{i-1})$$</div>
+<p>
+解码就是根据编码获得的C和已经生成的target序列去预测下一个生成的单词<span class="math">\(y_i\)</span>。</p>
+<p>类似的，对于文本生成任务，encoder表示一个对文章的阅读和理解，decoder就是生成文本摘要的过程；对于问答系统，encoder就是一个问句，decoder就对应一个回答过程。总之，这套框架在NLP中应用非常广泛。</p>
+<h3 id="32-attention">3.2 Attention模型</h3>
+<p>在上面框架介绍中，我们可以发现，对于每个输出<span class="math">\(y_i\)</span>的预测，它们使用的是同一个语义编码C，这其实是很反直觉的。因为在人进行翻译的时候，比如说在翻译Tom chases Jerry这句话时，我们在翻译“汤姆”中文时肯定更关注“Tom”的英文，而不是一整句话的英文。</p>
+<p>换句话说，就是人在翻译每个词的时候，注意力在原句子中是有所侧重的，而不是漫无目的的随机搜索，处理长的句子时，这种聚焦特定词的行为更加明显。</p>
+<p>于是很自然的想到引入一个attention模型，来表示这种注意力对不同词的侧重。比如说，在翻译“杰瑞”的时候，对source中不同词有这样的分布：(Tom, 0.3), (Chases, 0.2), (Jerry, 0.5)，通过这种概率分布分配attention的方式称为<code>soft attention</code>，与之对应的，设定1或者0表示attention的方式称为<code>hard attention</code>。其中，soft attention使用更加广泛。</p>
+<h4 id="321-attention">3.2.1 Attention概率分布的计算</h4>
+<p>借用之前的encoder-decoder框架，如下图：</p>
+<p><img alt="" src="./images/2018-03-30-15-03-17.jpg"/></p>
+<p>针对当前所需预测<span class="math">\(y_i\)</span>，利用前一个时间的隐藏层输出<span class="math">\(H_{i-1}\)</span>和encoder过程中的每个时间的隐藏层输出<span class="math">\(h_j\)</span>进行一个计算<span class="math">\(F(h_j, H_{i-1})\)</span>，然后再经过一个softmax就得到了对应source每个位置的attention概率。不过在F的选择上，有很多不同的方法下文再讲。</p>
+<p><img alt="" src="./images/2018-03-30-15-38-16.jpg"/></p>
+<p>上图是一个英法翻译时的attention计算的示意图，可以发现亮的地方所对应的英语和法语是相当关联的。</p>
+<h4 id="322-attention">3.2.2 Attention概率分布的使用</h4>
+<p>得到了每个<span class="math">\(y_i\)</span>的attention概率分布后，通过下图加权求和的方式可以得到预测<span class="math">\(y_i\)</span>时的语义编码C:</p>
+<p><img alt="" src="./images/2018-03-30-15-12-29.jpg"/></p>
+<p>其中<span class="math">\(a_{11}, a_{12}, a_{13}\)</span>分别表示预测第一个词时使用的attention概率分布，然后利用这个分布，对source中每个时间的隐藏层状态<span class="math">\(h_1, h_2, h_3\)</span>进行加权求和，就得到了预测第一个词时应该使用的语义编码<span class="math">\(C_1\)</span>，即：
+</p>
+<div class="math">$$C_i = \sum_{j=1}^L a_{ij}h_j$$</div>
+<p>
+其中L表示source长度，<span class="math">\(h_j\)</span>表示source每个时刻的隐藏层输出。类似的可以求出预测“追逐”和“杰瑞”时的语义编码<span class="math">\(C_2\)</span>和<span class="math">\(C_3\)</span>：</p>
+<p><img alt="" src="./images/2018-03-30-15-22-56.jpg"/></p>
+<p>于是可以得到：
+</p>
+<div class="math">$$\begin{aligned}&amp;y_1 = g(C_1) \\\\ &amp; y_2 = g(C_2, y_1) \\\\&amp;y_3 = g(C_3, y_1, y_2)\end{aligned}$$</div>
+<p>
+对比之前的<span class="math">\(y_i = g(C, y_1, y_2, ..., y_{i-1})\)</span>使用的都是同一个语义编码C，这里每一次预测都会先计算一个与之匹配的语义编码<span class="math">\(C_i\)</span>。</p>
+<h4 id="323-attention">3.2.3 理解Attention模型的含义</h4>
+<p>通常在NLP领域里，Attention经常被看作是一种将target的某个词与source中所有词的对齐的过程，生成的概率分布，可以理解为对齐每个词的概率。这在机器翻译过程中显得尤为直观：传统的统计机器翻译需要专门进行短语对齐，而attention机制起的就是这样的作用。</p>
+<p>Google16年的机器翻译系统使用的也是类似的结构：</p>
+<p><img alt="" src="./images/2018-03-30-15-47-16.jpg"/></p>
+<p>它使用了8层的LSTM进行编码和解码，并且使用了attention机制。</p>
+<h4 id="324-attention">3.2.4 Attention机制的本质</h4>
+<p>接下来抛开encoder-decoder框架，讲解一下attention思想的本质。如下图：</p>
+<p><img alt="" src="./images/2018-03-30-16-40-40.jpg"/></p>
+<p>首先可以将source看作是一系列的<key, value="">对，对于每个输入query，attention机制会将其和每个key进行比对，得到对应value的权重系数，然后根据计算的每个权重，对所有value进行加权求和。
+</key,></p>
+<div class="math">$$Attention(Query, Source) = \sum_{i=1}^L f(Query, Key_i) *Value_i$$</div>
+<p>
+其中L表示Source的长度，这个和之前机器翻译时的公式是一样的，只是在机器翻译时，Key和Value是一样的，都是Source中每个时刻隐藏层状态。</p>
+<p>和之前的Attention概念类似，这里的attention仍然是学习如何从大量信息中筛选出和当前query最相关的信息，权重越大的value说明越重要。然后attention机制的具体计算过程如下图：</p>
+<p><img alt="" src="./images/2018-03-30-17-39-16.jpg"/></p>
+<p>第一个阶段，将Query和每一个key进行计算<span class="math">\(F(Query, Key_i)\)</span>，得到该query和每个value的相关性<span class="math">\(s_i\)</span>。这个相关性有很多种求法，下面列举一些：</p>
+<ul>
+<li>
+<p>dot
+    <span class="math">\(f(Q, K_i) = Q^TK_i\)</span>，这种方法是直接将Query和每个<span class="math">\(K_i\)</span>做向量点乘，注意到，这样就必须要求两者的向量维度是一致的。</p>
+</li>
+<li>
+<p>general
+    <span class="math">\(f(Q, K_i) = Q^T W_a K_i\)</span>，因为引入了一个中间矩阵<span class="math">\(W_a\)</span>，就不再强制要求<span class="math">\(Q\)</span>和<span class="math">\(K_i\)</span>的向量维度一致，这也是被称为general的原因。</p>
+</li>
+<li>concat
+    <span class="math">\(f(Q, K_i) = W_a[Q;K_i]\)</span>,先将两者进行拼接，再和<span class="math">\(W_a\)</span>求积。</li>
+<li>perceptron
+    <span class="math">\(f(Q, K_i) =v^T_a tanh(W_a Q + U_aK_i)\)</span>，这里用了三个矩阵和tanh函数。</li>
+</ul>
+<p>第二个阶段就是将第一个阶段得到的相关性，进行softmax归一化，使其符合概率分布的形式<span class="math">\(a_i\)</span>。
+</p>
+<div class="math">$$a_i = softmax(f(Q, K_i)) = \frac{exp(f(Q, K_i)}{\sum_j exp(f(Q, K_j))}$$</div>
+<p>第三个阶段就是根据第二个阶段的权重系数<span class="math">\(a_i\)</span>，对所有<span class="math">\(value_i\)</span>进行加权求和：
+</p>
+<div class="math">$$Attention(Query, Source) = \sum_{i=1}^L a_i \cdot Value_i$$</div>
+<p>目前绝大多数的使用attention的方法都可以抽象为这三个过程。</p>
+<h3 id="33-self-attention">3.3 Self-Attention模型</h3>
+<p>在了解了attention模型的基本概念后，再简单讲一下最近非常热门的self attention模型。self attention模型也被称为intra attention模型，在最近一年得到了很多应用，尤其是在google机器翻译团队在2017年6月发表的Attention is All You Need上得到了大量使用，并取得了非常好的成绩。</p>
+<p>在前面讲普通attention的时候，source和target是不同的，而在self attention上，自注意力说明的就是两个是一样的，即target = source情况下的attention机制。也可以被看作是在source自身内部或者target自身内部发生的attention机制。</p>
+<p>常规的attention，其机制很容易理解，比如在机器翻译上就是进行对齐，判断当前要预测的词和source中哪些词关系更大。但是在self attention中，该怎么理解呢？换句话说，self attention学到了哪些特征呢？</p>
+<p><img alt="" src="./images/2018-03-30-19-06-57.jpg"/></p>
+<p>上图是google论文中的一张图，表示了self attention中的学到的特征。可以看出，self attention一定程度上可以捕获一个句子中单词之间的一些句法特征或者语义特征。也就是说，类似于LSTM等RNN捕获长期依赖的作用，self attention也可以用来捕获句子中长距离的依赖特征。</p>
+<p>但是LSTM需要经过若干时间将信息进行积累，距离越远，这种捕获的可能性就越小。而self attention简单粗暴，直接就可以在计算过程中把需要的词联系起来，无论它们之间隔的有多远，更有利于利用这些特征。</p>
+<p>除此之外，如果不使用RNN的隐藏层进行编码，直接使用self-attention的话，对于增加计算的并行性也有很大的帮助，毕竟RNN必须要延时间进行计算，天生就不适合GPU的并行化计算。这也是self attention最近越来越受欢迎的原因。</p>
+<h2 id="4-attention">4. Attention机制的应用</h2>
+<p>上面主要是讲了attention机制在nlp模型中的应用。除此之外，attention在图像任务，语音任务上都有很多的应用。</p>
+<p><img alt="" src="./images/2018-03-30-19-21-12.jpg"/></p>
+<p>上图中表明生成图片描述是，对于不同词，它侧重的图片中的区域是不同的。比如在输出单词girl的时候，attention机制将更多的注意力放在了图片中女孩的区域。</p>
+<p><img alt="" src="./images/2018-03-30-19-22-59.jpg"/></p>
+<p>上图是在进行语音识别的时候，不同的输出字符和音频信息对应的attention，该场景符合典型的encoder-decoder框架，而且使用attention的方法也和机器翻译中使用方法非常相似。不过相对来说，语音识别的attention不会选择比较远的信息，毕竟音频和它的文字是顺序对应的。</p>
+<h2 id="5">5.总结</h2>
+<p>attention理解起来是不难的，而且它的本意非常符合直觉。选择对当前预测最关联的信息来进行预测明显要比随机选择或者选择所有冗长的信息来预测更容易得到好的结果。</p>
+<p>而且Attention机制的使用越来越频繁，很多都取得了不错的效果。在读论文的过程中，发现越来越多的任务都喜欢加入attention，专门学习一下基础知识就显得很有必要了。</p>
+<p>本文主要是自己学习attention机制的一个笔记，最后提了一点关于self attention机制的内容，但是这并不代表self attention不重要，相反这一块的应用越来越主流。不过这一块以后会专门抽出来在讲google那篇论文的时候讲一下。</p>
+<h2 id="_1">参考资料</h2>
+<p>[1] <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a> - Ashish Vaswani, et al
+[2] <a href="https://blog.csdn.net/qq_40027052/article/details/78421155">深度学习中的注意力机制</a> - 张俊林</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+            
+            
+            <hr/>
+            <aside>
+            <nav>
+            <ul class="articles-timeline">
+                <li class="previous-article">« <a href="/early-stopping.html" title="Previous: Early Stopping">Early Stopping</a></li>
+                <li class="next-article"><a href="/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html" title="Next: 指数分布族和广义线性回归">指数分布族和广义线性回归</a> »</li>
+            </ul>
+            </nav>
+            </aside>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2017-11-10T19:55:00+08:00">2017  - 11  - 10</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#shen-du-xue-xi-ref">深度学习
+                <span>(8)</span>
+</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#attention-ref">Attention
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#shen-du-xue-xi-ref">深度学习
+                    <span>8</span>
+</a></li>
+                <li><a href="/tags.html#suan-fa-ref">算法
+                    <span>11</span>
+</a></li>
+            </ul>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>
