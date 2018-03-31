@@ -205,9 +205,11 @@
 </p>
 <div class="math">$$p_t = S \cdot sigmoid(v^T_p tanh(W_ph_t))$$</div>
 <p>
-S表示source的长度，sigmoid函数的值域是[0, 1]，这样<span class="math">\(p_t\)</span>就可以对应source上任意的位置。其中<span class="math">\(v_p和<div class="math">$$W_p$都是模型的参数。在确定里位置后，就可以只针对$p_t$左右的一个窗口，考虑它们的attention效果了：
-$$</div>a_t(s) = attention(h_t, \overline{h}_s)exp(-\frac{(s-p_t)^2}{2\sigma^2})\)</span><span class="math">\(
-上面s是表示位置，然后后面用了一个类似高斯分布形式对偏离中心点\)</span>p_t$的attention进行降权。</p>
+S表示source的长度，sigmoid函数的值域是[0, 1]，这样<span class="math">\(p_t\)</span>就可以对应source上任意的位置。其中<span class="math">\(v_p\)</span>和<span class="math">\(W_p\)</span>都是模型的参数。在确定里位置后，就可以只针对<span class="math">\(p_t\)</span>左右的一个窗口，考虑它们的attention效果了：
+</p>
+<div class="math">$$a_t(s) = attention(h_t, \overline{h}_s)exp(-\frac{(s-p_t)^2}{2\sigma^2})$$</div>
+<p>
+上面s是表示位置，然后后面用了一个类似高斯分布形式对偏离中心点<span class="math">\(p_t\)</span>的attention进行降权。</p>
 <p>Global attention和local attention各有优劣，不过实际使用时还是global attention更加普遍。因为local attention存在两个主要问题：1. 当source句子长度不长时，local attention并没有带来计算上的优势。2. <span class="math">\(p_t\)</span>位置预测的准确率无法保证，导致计算local attention的准确率下降。</p>
 <h3 id="34-self-attention">3.4 Self-Attention模型</h3>
 <p>在了解了attention模型的基本概念后，再简单讲一下最近非常热门的self attention模型。self attention模型也被称为intra attention模型，在最近一年得到了很多应用，尤其是在google机器翻译团队在2017年6月发表的Attention is All You Need上得到了大量使用，并取得了非常好的成绩。</p>
