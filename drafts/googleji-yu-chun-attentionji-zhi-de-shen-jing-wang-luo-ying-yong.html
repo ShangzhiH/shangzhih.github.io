@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="算法, Attention, 深度学习, Paper Reading, NLP, 自然语言处理, " />
+
+<meta property="og:title" content="Google基于纯Attention机制的神经网络应用  - 《Attention Is All You Need》论文讲解 "/>
+<meta property="og:url" content="/drafts/googleji-yu-chun-attentionji-zhi-de-shen-jing-wang-luo-ying-yong.html" />
+<meta property="og:description" content="1. 介绍 当前的机器翻译等相关的序列模型都是基于encoder-decoder架构的，而其中的encoder和decoder部分，很多时候都是围绕RNN和CNN做文章。 基于RNN的编码 RNN的编码通常是在时间维度上进行，它会沿着输入序列依次计算各隐藏状态\(h_1, h_2,...h_t\)，而每次计算都会依靠前一个状态和当前输入，即\(h_t = f(h_{t-1}, x_t)\)。RNN这种计算方式导致它天生就不适合分布式的训练，对GPU的利用并不友好，性能上有很大瓶颈。 除此之外，虽然有了LSTM，GRU等RNN的改进结构后，长期依赖问题得到了一定解决。但是RNN在处理这种长期依赖还是需要依靠在时间上进行计算叠加，是O(n)时间复杂度的。对于距离越远的依赖特征，越难捕获到。 基于CNN的编码 和RNN不同，CNN的编码更多是在空间上进行的，它将整个句子作为输入，然后通过不同的卷积层叠加提取特征。虽然同一层的CNN卷积是可以并行化处理的，不过要捕捉到远距离依赖，也需要靠更加抽象的深层卷积层才行。 attention机制 近年来，attention机制在encoder，decoder中使用非常频繁。和RNN或者CNN相比，attention机制捕获长期依赖的方式可以达到O(1)的复杂度。无论是多远的依赖，attention都可以直接将它们进行关联。 在 …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2017-12-02T19:55:00+08:00" />
+<meta name="twitter:title" content="Google基于纯Attention机制的神经网络应用  - 《Attention Is All You Need》论文讲解 ">
+<meta name="twitter:description" content="1. 介绍 当前的机器翻译等相关的序列模型都是基于encoder-decoder架构的，而其中的encoder和decoder部分，很多时候都是围绕RNN和CNN做文章。 基于RNN的编码 RNN的编码通常是在时间维度上进行，它会沿着输入序列依次计算各隐藏状态\(h_1, h_2,...h_t\)，而每次计算都会依靠前一个状态和当前输入，即\(h_t = f(h_{t-1}, x_t)\)。RNN这种计算方式导致它天生就不适合分布式的训练，对GPU的利用并不友好，性能上有很大瓶颈。 除此之外，虽然有了LSTM，GRU等RNN的改进结构后，长期依赖问题得到了一定解决。但是RNN在处理这种长期依赖还是需要依靠在时间上进行计算叠加，是O(n)时间复杂度的。对于距离越远的依赖特征，越难捕获到。 基于CNN的编码 和RNN不同，CNN的编码更多是在空间上进行的，它将整个句子作为输入，然后通过不同的卷积层叠加提取特征。虽然同一层的CNN卷积是可以并行化处理的，不过要捕捉到远距离依赖，也需要靠更加抽象的深层卷积层才行。 attention机制 近年来，attention机制在encoder，decoder中使用非常频繁。和RNN或者CNN相比，attention机制捕获长期依赖的方式可以达到O(1)的复杂度。无论是多远的依赖，attention都可以直接将它们进行关联。 在 …">
+
+        <title>Google基于纯Attention机制的神经网络应用  - 《Attention Is All You Need》论文讲解  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/drafts/googleji-yu-chun-attentionji-zhi-de-shen-jing-wang-luo-ying-yong.html"> Google基于纯Attention机制的神经网络应用  <small> 《Attention Is All You Need》论文讲解 </small>  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+    <div class="span2 table-of-content">
+        <nav>
+        <h4>Contents</h4>
+        <div class="toc">
+<ul>
+<li><a href="#1">1. 介绍</a></li>
+<li><a href="#2">2. 背景</a></li>
+<li><a href="#3">3. 模型结构</a><ul>
+<li><a href="#31-encoderdecoder">3.1 堆叠而成的encoder和decoder</a><ul>
+<li><a href="#encoder">encoder</a></li>
+<li><a href="#decoder">decoder</a></li>
+</ul>
+</li>
+<li><a href="#32-attention">3.2 Attention</a><ul>
+<li><a href="#321-scaled-dot-product-attention">3.2.1 Scaled Dot-Product Attention</a></li>
+<li><a href="#322-multi-head-attention">3.2.2 Multi-Head Attention</a></li>
+<li><a href="#323-attention">3.2.3 模型中使用的Attention</a></li>
+</ul>
+</li>
+<li><a href="#33-position-wise">3.3 Position-wise的前向神经网络</a></li>
+<li><a href="#34-embeddings-and-softmax">3.4 Embeddings and Softmax</a></li>
+<li><a href="#35-positional-encoding">3.5 Positional Encoding</a></li>
+</ul>
+</li>
+<li><a href="#4-self-attention">4. 为什么使用Self-Attention</a></li>
+<li><a href="#5">5. 训练</a></li>
+<li><a href="#6">6.总结</a></li>
+<li><a href="#_1">参考文献</a></li>
+</ul>
+</div>
+        </nav>
+    </div>
+    <div class="span8 article-content">
+
+            
+            
+<h2 id="1">1. 介绍</h2>
+<p>当前的机器翻译等相关的序列模型都是基于encoder-decoder架构的，而其中的encoder和decoder部分，很多时候都是围绕RNN和CNN做文章。</p>
+<ul>
+<li>
+<p>基于RNN的编码</p>
+<p>RNN的编码通常是在时间维度上进行，它会沿着输入序列依次计算各隐藏状态<span class="math">\(h_1, h_2,...h_t\)</span>，而每次计算都会依靠前一个状态和当前输入，即<span class="math">\(h_t = f(h_{t-1}, x_t)\)</span>。RNN这种计算方式导致它天生就不适合分布式的训练，对GPU的利用并不友好，性能上有很大瓶颈。</p>
+<p>除此之外，虽然有了LSTM，GRU等RNN的改进结构后，长期依赖问题得到了一定解决。但是RNN在处理这种长期依赖还是需要依靠在时间上进行计算叠加，是O(n)时间复杂度的。对于距离越远的依赖特征，越难捕获到。</p>
+</li>
+<li>
+<p>基于CNN的编码</p>
+<p>和RNN不同，CNN的编码更多是在空间上进行的，它将整个句子作为输入，然后通过不同的卷积层叠加提取特征。虽然同一层的CNN卷积是可以并行化处理的，不过要捕捉到远距离依赖，也需要靠更加抽象的深层卷积层才行。</p>
+</li>
+<li>
+<p>attention机制</p>
+<p>近年来，attention机制在encoder，decoder中使用非常频繁。和RNN或者CNN相比，attention机制捕获长期依赖的方式可以达到O(1)的复杂度。无论是多远的依赖，attention都可以直接将它们进行关联。</p>
+</li>
+</ul>
+<p>在《Attention Is All You Need》这篇论文中，Google利用纯Attention机制，不加入任何RNN和CNN的结构，构造了一个称为Transformer的模型。它在机器翻译相关任务上刷新了成绩，而且非常适合并行化加速了模型的训练。</p>
+<h2 id="2">2. 背景</h2>
+<p>RNN和CNN在捕捉长距离依赖时都有各自的局限性，算法的复杂度都是随距离增长而增长的，而attention机制可以按常数时间复杂度捕获这些依赖。</p>
+<p>普通的attention通常被用来构建source句子的词和target句子的词之间的联系，而self-attention是在单一句子上发现词之间的联系。作为一种新颖的句子表示方式，self-attention现在应用非常广泛，在文本摘要，阅读理解，句子表示上都有应用。</p>
+<h2 id="3">3. 模型结构</h2>
+<p>模型结构还是基于encoder-decoder的，如下图左右所示：</p>
+<p><img alt="" src="./images/2018-04-02-21-02-18.jpg"/></p>
+<p>图中的<code>Nx</code>表示同样的结构堆叠而成。</p>
+<h3 id="31-encoderdecoder">3.1 堆叠而成的encoder和decoder</h3>
+<h4 id="encoder">encoder</h4>
+<p>encoder由N=6个同样的结构层组成。每层由一个multi-head的self-attention结构和一个position-wise的前向全联接网络组成。multi-head是这篇文章提出的新概念，后面会讲。position-wise指的是对每个位置的向量做一个全联接，例如10个字，就是做10次全联接。</p>
+<p>除此之外，在multi-head和feed-forward之后分别都有一个残差结构和归一化。即每个Sublayer的真实输出是LayerNorm(x + Sublayer(x))。为了简化模型，这里定义这些sublayer的输出和embeding的维度都是<span class="math">\(d_{model} = 512\)</span></p>
+<h4 id="decoder">decoder</h4>
+<p>decoder部分和encoder部分的区别主要有两点。首先是在self-attention之外还加入了一层attention，用来对encoder的输出计算multi-head形式的attention。其次是在输出的上做self-attention的时候用到了一个mask，因为i时刻的输出只能在i时刻之前的输出序列上计算attention。</p>
+<h3 id="32-attention">3.2 Attention</h3>
+<p>之前了解过Attention机制可以理解为计算query与key的相似度，然后根据相似度对value进行加权求和的过程。本文中使用的计算相似度的方法被称为Scaled Dot-Product Attention。</p>
+<h4 id="321-scaled-dot-product-attention">3.2.1 Scaled Dot-Product Attention</h4>
+<p><img alt="" src="./images/2018-04-02-23-45-17.jpg"/></p>
+<p>实际上，我们通常可以同时计算多个query的attention函数。把它们都放进一个矩阵Q，keys和values对应的矩阵分别为K和V.</p>
+<p>其中，Q的维度为<span class="math">\(n\*d_k\)</span>, n代表query的个数，<span class="math">\(d_k\)</span>代表key的维度，K的维度为<span class="math">\(m\*d_k\)</span>，其中m代表计算attention时key的个数，self-attention时可以理解为source的长度，V的维度自然就是<span class="math">\(m\*d_v\)</span>。</p>
+<p>输出矩阵则为：
+</p>
+<div class="math">$$Attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V$$</div>
+<p>
+scaled指的就是在做完点乘之后除以<span class="math">\(\sqrt{d_k}\)</span>，这是为了防止点乘过大导致的softmax不够“soft”，即各个key上的概率分布接近于非0即1。</p>
+<h4 id="322-multi-head-attention">3.2.2 Multi-Head Attention</h4>
+<p>按照上面的Attention计算的话就是一个基于维度<span class="math">\(d_{model}\)</span>的query, key, value的attention，不过这里作者发明了一个称为multi-head的attention结构，可以获得更好的效果。</p>
+<p><img alt="" src="./images/2018-04-03-14-36-16.jpg"/></p>
+<p>公式为
+</p>
+<div class="math">$$MultiHead(Q, K, V) = Concat(head_1, head_2, ..., head_h)W^O \quad 其中 head_i = Attention(QW^Q_i, KW^K_i, VW^V_i)$$</div>
+<p>这里先将<span class="math">\(d_{model}\)</span>的维度分别利用矩阵相乘进行线性变换，相对于<span class="math">\(d_{model}\)</span>进行降维，其中<span class="math">\(W^Q_i\)</span>和<span class="math">\(W^K_i\)</span>的维度均为<span class="math">\(d_{model}xd_k\)</span>，<span class="math">\(W^V_i\)</span>的维度为<span class="math">\(d_{model}xd_v\)</span>，随后对h个head进行concat就得到了<span class="math">\(hd_v\)</span>的输出维度，于是<span class="math">\(W^O\)</span>的维度设置为<span class="math">\(hd_v x d_{model}\)</span>。</p>
+<p>在这里作者使用了<span class="math">\(h=8\)</span>个attention进行拼接，由于它们是参数不共享的，可以很容易的进行并行化计算。为了使最终计算复杂度和单一attention的时候接近，这里设置<span class="math">\(d_k = d_v = d_{model} / h = 512/8 = 64\)</span></p>
+<h4 id="323-attention">3.2.3 模型中使用的Attention</h4>
+<p>在Transformer模型中，attention有三种使用方法：</p>
+<ul>
+<li>
+<p>encoder-decoder的attention</p>
+<p>这个是encoder-decoder架构中attention的最经典用法，query是decoder中的上一时刻的状态，然后attention是在encoder的所有输出上。</p>
+</li>
+<li>
+<p>encoder的self-attention</p>
+<p>这个是在source句子上做self-attention，每个字计算它和所有字的联系。</p>
+</li>
+<li>
+<p>decoder的self-attention</p>
+<p>和encoder的self-attention相比，decoder的self-attention在于在计算一个位置的self-attention的时候考虑的source只能是它之前(包含当前位置)的字，对之后的字应该是不可见的。为了实现这样的功能，作者在scaled dot-product的时候用了一个mask。将之后的位置的key的dot-product设置为<span class="math">\(-\infty\)</span>。   </p>
+</li>
+</ul>
+<h3 id="33-position-wise">3.3 Position-wise的前向神经网络</h3>
+<p>从模型结构图可以看到，在每个sublayer的最终attention输出后都有一个前向神经网络。这个网络是position-wise的，对每个位置进行相同的feed-forward过程：
+</p>
+<div class="math">$$FFN(x) = max(0, xW_1 + b_1)W_2 + b_2$$</div>
+<p>
+不过在层级之间，它们的参数是不同的。</p>
+<h3 id="34-embeddings-and-softmax">3.4 Embeddings and Softmax</h3>
+<p>这里stacks中的每层模型都含有两个embeddings和linear-softmax，两个embedings分别在encoder和decoder中，这些矩阵的参数在stacks中是共享的。这也符合直觉，因为无论每一层提取的特征是啥，字在每一层所具备的“自身的含义”应该是保持不变的。</p>
+<h3 id="35-positional-encoding">3.5 Positional Encoding</h3>
+<p>可以看到目前的模型并没有考虑任何位置信息，也就是说source打乱顺序对于生成target是没有任何影响的。我们的模型无法利用序列的位置信息，这在序列模型上显然是有很大缺陷的。特别是对于语言模型，字词的顺序是一个非常重要的特征。</p>
+<p>基于这样的考虑，作者在这里使用了一个positional encoding的方法。其实类似的方法很多模型都用过，比如在对字进行建模的时候，经常除了字本身的embedding，还会加入一个粗分词后字的位置作为特征，这个特征有三种状态，“词开始”，“词中间”，“词结束”，分别对应一组特征向量。然后组合可以是求和，也可以是拼接。</p>
+<p>这里我们使用的是求和的方式，因此位置的向量维度和字的embedding是一样的，都为<span class="math">\(d_{model} = 512\)</span>。不过这里有一个不同是，一般情况下这种位置向量是训练得到的，而google这里是直接给出了公式计算这个向量：
+</p>
+<div class="math">$$\begin{aligned} PE_{(pos, 2i)} = sin(pos/10000^{2i/d_{model}})\\\\ &amp; PE_{(pos, 2i+1)} = cos(pos/10000^{2i/d_{model}})\end{aligned}$$</div>
+<p>
+其中pos是位置，2i和2i+1都是是当前位置向量的index。作者测试发现这种方法和学习位置向量的方法得到的结果基本没有区别。</p>
+<h2 id="4-self-attention">4. 为什么使用Self-Attention</h2>
+<p>首先是计算上带来的优化，每层的计算大大减小，而且相对于RNN的情形，self-Attention的计算是高度并行化的。对于长期依赖来说，self-attention的编码方式更加容易处理，可以直接将两个很远的字或词直接联系起来。</p>
+<p>除此之外，self-attention可以带来很多可解释的模型结果。下面是作者在论文中给出的一些self-attention的可视化图。</p>
+<p><img alt="" src="./images/2018-04-04-11-42-31.jpg"/></p>
+<p>上图显示的是encoder上一个长依赖的特性，可以看到making这个词对很多远距离的词都有联系，尤其是捕获到了making...more difficult这个短语结构。其中每个小方块表示的是multi-head中每个head的影响，共8个。</p>
+<p><img alt="" src="./images/2018-04-04-11-54-21.jpg"/></p>
+<p>上图是捕获代词特征的一个例子，its很智能的表示了law和application的关系。</p>
+<h2 id="5">5. 训练</h2>
+<p>训练过程都是些常用的优化算法，这里用的是adam。然后讲一下作者在训练时使用的正则化的技巧。</p>
+<p><strong>Dropout</strong></p>
+<p>这里有两个地方用到了dropout：</p>
+<ul>
+<li>模型中每个sub-layer输出都有个类似残差网络的联结结构，在将其加入前进行dropout</li>
+<li>embeding和position encoding输入层加一个dropout</li>
+</ul>
+<p>这两个dropout作者均使用了0.1。</p>
+<p><strong>Label Smoothing</strong>
+训练的时候，输出数据的分布通常是0或1的，不够soft。这样会容易导致过拟合情况的发生。除此之外，模型的预测过于自信，给出很高的置信度，这往往也会产生偏离实际情况的结果。</p>
+<p>label smoothing就是为了缓解这种label标注时不够soft从而导致过拟合的情形：
+</p>
+<div class="math">$$q'(y|x) = (1-e)q(y|x) + e*u(y)$$</div>
+<p>
+这里q(y|x)是标注label上表示的真实分布，u(y)是脱离训练样本的y的真实分布，通常可以通过统计出现的频数进行计算。比如说如果是分类问题的话，就是类型y的样本数／总样本数。</p>
+<p>通过这样的方法，就相当于是给训练数据上引入了一些噪声，一定程度上可以防止过拟合。这里作者选择了e=0.1。</p>
+<h2 id="6">6.总结</h2>
+<p>Transformer模型完全使用attention机制进行建模，算法非常适合并行化，在效率提升的情况下仍然获得了好的结果。而且attention机制更符合人的直觉，可视化也展示了attention学到了人类语法中的一些特征。</p>
+<p>除此之外，作者也指出了改进空间。当前的attention的每次都是考虑完整的序列，这对于很长的序列有的时候是不必要的，因此提出了一个restricted的版本，只考虑局部的attention(例如一定窗口长度内的词)，这在处理例如图片，音频和视频等长序列输入的时候可能会更有优势。</p>
+<p>作者的代码已经开源在了<a href="https://github.com/ tensorflow/tensor2tensor">github</a>上。</p>
+<h2 id="_1">参考文献</h2>
+<p>[1] <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a> - Ashish Vaswani, et al</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+            
+            
+            <hr/>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2017-12-02T19:55:00+08:00">2017  - 12  - 02</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#zi-ran-yu-yan-chu-li-ref">自然语言处理
+                <span>(1)</span>
+</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#attention-ref">Attention
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#nlp-ref">NLP
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#paper-reading-ref">Paper Reading
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#shen-du-xue-xi-ref">深度学习
+                    <span>8</span>
+</a></li>
+                <li><a href="/tags.html#suan-fa-ref">算法
+                    <span>11</span>
+</a></li>
+            </ul>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>

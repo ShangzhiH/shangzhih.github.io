@@ -75,7 +75,7 @@
 &lt;div class="math"&gt;$$H(X) = - \sum_{x \in R} p(x)log_x (p(x))$$&lt;/div&gt;
 &lt;p&gt;
 约定&lt;span class="math"&gt;\(0log(0) = 0\)&lt;/span&gt;。由于这里使用了2为底，所以该公式定义的熵的单位为二进制单位(比特)，实际情况也有使用其它底数的版本的熵。&lt;/p&gt;
-&lt;p&gt;熵又被成为自信息(self-information)，可以将其描述为一个随机变量不稳定的程度 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Sat, 30 Sep 2017 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2017-09-30:/xin-xi-lun-ji-ben-gai-nian.html</guid><category>信息论</category><category>自然语言处理</category><category>熵</category></item><item><title>《深度学习与神经网络》笔记5</title><link>/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-5.html</link><description>
+&lt;p&gt;熵又被成为自信息(self-information)，可以将其描述为一个随机变量不稳定的程度 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Sat, 30 Sep 2017 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2017-09-30:/xin-xi-lun-ji-ben-gai-nian.html</guid><category>信息论</category><category>NLP</category><category>熵</category></item><item><title>《深度学习与神经网络》笔记5</title><link>/shen-du-xue-xi-yu-shen-jing-wang-luo-bi-ji-5.html</link><description>
 &lt;p&gt;之前的章节，我们利用一个仅包含一层隐藏层的简单神经网络就在MNIST识别问题上获得了98%左右的准确率。我们于是本能会想到用更多的隐藏层，构建更复杂的神经网络将会为我们带来更好的结果。&lt;/p&gt;
 &lt;p&gt;就如同在进行图像模式识别的时候，第一层的神经层可以学到边缘特征，第二层的可以学到更复杂的图形特征，例如三角形，长方形等，第三层又会识别更加复杂的图案。这样看来，多层的结构就会带来更强大的模型，进行更复杂的识别。&lt;/p&gt;
 &lt;p&gt;那么在这一章，就试着训练这样的神经网络来看看对结果有没有什么提升。不过我们发现，训练的过程将会出现问题，我们的神经网络的效果并没有什么提升。&lt;/p&gt;
