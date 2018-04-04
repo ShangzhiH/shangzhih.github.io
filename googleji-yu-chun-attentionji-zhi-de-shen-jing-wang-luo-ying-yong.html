@@ -148,7 +148,7 @@
 <h4 id="321-scaled-dot-product-attention">3.2.1 Scaled Dot-Product Attention</h4>
 <p><img alt="" src="./images/2018-04-02-23-45-17.jpg"/></p>
 <p>实际上，我们通常可以同时计算多个query的attention函数。把它们都放进一个矩阵Q，keys和values对应的矩阵分别为K和V.</p>
-<p>其中，Q的维度为<span class="math">\(n\*d_k\)</span>, n代表query的个数，<span class="math">\(d_k\)</span>代表key的维度，K的维度为<span class="math">\(m\*d_k\)</span>，其中m代表计算attention时key的个数，self-attention时可以理解为source的长度，V的维度自然就是<span class="math">\(m\*d_v\)</span>。</p>
+<p>其中，Q的维度为<span class="math">\(n x d_k\)</span>, n代表query的个数，<span class="math">\(d_k\)</span>代表key的维度，K的维度为<span class="math">\(m x d_k\)</span>，其中m代表计算attention时key的个数，self-attention时可以理解为source的长度，V的维度自然就是<span class="math">\(m x d_v\)</span>。</p>
 <p>输出矩阵则为：
 </p>
 <div class="math">$$Attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V$$</div>
@@ -159,7 +159,9 @@ scaled指的就是在做完点乘之后除以<span class="math">\(\sqrt{d_k}\)</
 <p><img alt="" src="./images/2018-04-03-14-36-16.jpg"/></p>
 <p>公式为
 </p>
-<div class="math">$$MultiHead(Q, K, V) = Concat(head_1, head_2, ..., head_h)W^O \quad 其中 head_i = Attention(QW^Q_i, KW^K_i, VW^V_i)$$</div>
+<div class="math">$$MultiHead(Q, K, V) = Concat(head_1, head_2, ..., head_h)W^O$$</div>
+<p>
+其中<span class="math">\(head_i = Attention(QW^Q_i, KW^K_i, VW^V_i)\)</span></p>
 <p>这里先将<span class="math">\(d_{model}\)</span>的维度分别利用矩阵相乘进行线性变换，相对于<span class="math">\(d_{model}\)</span>进行降维，其中<span class="math">\(W^Q_i\)</span>和<span class="math">\(W^K_i\)</span>的维度均为<span class="math">\(d_{model}xd_k\)</span>，<span class="math">\(W^V_i\)</span>的维度为<span class="math">\(d_{model}xd_v\)</span>，随后对h个head进行concat就得到了<span class="math">\(hd_v\)</span>的输出维度，于是<span class="math">\(W^O\)</span>的维度设置为<span class="math">\(hd_v x d_{model}\)</span>。</p>
 <p>在这里作者使用了<span class="math">\(h=8\)</span>个attention进行拼接，由于它们是参数不共享的，可以很容易的进行并行化计算。为了使最终计算复杂度和单一attention的时候接近，这里设置<span class="math">\(d_k = d_v = d_{model} / h = 512/8 = 64\)</span></p>
 <h4 id="323-attention">3.2.3 模型中使用的Attention</h4>
@@ -191,7 +193,7 @@ scaled指的就是在做完点乘之后除以<span class="math">\(\sqrt{d_k}\)</
 <p>基于这样的考虑，作者在这里使用了一个positional encoding的方法。其实类似的方法很多模型都用过，比如在对字进行建模的时候，经常除了字本身的embedding，还会加入一个粗分词后字的位置作为特征，这个特征有三种状态，“词开始”，“词中间”，“词结束”，分别对应一组特征向量。然后组合可以是求和，也可以是拼接。</p>
 <p>这里我们使用的是求和的方式，因此位置的向量维度和字的embedding是一样的，都为<span class="math">\(d_{model} = 512\)</span>。不过这里有一个不同是，一般情况下这种位置向量是训练得到的，而google这里是直接给出了公式计算这个向量：
 </p>
-<div class="math">$$\begin{aligned} PE_{(pos, 2i)} = sin(pos/10000^{2i/d_{model}})\\\\ &amp; PE_{(pos, 2i+1)} = cos(pos/10000^{2i/d_{model}})\end{aligned}$$</div>
+<div class="math">$$\begin{aligned} &amp;PE_{(pos, 2i)} = sin(pos/10000^{2i/d_{model}})\\\\ &amp; PE_{(pos, 2i+1)} = cos(pos/10000^{2i/d_{model}})\end{aligned}$$</div>
 <p>
 其中pos是位置，2i和2i+1都是是当前位置向量的index。作者测试发现这种方法和学习位置向量的方法得到的结果基本没有区别。</p>
 <h2 id="4-self-attention">4. 为什么使用Self-Attention</h2>
