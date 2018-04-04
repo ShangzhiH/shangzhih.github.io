@@ -37,7 +37,25 @@
 &lt;li&gt;A(&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;) - log normalizer&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;通常情况下T(y) = y,  A, b, T, &lt;span class="math"&gt;\(\eta\)&lt;/span&gt;给定的不同，就能得到不同的y的分布&lt;/p&gt;
-&lt;p&gt;其中的变量y和参数&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;只在&lt;span class="math"&gt;\(T(y)\eta …&lt;/span&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Fri, 05 Jan 2018 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-01-05:/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html</guid><category>概率分布</category><category>统计机器学习</category><category>回归模型</category><category>算法</category></item><item><title>简述Attention机制</title><link>/jian-shu-attentionji-zhi.html</link><description>
+&lt;p&gt;其中的变量y和参数&lt;span class="math"&gt;\(\theta\)&lt;/span&gt;只在&lt;span class="math"&gt;\(T(y)\eta …&lt;/span&gt;&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Fri, 05 Jan 2018 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-01-05:/zhi-shu-fen-bu-zu-he-yan-yi-xian-xing-hui-gui.html</guid><category>概率分布</category><category>统计机器学习</category><category>回归模型</category><category>算法</category></item><item><title>Google基于纯Attention机制的神经网络应用</title><link>/googleji-yu-chun-attentionji-zhi-de-shen-jing-wang-luo-ying-yong.html</link><description>
+&lt;h2 id="1"&gt;1. 介绍&lt;/h2&gt;
+&lt;p&gt;当前的机器翻译等相关的序列模型都是基于encoder-decoder架构的，而其中的encoder和decoder部分，很多时候都是围绕RNN和CNN做文章。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;基于RNN的编码&lt;/p&gt;
+&lt;p&gt;RNN的编码通常是在时间维度上进行，它会沿着输入序列依次计算各隐藏状态&lt;span class="math"&gt;\(h_1, h_2,...h_t\)&lt;/span&gt;，而每次计算都会依靠前一个状态和当前输入，即&lt;span class="math"&gt;\(h_t = f(h_{t-1}, x_t)\)&lt;/span&gt;。RNN这种计算方式导致它天生就不适合分布式的训练，对GPU的利用并不友好，性能上有很大瓶颈。&lt;/p&gt;
+&lt;p&gt;除此之外，虽然有了LSTM，GRU等RNN的改进结构后，长期依赖问题得到了一定解决。但是RNN在处理这种长期依赖还是需要依靠在时间上进行计算叠加，是O(n)时间复杂度的。对于距离越远的依赖特征，越难捕获到。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;基于CNN的编码&lt;/p&gt;
+&lt;p&gt;和RNN不同，CNN的编码更多是在空间上进行的，它将整个句子作为输入，然后通过不同的卷积层叠加提取特征。虽然同一层的CNN卷积是可以并行化处理的，不过要捕捉到远距离依赖，也需要靠更加抽象的深层卷积层才行。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;attention机制&lt;/p&gt;
+&lt;p&gt;近年来，attention机制在encoder，decoder中使用非常频繁。和RNN或者CNN相比，attention机制捕获长期依赖的方式可以达到O(1)的复杂度。无论是多远的依赖，attention都可以直接将它们进行关联。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Sat, 02 Dec 2017 19:55:00 +0800</pubDate><guid isPermaLink="false">tag:None,2017-12-02:/googleji-yu-chun-attentionji-zhi-de-shen-jing-wang-luo-ying-yong.html</guid><category>算法</category><category>Attention</category><category>深度学习</category><category>Paper Reading</category><category>NLP</category></item><item><title>简述Attention机制</title><link>/jian-shu-attentionji-zhi.html</link><description>
 &lt;h2 id="1"&gt;1. 介绍&lt;/h2&gt;
 &lt;p&gt;最近两年，Attention Model在深度学习上得到了广泛应用，在诸如NLP，图像识别，语音识别等很多领域都得到了很大的发展。&lt;/p&gt;
 &lt;p&gt;本文简要总结一下自己学习过程中对注意力机制的理解，再顺便介绍一下最近比较热门的self-attention自注意力模型，文中很多图片来自张俊林博士的博客《深度学习中的注意力机制》。&lt;/p&gt;
