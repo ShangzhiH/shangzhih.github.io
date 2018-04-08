@@ -187,7 +187,7 @@ scaled指的就是在做完点乘之后除以<span class="math">\(\sqrt{d_k}\)</
 <p>
 不过在层级之间，它们的参数是不同的。</p>
 <h3 id="34-embeddings-and-softmax">3.4 Embeddings and Softmax</h3>
-<p>这里stacks中的每层模型都含有两个embeddings和linear-softmax，两个embedings分别在encoder和decoder中，这些矩阵的参数在stacks中是共享的。这也符合直觉，因为无论每一层提取的特征是啥，字在每一层所具备的“自身的含义”应该是保持不变的。</p>
+<p>这里stacks中的每层模型都含有两个embeddings和一个linear-softmax，两个embedings分别在encoder和decoder中，这三个矩阵在同一层中是同一个维度为<span class="math">\(n*d_{model}\)</span>的矩阵。这也符合直觉，因为字在每一层所具备的“自身的含义”在该层的不同模块应该是保持不变的。</p>
 <h3 id="35-positional-encoding">3.5 Positional Encoding</h3>
 <p>可以看到目前的模型并没有考虑任何位置信息，也就是说source打乱顺序对于生成target是没有任何影响的。我们的模型无法利用序列的位置信息，这在序列模型上显然是有很大缺陷的。特别是对于语言模型，字词的顺序是一个非常重要的特征。</p>
 <p>基于这样的考虑，作者在这里使用了一个positional encoding的方法。其实类似的方法很多模型都用过，比如在对字进行建模的时候，经常除了字本身的embedding，还会加入一个粗分词后字的位置作为特征，这个特征有三种状态，“词开始”，“词中间”，“词结束”，分别对应一组特征向量。然后组合可以是求和，也可以是拼接。</p>
