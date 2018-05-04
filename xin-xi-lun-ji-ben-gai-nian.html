@@ -109,7 +109,7 @@
 <p>有了单变量的情况，很自然就想到多变量下联合概率和条件概率的情况。</p>
 <p>对于一堆随机变量<span class="math">\(X, Y\)</span>，其联合概率为<span class="math">\(p(x, y)\)</span>，则其联合熵为：
 </p>
-<div class="math">$$H(X, Y) =  - \sum_{x\in X} \sum_{y \in Y} log_2(p(x, y))$$</div>
+<div class="math">$$H(X, Y) =  - \sum_{x\in X} \sum_{y \in Y} p(x, y) log_2(p(x, y))$$</div>
 <p>
 联合熵实际熵就是描述一对随机变量平均所需要的信息量。</p>
 <p>条件熵就是给定条件概率<span class="math">\(p(Y|X)\)</span>的情况下：
