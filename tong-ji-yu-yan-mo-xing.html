@@ -100,9 +100,16 @@
 </ul>
 </li>
 <li><a href="#4-rnn">4. RNN神经网络语言模型</a><ul>
-<li><a href="#41">4.1 模型介绍</a></li>
+<li><a href="#_1">模型介绍</a></li>
 </ul>
 </li>
+<li><a href="#5">5. 模型评价</a><ul>
+<li><a href="#51-extrinsictask-based">5.1 Extrinsic(task-based)</a></li>
+<li><a href="#52-intrinsic-perplexity">5.2 Intrinsic - Perplexity</a></li>
+</ul>
+</li>
+<li><a href="#6">6. 语言模型总结</a></li>
+<li><a href="#_2">参考文献</a></li>
 </ul>
 </div>
         </nav>
@@ -121,7 +128,7 @@
 <p>
 利用bayes公式将其转变为：
 </p>
-<div class="math">$$\begin{aligned} p(s) &amp;= p(w_1)p(w_2|w_1)p(w_3|w_1,w_2) ... p(w_l|w1,w_2,..,w_{l-1}) \\\\ &amp; = \prod_{i=1}^l p(w_i | w_1...w_{i-1})\\end{aligned}$$</div>
+<div class="math">$$\begin{aligned} p(s) &amp;= p(w_1)p(w_2|w_1)p(w_3|w_1,w_2) ... p(w_l|w1,w_2,..,w_{l-1}) \\\\ &amp; = \prod_{i=1}^l p(w_i | w_1...w_{i-1})\end{aligned}$$</div>
 <p>
 而上式中的条件概率<span class="math">\(p(w_1),p(w_2|w_1), p(w_3,|w_1, w_2)...\)</span>就是语言模型的参数。当这些模型都计算出的时候，对于任何一个给定的句子s都可以通过将对应的条件概率相乘的方法很快得到句子的概率了。不同的模型计算这些参数的值的方式不同，常用的方法有n-gram，决策树，最大熵模型神经网络等等。</p>
 <h3 id="12">1.2 模型缺点</h3>
@@ -202,12 +209,41 @@ n=1时的模型被称为一元语言模型(Uni-gram)，它表示的是句子中�
 <p>而上面的神经网络语言模型虽然较n-gram模型来说具有更强大的表现力和更好的泛化能力，但是同样无法捕捉更长的全局语义信息。比如说，在自然语言中，经常出现的he和himself会出现在比较远的地方，通过上文的神经网络语言模型，即使考虑的句子长度涵盖了这两个字，但是由于混入中间的信息过多，也无法保证能够将其相连(加入attention机制可能对这个问题有帮助)。</p>
 <p>为了解决这些问题，Mikolov提出了基于RNN的循环神经网络，使用RNN的隐状态来作为对词序历史信息的记录，使其能够捕捉到句子中的长期依赖。</p>
 <p>近年来，随着RNN模型的相关发展，特别是LSTM和GRU等RNN单元的提出，使得基础RNN中在处理长期依赖时遇到的梯度消失问题得到了很大的改善。RNN序列模型处理长期依赖的能力得到了很大的提升，作为一种新的表示方式，RNN/LSTM的语言模型在很多领域都取得了优于N-gram的结果成为主流模型。</p>
-<h3 id="41">4.1 模型介绍</h3>
-<p>RNN神经网络语言模型在github有很多相关的项目，很多都是基于LSTM做的生成古诗，歌词等内容的模型。这些在基础结构上大致是一样的，只是用了不同的数据集去训练基于当前数据集的语言模型，然后再利用现有的语言模型做Inference。</p>
+<h3 id="_1">模型介绍</h3>
+<p>接受了神经网络语言模型引入的词向量概念后，再理解RNN神经网络语言模型就不难了。RNN神经网络语言模型在github有很多相关的项目，很多都是基于LSTM做的生成古诗，歌词等内容的模型。这些在基础结构上大致是一样的，只是用了不同的数据集去训练基于当前数据集的语言模型，然后再利用现有的语言模型做Inference。</p>
 <p>RNN的基础结构如下：
 <img alt="" src="./images/2018-05-15-21-36-56.png"/>
 用在语言模型上，更像是一种sequence模型，其实机器翻译中经常用到的Seq2Seq模型中的decoder部分通常就是这个模型。</p>
 <p>因为之后打算再开一篇博客专门讲一下这个模型，这里就先简要介绍一下。这个模型的预测和之前的模型不同的一点是输入是一个一个传入模型的。例如将第一个词作为<span class="math">\(x_0\)</span>，然后得到RNN的隐状态，对于下一个时刻，传入第二个词<span class="math">\(x_1\)</span>和上一刻的隐状态输出，依次这样进行，根据t-1时刻的输出，经过softmax进行t时刻字的预测。这样进行的前提是假设RNN隐藏层的状态已经包含了过去词的信息了。</p>
+<h2 id="5">5. 模型评价</h2>
+<p>在机器学习中，如何进行模型的评价一直是一个很重要的问题。如果评价的准则都出错了，我们很可能就会错过好的模型而去选择差的模型。而对于语言模型来说，通常有两种评价方式。</p>
+<ul>
+<li>基于特定任务的extrinsic评价方式</li>
+<li>基于模型本身的intrinsic评价方式</li>
+</ul>
+<h3 id="51-extrinsictask-based">5.1 Extrinsic(task-based)</h3>
+<p>语言模型很多时候只是一个中间模型，最终也是为特定任务服务的，有的时候结合任务来看比起单纯的衡量语言模型更有意义。</p>
+<p>这种做法就是将不同的语言模型接入到同一套任务中，比如说语音识别，最后通过语音识别任务结果的好坏来评价语言模型。</p>
+<h3 id="52-intrinsic-perplexity">5.2 Intrinsic - Perplexity</h3>
+<p>对于序列<span class="math">\(w_1, w_2,...,w_n\)</span>, Perplexity混淆度(PPL值)的定义为：
+</p>
+<div class="math">$$PP(w_1, w_2, ..., w_n)  = P(w_1, w_2, ..., w_n)^{-\frac{1}{n}}$$</div>
+<p>
+Perplexity表示的是对于一个句子，用语言模型计算其概率值，并且根据序列长度做规范化后的倒数。</p>
+<p>于是可以知道最小化perplexity就等价于最大化概率。通常来说，由于概率相乘很容易导致小数溢出的情况，于是通常使用其log表示。</p>
+<p>因此，对于一个合理的测试句子集合，一个好的模型的ppl值应该是要小于一个差的模型的。在实际中，我们就可以分出一部分数据作为测试集，在语言模型的训练过程中进行测试保留最优的模型。</p>
+<p><strong>注意</strong>: 由于语言模型是和所用到的训练数据挂钩的，如果用一个根据诗歌去训练的语言模型，去计算给定一篇散文的ppl值那肯定是不合理的。因此不同语言模型的ppl值比较必须是使用同一套数据集训练的情况下才有意义。</p>
+<p>这里给出一组对于N-gram在不同n值情况下ppl值的比较结果：</p>
+<p><img alt="" src="./images/2018-05-15-23-23-33.jpg"/></p>
+<p>可以看到n=2对于n=1有个大的提升，n=3对于n=2有提升，但是提升效果已经弱多了。虽然理论上n=4效果会更好，但那需要更多更全的数据集，更耗时的训练时间，通常不会使用。</p>
+<h2 id="6">6. 语言模型总结</h2>
+<h2 id="_2">参考文献</h2>
+<p>[1] <a href="https://book.douban.com/subject/25746399/">统计自然语言处理</a> - 宗成庆</p>
+<p>[2] <a href="http://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf">A Neural Probabilistic Language Model</a> - Yoshua Bengio, et al</p>
+<p>[3] <a href="https://www.cnblogs.com/peghoty/p/3857839.html">word2vec 中的数学原理详解</a> - 博客园用户peghoty</p>
+<p>[4] <a href="https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf">Distributed Representations of Words and Phrases and their Compositionality</a> - Tomas Mikolov, et al</p>
+<p>[5] <a href="http://www.fit.vutbr.cz/research/groups/speech/publi/2010/mikolov_interspeech2010_IS100722.pdf">Recurrent neural network based language model</a> - Tomas Mikolov, et al</p>
+<p>[6] <a href="https://courses.engr.illinois.edu/cs447/fa2015/Slides/Lecture05.pdf">Evaluating language models</a> - Julia Hockenmaier</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
