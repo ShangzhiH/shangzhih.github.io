@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Fri, 16 Feb 2018 20:55:00 +0800</lastBuildDate><item><title>RNN常见结构</title><link>/rnnchang-jian-jie-gou.html</link><description>
+<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Sat, 10 Mar 2018 20:00:00 +0800</lastBuildDate><item><title>统计语言模型</title><link>/tong-ji-yu-yan-mo-xing.html</link><description>
+&lt;p&gt;语言模型(Language model, LM)在自然语言处理中占有重要的地位，尤其是在基于统计语言模型的语音识别、机器翻译、中文分词和句法分析等相关研究中有着广泛的应用。&lt;/p&gt;
+&lt;p&gt;因为工作上主要做的都是些跟文本挖掘的相关项目，大部分技术都是和NLP相关的。而语言模型又是NLP上一个很基础但很重要的概念，本文就简要总结了一些工作中经常用的语言模型。&lt;/p&gt;
+&lt;h2 id="1"&gt;1. 统计语言模型&lt;/h2&gt;
+&lt;h3 id="11"&gt;1.1 介绍&lt;/h3&gt;
+&lt;p&gt;通俗的说，语言模型就是用来计算一个句子的概率的&lt;strong&gt;概率模型&lt;/strong&gt;，它通常被描述为字符串s的概率分布&lt;span class="math"&gt;\(P(s)\)&lt;/span&gt;。这里的字符串s由l个“基元”组成，基元可以是字、词或者短语等。于是句子s的概率可以表示为所有基元的联合概率分布：
+&lt;/p&gt;
+&lt;div class="math"&gt;$$p(s) = p(w_1, w_2, w_3, ..., w_l)$$&lt;/div&gt;
+&lt;p&gt;
+利用bayes公式将其转变为：
+&lt;/p&gt;
+&lt;div class="math"&gt;$$\begin{aligned} p(s) &amp;amp;= p(w_1)p(w_2|w_1)p(w_3|w_1,w_2 …&lt;/div&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Sat, 10 Mar 2018 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-03-10:/tong-ji-yu-yan-mo-xing.html</guid><category>NLP</category><category>语言模型</category></item><item><title>RNN常见结构</title><link>/rnnchang-jian-jie-gou.html</link><description>
 &lt;h2 id="1"&gt;1. 介绍&lt;/h2&gt;
 &lt;p&gt;深度学习中，虽然CNN除了被经常用来进行图像相关的任务外，也可以作为一种特征提取的方法用在NLP任务中。但是在NLP任务中，更多的我们还是使用RNN模型，本文就简单介绍几种常用的RNN结构。&lt;/p&gt;
 &lt;h2 id="2-rnn"&gt;2. 基本RNN&lt;/h2&gt;
