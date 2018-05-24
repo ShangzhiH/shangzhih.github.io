@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Sat, 10 Mar 2018 20:00:00 +0800</lastBuildDate><item><title>统计语言模型</title><link>/tong-ji-yu-yan-mo-xing.html</link><description>
+<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Sun, 01 Apr 2018 20:00:00 +0800</lastBuildDate><item><title>TensorFlow数据读取</title><link>/tensorflowshu-ju-du-qu.html</link><description>
+&lt;p&gt;作为TensorFlow的入门玩家，之前向模型中输入数据的方式一直是采用定义输入placeholder，然后在session.run的时候通过feed_dict
+将处理后的数据传入模型进行计算。但是根据TensorFlow官网说的，这种方式传数据是非常低效的，更推荐大家使用Dateset相关的api构建模型的输入pipeline，以保证GPU在工作的时候无需等待新数据的输入，提高训练效率。&lt;/p&gt;
+&lt;p&gt;本文就简单介绍一下，我在将feed_dict改为dataset api过程的一些总结。&lt;/p&gt;
+&lt;h2 id="1"&gt;1. 概述&lt;/h2&gt;
+&lt;h3 id="11"&gt;1.1 使用流程&lt;/h3&gt;
+&lt;p&gt;Dataset的使用流程大致可以看作为三步：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;导入数据：根据数据创建dataset实例&lt;/li&gt;
+&lt;li&gt;创建iterator：根据dataset实例创建iterator实例&lt;/li&gt;
+&lt;li&gt;消费数据：根据创建好的iterator实例获取数据传入模型进行计算&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="12"&gt;1.2 基本概念&lt;/h3&gt;
+&lt;p&gt;先看一下官方给出的Dataset API的类之间的继承关系：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="./images/2018-05-24-15-52-20.jpg"/&gt;&lt;/p&gt;
+&lt;p&gt;其中Dataset的三个子类FixedLengthRecordDataset，TextLineDataset，TFRecordDataset分别处理不同的数据源文件。不过我在平时的任务中大部分是NLP相关的，使用的文本内容都是存储在txt或csv文件中的，只要使用基础类Dataset就够了。&lt;/p&gt;
+&lt;p&gt;而&lt;strong&gt;Dataset可以看作是相同类型元素的有序列表&lt;/strong&gt;，这些元素可以是向量，可以是字符串，图片等等，它们的区别只是在于tensor的数据类型和形状的不同而已。&lt;/p&gt;
+&lt;p&gt;dataset实例创建好了之后就是考虑如何将元素从里面取出了，tensorflow采用的方式是根据这个dataset实例再实例化一个iterator，然后通过迭代的方式将元素取出并直接参与模型graph中的计算。&lt;/p&gt;
+&lt;h3 id="13-feed_dict"&gt;1.3 与feed_dict的对比&lt;/h3&gt;
+&lt;p&gt;最明显的一个不同是，之前通过feed_dict的方式传入数据的话 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Sun, 01 Apr 2018 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-04-01:/tensorflowshu-ju-du-qu.html</guid><category>TensorFlow</category><category>数据预处理</category></item><item><title>统计语言模型</title><link>/tong-ji-yu-yan-mo-xing.html</link><description>
 &lt;p&gt;语言模型(Language model, LM)在自然语言处理中占有重要的地位，尤其是在基于统计语言模型的语音识别、机器翻译、中文分词和句法分析等相关研究中有着广泛的应用。&lt;/p&gt;
 &lt;p&gt;因为工作上主要做的都是些跟文本挖掘的相关项目，大部分技术都是和NLP相关的。而语言模型又是NLP上一个很基础但很重要的概念，本文就简要总结了一些工作中经常用的语言模型。&lt;/p&gt;
 &lt;h2 id="1"&gt;1. 统计语言模型&lt;/h2&gt;

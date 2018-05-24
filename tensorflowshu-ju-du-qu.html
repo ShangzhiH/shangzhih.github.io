@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="TensorFlow, 数据预处理, 深度学习, " />
+
+<meta property="og:title" content="TensorFlow数据读取  - Dataset API的使用 "/>
+<meta property="og:url" content="/tensorflowshu-ju-du-qu.html" />
+<meta property="og:description" content="作为TensorFlow的入门玩家，之前向模型中输入数据的方式一直是采用定义输入placeholder，然后在session.run的时候通过feed_dict 将处理后的数据传入模型进行计算。但是根据TensorFlow官网说的，这种方式传数据是非常低效的，更推荐大家使用Dateset相关的api构建模型的输入pipeline，以保证GPU在工作的时候无需等待新数据的输入，提高训练效率。 本文就简单介绍一下，我在将feed_dict改为dataset api过程的一些总结。 1. 概述 1.1 使用流程 Dataset的使用流程大致可以看作为三步： 导入数据：根据数据创建dataset实例 创建iterator：根据dataset实例创建iterator实例 消费数据：根据创建好的iterator实例获取数据传入模型进行计算 1.2 基本概念 先看一下官方给出的Dataset API的类之间的继承关系： 其中Dataset的三个子类FixedLengthRecordDataset，TextLineDataset，TFRecordDataset分别处理不同的数据源文件。不过我在平时的任务中大部分是NLP相关的，使用的文本内容都是存储在txt或csv文件中的，只要使用基础类Dataset就够了。 而Dataset可以看作是相同类型元素的有序列表，这些元素可以是向量，可以是字符串，图片等等，它们的区别只是在于tensor的数据类型和形状的不同而已。 dataset实例创建好了之后就是考虑如何将元素从里面取出了，tensorflow采用的方式是根据这个dataset实例再实例化一个iterator，然后通过迭代的方式将元素取出并直接参与模型graph中的计算。 1.3 与feed_dict的对比 最明显的一个不同是，之前通过feed_dict的方式传入数据的话 …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2018-04-01T20:00:00+08:00" />
+<meta name="twitter:title" content="TensorFlow数据读取  - Dataset API的使用 ">
+<meta name="twitter:description" content="作为TensorFlow的入门玩家，之前向模型中输入数据的方式一直是采用定义输入placeholder，然后在session.run的时候通过feed_dict 将处理后的数据传入模型进行计算。但是根据TensorFlow官网说的，这种方式传数据是非常低效的，更推荐大家使用Dateset相关的api构建模型的输入pipeline，以保证GPU在工作的时候无需等待新数据的输入，提高训练效率。 本文就简单介绍一下，我在将feed_dict改为dataset api过程的一些总结。 1. 概述 1.1 使用流程 Dataset的使用流程大致可以看作为三步： 导入数据：根据数据创建dataset实例 创建iterator：根据dataset实例创建iterator实例 消费数据：根据创建好的iterator实例获取数据传入模型进行计算 1.2 基本概念 先看一下官方给出的Dataset API的类之间的继承关系： 其中Dataset的三个子类FixedLengthRecordDataset，TextLineDataset，TFRecordDataset分别处理不同的数据源文件。不过我在平时的任务中大部分是NLP相关的，使用的文本内容都是存储在txt或csv文件中的，只要使用基础类Dataset就够了。 而Dataset可以看作是相同类型元素的有序列表，这些元素可以是向量，可以是字符串，图片等等，它们的区别只是在于tensor的数据类型和形状的不同而已。 dataset实例创建好了之后就是考虑如何将元素从里面取出了，tensorflow采用的方式是根据这个dataset实例再实例化一个iterator，然后通过迭代的方式将元素取出并直接参与模型graph中的计算。 1.3 与feed_dict的对比 最明显的一个不同是，之前通过feed_dict的方式传入数据的话 …">
+
+        <title>TensorFlow数据读取  - Dataset API的使用  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/tensorflowshu-ju-du-qu.html"> TensorFlow数据读取  <small> Dataset API的使用 </small>  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+    <div class="span2 table-of-content">
+        <nav>
+        <h4>Contents</h4>
+        <div class="toc">
+<ul>
+<li><a href="#1">1. 概述</a><ul>
+<li><a href="#11">1.1 使用流程</a></li>
+<li><a href="#12">1.2 基本概念</a></li>
+<li><a href="#13-feed_dict">1.3 与feed_dict的对比</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 导入数据</a><ul>
+<li><a href="#21-from-numpy">2.1 From numpy</a></li>
+<li><a href="#22-from-tensors">2.2 From tensors</a></li>
+<li><a href="#23-from-placeholder">2.3 From placeholder</a></li>
+<li><a href="#24-from-generator">2.4 From generator</a></li>
+</ul>
+</li>
+<li><a href="#3-iterator">3. 创建Iterator</a><ul>
+<li><a href="#31-one-shot-iterator">3.1 One shot Iterator</a></li>
+<li><a href="#32-initializable-iterator">3.2 Initializable Iterator</a></li>
+<li><a href="#33-reinitializable-iterator">3.3 Reinitializable Iterator</a></li>
+<li><a href="#34-feedable-iterator">3.4 Feedable Iterator</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </nav>
+    </div>
+    <div class="span8 article-content">
+
+            
+            
+<p>作为TensorFlow的入门玩家，之前向模型中输入数据的方式一直是采用定义输入placeholder，然后在session.run的时候通过feed_dict
+将处理后的数据传入模型进行计算。但是根据TensorFlow官网说的，这种方式传数据是非常低效的，更推荐大家使用Dateset相关的api构建模型的输入pipeline，以保证GPU在工作的时候无需等待新数据的输入，提高训练效率。</p>
+<p>本文就简单介绍一下，我在将feed_dict改为dataset api过程的一些总结。</p>
+<h2 id="1">1. 概述</h2>
+<h3 id="11">1.1 使用流程</h3>
+<p>Dataset的使用流程大致可以看作为三步：</p>
+<ul>
+<li>导入数据：根据数据创建dataset实例</li>
+<li>创建iterator：根据dataset实例创建iterator实例</li>
+<li>消费数据：根据创建好的iterator实例获取数据传入模型进行计算</li>
+</ul>
+<h3 id="12">1.2 基本概念</h3>
+<p>先看一下官方给出的Dataset API的类之间的继承关系：</p>
+<p><img alt="" src="./images/2018-05-24-15-52-20.jpg"/></p>
+<p>其中Dataset的三个子类FixedLengthRecordDataset，TextLineDataset，TFRecordDataset分别处理不同的数据源文件。不过我在平时的任务中大部分是NLP相关的，使用的文本内容都是存储在txt或csv文件中的，只要使用基础类Dataset就够了。</p>
+<p>而<strong>Dataset可以看作是相同类型元素的有序列表</strong>，这些元素可以是向量，可以是字符串，图片等等，它们的区别只是在于tensor的数据类型和形状的不同而已。</p>
+<p>dataset实例创建好了之后就是考虑如何将元素从里面取出了，tensorflow采用的方式是根据这个dataset实例再实例化一个iterator，然后通过迭代的方式将元素取出并直接参与模型graph中的计算。</p>
+<h3 id="13-feed_dict">1.3 与feed_dict的对比</h3>
+<p>最明显的一个不同是，之前通过feed_dict的方式传入数据的话，在数据到达feed_dict之前的所有预处理过程都是在graph外进行的。这有的时候就会引入一个问题：在NLP任务中，经常需要将char或word转化为id的形式，以输入进embedding层。如果这个转换发生在graph之外，那我们利用导出的模型做inference的时候就必须带一个额外的char_to_id文件，否则就没办法知道char和id的对应关系了。</p>
+<p>而dataset，从它创建之初，就已经是在graph里了，它的element就是tensor了，它将char向id转换的动作也是发生在graph里的，这个lookup的字典在导出模型的时候也会作为一个参数保存在模型里。因此在利用这个模型做inference的时候就不用额外的char_to_id文件了。当然python的dict是没办法对tensor做查找映射的，除非使用tf.py_func进行封装，不过好在tf提供了更好的方式处理这个问题，在下文再讲。</p>
+<p>接下来依次详细介绍上面三步的过程让大家对dataset api的使用有更清晰的认识。</p>
+<h2 id="2">2. 导入数据</h2>
+<p>导入数据就是根据数据创建dataset，dataset的创建由以下几种数据来源</p>
+<h3 id="21-from-numpy">2.1 From numpy</h3>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># create two random vector of shape (100,2), (100,1)</span>
+<span class="n">features</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+<span class="c1"># make a dataset from a numpy array</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">features</span><span class="p">,</span><span class="n">labels</span><span class="p">))</span>
+</pre></div>
+</td></tr></table>
+<h3 id="22-from-tensors">2.2 From tensors</h3>
+<p>由于dataset在graph中的，它因此也可以基于tensor创建</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_uniform</span><span class="p">([</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table>
+<h3 id="23-from-placeholder">2.3 From placeholder</h3>
+<p>如果我们想要动态改变dataset创建所使用的数据，也可以基于placeholder创建</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<h3 id="24-from-generator">2.4 From generator</h3>
+<p>最后还可以根据generator进行创建，这种方式对我来说使用。首先，我使用数据量一般都大到无法直接读入内存，经常都是采用读取文本创建一个generator的方式进行处理。其次，文本长度经常不一样，从generator创建dataset可以设定shape为None以适应不定长输入。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># 由于我需要对不同的处理参数生成不同的生成器，因此这里进行了一次封装</span>
+<span class="k">def</span> <span class="nf">_generator_reader</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">lower</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">gen</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">tf</span><span class="o">.</span><span class="n">gfile</span><span class="o">.</span><span class="n">GFile</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
+            <span class="n">sentence</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">sentence</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">zeros</span><span class="p">:</span>
+                <span class="n">sentence</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">'\d'</span><span class="p">,</span> <span class="s1">'0'</span><span class="p">,</span> <span class="n">sentence</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">lower</span><span class="p">:</span>
+                <span class="n">sentence</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">sentence</span> <span class="o">=</span> <span class="n">replace_html</span><span class="p">(</span><span class="n">full_to_half</span><span class="p">(</span><span class="n">sentence</span><span class="p">))</span>
+            <span class="c1"># 空字符处理</span>
+            <span class="n">sentence</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">u</span><span class="s2">" "</span><span class="p">,</span> <span class="sa">u</span><span class="s2">"#"</span><span class="p">)</span>
+            <span class="n">sentence_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"&lt;begin&gt;"</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"&lt;/begin&gt;"</span><span class="p">]</span>
+            <span class="k">yield</span> <span class="n">sentence_list</span>
+    <span class="k">return</span> <span class="n">gen</span>
+
+<span class="c1"># arg1: 生成器</span>
+<span class="c1"># arg2: 指定生成器返回的数据类型</span>
+<span class="c1"># arg3: 指定生成器返回的数据形状，由于返回的是一个不定长列表，这里为[None]，如果是一个值的话，则形状设置为[]</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span><span class="n">_generator_reader</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">lower</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="bp">None</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table>
+<h2 id="3-iterator">3. 创建Iterator</h2>
+<p>构建完dataset实例之后，在使用它的数据之前，需要先构建对应的iterator。iterator同样也有多种类型：</p>
+<ul>
+<li>One shot：对dataset进行一次迭代，结束后无法更新或feed新的数据</li>
+<li>Initializable：可以通过feed_dict的方式动态改变输入数据</li>
+<li>Reinitializable：可以对不同的dataset基于同一个iterator创建对应的iterator的初始化op，通过执行不同的初始化，达到在不同的dataset上来回切换的目的</li>
+<li>Feedable：initializale可以理解为动态改变数据，reinitalizable可以理解为动态改变dataset，而feedable是动态改变iterator，这个使用的不多，不过也有它自己的应用场景</li>
+</ul>
+<h3 id="31-one-shot-iterator">3.1 One shot Iterator</h3>
+<p><strong>使用场景</strong>：</p>
+<p>对于数据集只循环迭代一次，用完结束，无需来回切换或者注入新的数据。</p>
+<p><strong>使用方法</strong>：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="c1"># make a dataset from a numpy array</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="c1"># create the iterator</span>
+<span class="nb">iter</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">make_one_shot_iterator</span><span class="p">()</span>
+</pre></div>
+</td></tr></table>
+<p>有了iterator后，获取数据就依靠get_next()方法就可以了，不过因为这里是获取的都是tensor，如果在非Eager模式的话，需要依靠session.run获取对应的值。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">el</span> <span class="o">=</span> <span class="nb">iter</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">el</span><span class="p">))</span>
+</pre></div>
+</td></tr></table>
+<h3 id="32-initializable-iterator">3.2 Initializable Iterator</h3>
+<p><strong>使用场景</strong>：</p>
+<p>上面提到了，这种是采用动态改变输入数据的方式达到在不同的数据集上进行切换。因此可以先创建一个placeholder作为对输入数据的接收，随后根据该placeholder创建dataset。随后通过feed_dict的方式传入数据，并于此同时利用该数据初始化该iterator，随后就可以根据get_next()获取iterator的数据了。</p>
+<p><strong>使用方法</strong>:</p>
+<p>简单例子：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># data source</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="c1"># using a placeholder to retrieve input data</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="nb">iter</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">make_initializable_iterator</span><span class="p">()</span> <span class="c1"># create the iterator, it's initializable but not initialized yet</span>
+<span class="n">el</span> <span class="o">=</span> <span class="nb">iter</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="c1"># feed the placeholder with data</span>
+    <span class="c1"># iter.initializer defines the iterator's initialization op, run it with feeded data</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="nb">iter</span><span class="o">.</span><span class="n">initializer</span><span class="p">,</span> <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
+    <span class="c1"># after the initialization, we can get the data iterately</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>当然，更普遍的情况是，我们希望它能够在train和test中来回切换，下面是一个稍微复杂点的例子：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># different input data source</span>
+<span class="n">train_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+<span class="n">test_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">]]))</span>
+
+<span class="c1"># two placeholder to unpack feature and label</span>
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="mi">2</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+<span class="c1"># use dataset to create initializable iterator</span>
+<span class="nb">iter</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">make_initializable_iterator</span><span class="p">()</span>
+<span class="n">features</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="nb">iter</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="c1"># initialise iterator with train data</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="nb">iter</span><span class="o">.</span><span class="n">initializer</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span> <span class="n">x</span><span class="p">:</span> <span class="n">train_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">train_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">])</span>
+    <span class="c1"># switch to test data</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="nb">iter</span><span class="o">.</span><span class="n">initializer</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span> <span class="n">x</span><span class="p">:</span> <span class="n">test_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">test_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table>
+<h3 id="33-reinitializable-iterator">3.3 Reinitializable Iterator</h3>
+<p><strong>使用场景</strong>：</p>
+<p>这个使用场景和initializable iterator几乎一样，只是采取的方式不是动态改变feed进去的数据，而是动态改变iterator绑定的dataset，因此这种iterator是被成为reinitializable的。</p>
+<p><strong>使用方法</strong>：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># input data</span>
+<span class="n">train_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+<span class="n">test_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+
+<span class="c1"># create two datasets, one for training and one for test</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">(</span><span class="n">train_data</span><span class="p">)</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">(</span><span class="n">test_data</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>接下来是实现iterator可变的重点，因为这里我们创建的是一个通用的generic，只定义了它的type和shape，并没有显式将其和dataset绑定。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># create a iterator of the correct shape and type</span>
+<span class="c1"># this iterator is generic, because it's none of dataset, we just indicate its type and shape</span>
+<span class="nb">iter</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Iterator</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span><span class="n">train_dataset</span><span class="o">.</span><span class="n">output_types</span><span class="p">,</span>
+                                           <span class="n">train_dataset</span><span class="o">.</span><span class="n">output_shapes</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>我们接下来定义iterator的两个初始化operation</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># create the initialisation operations</span>
+<span class="n">train_init_op</span> <span class="o">=</span> <span class="nb">iter</span><span class="o">.</span><span class="n">make_initializer</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
+<span class="n">test_init_op</span> <span class="o">=</span> <span class="nb">iter</span><span class="o">.</span><span class="n">make_initializer</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>在我们使用数据之前，只要提前执行对应dataset的init_op就可以使用对应dataset中的数据，这样就实现了在不同的dataset中进行切换。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="nb">iter</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">train_init_op</span><span class="p">)</span> <span class="c1"># switch to train dataset</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">])</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_init_op</span><span class="p">)</span> <span class="c1"># switch to val dataset</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table>
+<h3 id="34-feedable-iterator">3.4 Feedable Iterator</h3>
+<p><strong>使用场景</strong>：</p>
+<p>其实上面的三种Iterator已经可以满足绝大多数的业务需求了，但是在使用的过程中我发现了一个问题：</p>
+<p>训练集和测试集通常比例是很不均衡的，特别是在大数据量的深度学习情况下，经常会出现训练集百万级别的数据，测试集万级别的数据。如果每次都等到一个epoch结束，也就是说等所有训练数据遍历一次在进行test，将会导致模型迟迟得不到评估。而且在数据量大的情况下，很多时候，少数几个epoch，甚至有的时候一个epoch，就足够模型就收敛了。因此，我们想要的是隔一定数量的batch就评估一次，而不是在每次epoch结束在评估。</p>
+<p>但是上面的几种在train和test直接切换的方法，如果在train的数据消费结束之前，就执行init操作切换到test。当再次执行init切回train的时候，iterator相当于进行了初始化，再从它读入train的数据的话，是从头开始的，也就是说它没办法记录上次train数据的读入进行到哪个位置了。</p>
+<p>一种解决方案是，不进行数据切换。开两个进程，一个只负责train，定时保存模型。一个只负责评估，定时装载模型进行评估。这种方法和dataset的使用无关，这里不讲。</p>
+<p>剩下的解决方案就是使用两个iterator了，而如何实现train iterator和eval iterator之间的转换也有两种方式。</p>
+<p>首先，我们可以采用定义多个graph的方式，这也是我最终采用的方式。多个graph可以是模型的流程更加清晰，不需要为了适应train和eval的graph不同，在同一个graph里定义大量的node。这里我们分别定义train graph和eval graph，在定义train graph的时候使用train iterator，在定义eval graph的时候使用eval iterator，eval iterator最好使用Reinitializable的iterator，因为我的eval需要在validation和test之间进行切换。</p>
+<p>其次，如果我们非要在一个graph内改变iterator该怎么办呢？这就是feedable iterator的使用场景了。接下来看一下，feedable iterator是如何在同一个graph里实现iterator的替换的。</p>
+<p><strong>使用方法</strong>：</p>
+<p>既然是在多个iterator间进行切换，我们先定义两个iterator。这里的iterator可以是前三种的任意一种，示例中使用的是两个initializable的iterator。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># input data</span>
+<span class="n">train_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+<span class="n">test_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+<span class="c1"># create placeholder</span>
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="mi">2</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="c1"># create two datasets, one for training and one for test</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">))</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">))</span>
+<span class="c1"># create two iterators from the dataset</span>
+<span class="n">train_iterator</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">make_initializable_iterator</span><span class="p">()</span>
+<span class="n">test_iterator</span> <span class="o">=</span> <span class="n">test_dataset</span><span class="o">.</span><span class="n">make_initializable_iterator</span><span class="p">()</span>
+</pre></div>
+</td></tr></table>
+<p>接下来是在graph中定义iterator的使用了，既然这个iterator是feedable的，自然想到了placeholder的方式，这里也是这样做的。不过placeholder肯定是没有iterator类型的，这里是定义了一个handle，它是一个string类型的scalar tensor，可以把它当作是一个iterator的名字。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">handle</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="p">[])</span>
+</pre></div>
+</td></tr></table>
+<p>然后根据这个handle在graph里定义一个通用的iterator</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nb">iter</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Iterator</span><span class="o">.</span><span class="n">from_string_handle</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">output_types</span><span class="p">,</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">output_shapes</span><span class="p">)</span>
+<span class="c1"># get data from generic iterator</span>
+<span class="n">next_elements</span> <span class="o">=</span> <span class="nb">iter</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+</pre></div>
+</td></tr></table>
+<p>在获取数据的时候，要注意先要执行两个iterator的string_handle()方法分别得到它们对应的handle，好在之后使用的时候传入。其次就是由于使用了initializable的iterator，需要在使用的时候传入数据进行初始化。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="c1"># get two handle as the different iterators' identification name</span>
+    <span class="n">train_handle</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">train_iterator</span><span class="o">.</span><span class="n">string_handle</span><span class="p">())</span>
+    <span class="n">test_handle</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_iterator</span><span class="o">.</span><span class="n">string_handle</span><span class="p">())</span>
+    <span class="c1"># initialise iterators</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">train_iterator</span><span class="o">.</span><span class="n">initializer</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span> <span class="n">x</span><span class="p">:</span> <span class="n">train_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">train_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_iterator</span><span class="o">.</span><span class="n">initializer</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span> <span class="n">x</span><span class="p">:</span> <span class="n">test_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">test_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+    <span class="c1"># get data</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="c1"># feed train_handle to get data of train set</span>
+        <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_elements</span><span class="p">,</span> <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">handle</span><span class="p">:</span> <span class="n">train_handle</span><span class="p">})</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="c1"># feed test_handle to get data of test set    </span>
+    <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_elements</span><span class="p">,</span> <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">handle</span><span class="p">:</span> <span class="n">test_handle</span><span class="p">})</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>y欧了</p>
+            
+            
+            <hr/>
+            <aside>
+            <nav>
+            <ul class="articles-timeline">
+                <li class="previous-article">« <a href="/tong-ji-yu-yan-mo-xing.html" title="Previous: 统计语言模型">统计语言模型</a></li>
+            </ul>
+            </nav>
+            </aside>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2018-04-01T20:00:00+08:00">2018  - 04  - 01</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#shen-du-xue-xi-ref">深度学习
+                <span>(9)</span>
+</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#shu-ju-yu-chu-li-ref">数据预处理
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#tensorflow-ref">TensorFlow
+                    <span>1</span>
+</a></li>
+            </ul>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>
