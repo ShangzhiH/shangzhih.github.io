@@ -101,6 +101,17 @@
 <li><a href="#34-feedable-iterator">3.4 Feedable Iterator</a></li>
 </ul>
 </li>
+<li><a href="#4">4. 消费数据</a></li>
+<li><a href="#5-transformation">5. Transformation操作</a><ul>
+<li><a href="#51-map">5.1 map</a></li>
+<li><a href="#52-shuffle">5.2 Shuffle</a></li>
+<li><a href="#53-batch-padded-batch">5.3 Batch &amp; Padded Batch</a></li>
+<li><a href="#54-filter">5.4 Filter</a></li>
+<li><a href="#55-repeat">5.5 Repeat</a></li>
+</ul>
+</li>
+<li><a href="#6">6. 总结</a></li>
+<li><a href="#_1">参考文献</a></li>
 </ul>
 </div>
         </nav>
@@ -443,7 +454,91 @@
     <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
 </pre></div>
 </td></tr></table>
-<p>y欧了</p>
+<p>有了上面的介绍，相信大家就可以根据自己业务场景的需要选择不同的iterator了。</p>
+<h2 id="4">4. 消费数据</h2>
+<p>消费数据在上面介绍的代码实例中已经有体现了，就是对iterator执行get_next()方法，然后每次在session.run()执行计算图的时候都会消耗掉一个batch_size的数据(不指定的话，batch_size就是1，即一次一条)。</p>
+<p>这里要提醒一点就是，当一个iterator执行到头的时候，即dataset的数据被遍历结束了，它并不会自动停止，而是会继续get_next()从而导致一个错误。因此需要在代码中进行异常处理：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="nb">iter</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="k">except</span> <span class="n">tf</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">OutOfRangeError</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">"reach end of dataset"</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>我一般会在需要遍历完dataset中所有数据的情况下执行这样的异常处理，即在validation dataset和test dataset的时候。而在train的时候，有更好的方法，这就要先讲一下transformation操作。</p>
+<h2 id="5-transformation">5. Transformation操作</h2>
+<p>熟悉spark的同学对于rdd的相关transformation操作肯定不会陌生，这里的transformation虽说是对dataset进行处理的，但是相关的操作目的是很相似的，包括map，filter，shuffle等等。以下介绍几种常用的transformation。</p>
+<h3 id="51-map">5.1 map</h3>
+<p>map操作就是对dataset中每一个element利用同一个函数进行处理。NLP中最常用的就是将char或者word进行转id的操作了。回到文章最初的那个问题，tensorflow如何利用类似python dict的tensor来执行这样的lookup操作，那就是使用tf.contrib.lookup.HashTable</p>
+<p>对于我来说我通常会对所有训练数据进行遍历得到一份python形式的char_to_id的dict，然后可以在graph利用这个dict初始化一个tensor</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># char_to_id is python dict</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">lookup</span><span class="o">.</span><span class="n">HashTable</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">lookup</span><span class="o">.</span><span class="n">KeyValueTensorInitializer</span><span class="p">(</span>
+            <span class="n">char_to_id</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">char_to_id</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="c1"># initialize value for hashtable</span>
+            <span class="n">char_to_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">u</span><span class="s2">"&lt;UNK&gt;"</span><span class="p">)</span> <span class="c1"># default value for not found key</span>
+        <span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>有了这个table，对一个char list形式的tensor，想得到它对应的id list：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">id_list</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">char_list</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>不过在实际使用的时候需要对table进行初始化操作的：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+        <span class="c1"># table.init return the initialization op of HashTable</span>
+        <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">init</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>回到map函数，利用这个table</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">token_list</span><span class="p">:</span> <span class="n">table</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">token_list</span><span class="p">))</span>
+</pre></div>
+</td></tr></table>
+<p>就实现了将每个token_list转化成id_list的目的，而table作为graph中的参数在导出模型的时候就会一并导出，从而无需再导出额外的一份char_to_id文件</p>
+<h3 id="52-shuffle">5.2 Shuffle</h3>
+<p>shuffle是在处理dataset的时候进行适当的打乱操作，这对避免overfitting有着很重要的作用。不过数据量过大的时候，每次对所有数据进行打乱会导致内存不足，所以需要设定适当的buffer_size</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">buffer_size</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<h3 id="53-batch-padded-batch">5.3 Batch &amp; Padded Batch</h3>
+<p>除开stochastic的训练情况，大部分时候都是采用mini-batch的方式，而之前不用dataset的时候需要自己对数据进行组织，比较麻烦。有了dataset，相关的操作变得非常简单。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>有的时候，由于batch内数据的长度不一致，这在NLP中非常常见。不同的句子长度不一，需要进行padding的操作</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">padded_batch</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">padded_shapes</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="bp">None</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table>
+<p>形状设置为None的话，表示根据batch内最长的一条数据长度进行padding，当然这里也可以人工指定padding到某一长度。padding值的话，可以自己指定，默认的情况下对于数值型tensor为0，对于string型tensor为空字符串。</p>
+<h3 id="54-filter">5.4 Filter</h3>
+<p>如果在模型graph的定义时使用了固定的batch_size，在对dataset读取的时候，可能会出现最后一个batch的size不够的情况，直接使用就会导致出错。</p>
+<p>我使用的方式是在batch过后的dataset进行一个map操作，计算每个batch内的数据量，传入graph的时候和数据一起传入，而graph定义时将batch_size看作一个输入来处理，这样就可以使用最后一个数量不足的batch。</p>
+<p>还有一种方式就是直接扔掉最后一个batch，这可以通过filter来进行</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">BATCH_SIZE</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>这就相当于只考虑了batch内数据量等于BATCH_SIZE的batch，最后一个如果数据不足的话就不使用了。</p>
+<h3 id="55-repeat">5.5 Repeat</h3>
+<p>daataset.repeat(n)就是设定dataset中的数据可以迭代几次，如果不传入参数就会一直进行下去。</p>
+<p>前面说过train的时候我是不需要进行异常处理的，就是采用这样的方式。我会对train的dataset做一个dataset.repeat()的操作，让它可以进行无限多次迭代。然后在使用的时候通过外部的for loop根据最大epoch数和每个epoch内的batch数进行控制，这样比起不停的初始化train的iterator更加方便。</p>
+<h2 id="6">6. 总结</h2>
+<p>Dataset API提供了一种更加快速和自由的创建tensorflow模型数据pipeline的方式。本文主要介绍了它的基本架构：Dataset类，Iterator类和一些Dataset相关的transformation操作，及其它们的使用场景和使用方法。Dataset也可以结合Estimator使用，不过由于我Estimator用的不多，这里就不介绍了。</p>
+<p>作为Tensorflow官方的推荐方式，Dataset API今后也将成为其读取数据的主流方式，今后我也会将我之前的tensorflow项目的数据读取方式改为用dataset api读取。</p>
+<h2 id="_1">参考文献</h2>
+<p>[1] <a href="https://www.tensorflow.org/programmers_guide/datasets">官方Dataset使用教程</a></p>
+<p>[2] <a href="https://www.tensorflow.org/api_docs/python/tf/data">官方API文档</a></p>
+<p>[3] <a href="https://towardsdatascience.com/how-to-use-dataset-in-tensorflow-c758ef9e4428">How to use Dataset in TensorFlow</a> - Francesco Zuppichini</p>
+<p>[4] <a href="https://zhuanlan.zhihu.com/p/30751039">TensorFlow全新的数据读取方式：Dataset API入门教程</a> - 何之源</p>
             
             
             <hr/>
