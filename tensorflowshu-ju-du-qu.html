@@ -103,7 +103,7 @@
 </li>
 <li><a href="#4">4. 消费数据</a></li>
 <li><a href="#5-transformation">5. Transformation操作</a><ul>
-<li><a href="#51-map">5.1 map</a></li>
+<li><a href="#51-map">5.1 Map</a></li>
 <li><a href="#52-shuffle">5.2 Shuffle</a></li>
 <li><a href="#53-batch-padded-batch">5.3 Batch &amp; Padded Batch</a></li>
 <li><a href="#54-filter">5.4 Filter</a></li>
@@ -464,7 +464,7 @@
 4
 5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-        <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="nb">iter</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="nb">iter</span><span class="o">.</span><span class="n">get_next</span><span class="p">())</span>
 <span class="k">except</span> <span class="n">tf</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">OutOfRangeError</span><span class="p">:</span>
     <span class="k">print</span><span class="p">(</span><span class="s2">"reach end of dataset"</span><span class="p">)</span>
 </pre></div>
@@ -472,7 +472,7 @@
 <p>我一般会在需要遍历完dataset中所有数据的情况下执行这样的异常处理，即在validation dataset和test dataset的时候。而在train的时候，有更好的方法，这就要先讲一下transformation操作。</p>
 <h2 id="5-transformation">5. Transformation操作</h2>
 <p>熟悉spark的同学对于rdd的相关transformation操作肯定不会陌生，这里的transformation虽说是对dataset进行处理的，但是相关的操作目的是很相似的，包括map，filter，shuffle等等。以下介绍几种常用的transformation。</p>
-<h3 id="51-map">5.1 map</h3>
+<h3 id="51-map">5.1 Map</h3>
 <p>map操作就是对dataset中每一个element利用同一个函数进行处理。NLP中最常用的就是将char或者word进行转id的操作了。回到文章最初的那个问题，tensorflow如何利用类似python dict的tensor来执行这样的lookup操作，那就是使用tf.contrib.lookup.HashTable</p>
 <p>对于我来说我通常会对所有训练数据进行遍历得到一份python形式的char_to_id的dict，然后可以在graph利用这个dict初始化一个tensor</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
