@@ -14,12 +14,12 @@
 
 <meta property="og:title" content="条件随机场CRF "/>
 <meta property="og:url" content="/tiao-jian-sui-ji-chang-crf.html" />
-<meta property="og:description" content="1. 概率无向图 不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。 状态与状态之间并没有谁推导出谁的先后关系(\(P(y_n|y_{n-1}, y_{n-2}...y_1)\))，这里我们用的是序列整体的分布\(P(y_1,y_2,...y_n)\)。 因子分解 团： 对于无向图中的一个子集，如果该子集中任意两个点都是有边相连接的，那么这样的子集就叫做该无向图上的一个团 最大团： 对于一个团，如果无法添加另外一个点使得团增大，那么现有的团就是最大团 一个概率无向图总的的联合概率分布\(P(Y)\)可以分解为在其所有最大团上定义的一个势函数的积： $$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$ 其中C是最大团的集合，对于其中每一个最大团，有一个势能函数\(\Phi_C\)，\(Y_C\)为属于这个最大团的节点，\(Z=\sum_Y{\prod_C{\Phi_C(Y_C)}}\)是一个规范化因子 …" />
+<meta property="og:description" content="1. 入门图示 在介绍CRF模型的数学知识之前，我们可以先通过模型的图示了解这个模型的特点。 1.1 SOFTMAX CRF通常用在序列标注模型上，每个位置的标注可以看作是一个分类问题，于是就可以使用softmax。 通常的做法就可以是将序列进行编码，RNN或者CNN等都可以。然后将编码的每个位置的输出经过softmax分类，如下所示： 模型的一个特点就是它们每个时刻经过softmax后的输出是相互独立的，虽然很多神经网络模型都可以在编码的时候进行上下文的联系，但是softmax在不同时刻的\(y_t\)上还是没有办法进行联系的。 1.2 CRF 上面不考虑输出之间联系的模型显然是有缺陷的，比如在NER任务中，BIO标注的话，每个位置就有三种可能，实体开始，实体中间，其他。而实体中间肯定是在实体开始之后而不是之前的，这就需要模型在每个时刻的输出之间建立某种联系。 在CRF中，抛开和softmax一样的在编码时进行上下文的关联，在输出的时候，crf仍然可以进行进一步的关联，也就是说crf可以将输出层面的关联分离出来，模型的表达能力更强。 当然，CRF不仅仅是引入了对于输出的关联，仅仅关联的话HMM等很多图模型都是可以做到的。CRF的精巧之处，在于它以路径为单位，每次考虑的是路径的概率，实现的也是路径概率的最大化。它们两者的根本不同在于：前者将序列标注看成是独立的n个k分类问题，而后者将序列标注看成是一个\(k …" />
 <meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
 <meta property="og:article:author" content="Shangzhi HUANG" />
 <meta property="og:article:published_time" content="2018-01-17T19:55:00+08:00" />
 <meta name="twitter:title" content="条件随机场CRF ">
-<meta name="twitter:description" content="1. 概率无向图 不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。 状态与状态之间并没有谁推导出谁的先后关系(\(P(y_n|y_{n-1}, y_{n-2}...y_1)\))，这里我们用的是序列整体的分布\(P(y_1,y_2,...y_n)\)。 因子分解 团： 对于无向图中的一个子集，如果该子集中任意两个点都是有边相连接的，那么这样的子集就叫做该无向图上的一个团 最大团： 对于一个团，如果无法添加另外一个点使得团增大，那么现有的团就是最大团 一个概率无向图总的的联合概率分布\(P(Y)\)可以分解为在其所有最大团上定义的一个势函数的积： $$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$ 其中C是最大团的集合，对于其中每一个最大团，有一个势能函数\(\Phi_C\)，\(Y_C\)为属于这个最大团的节点，\(Z=\sum_Y{\prod_C{\Phi_C(Y_C)}}\)是一个规范化因子 …">
+<meta name="twitter:description" content="1. 入门图示 在介绍CRF模型的数学知识之前，我们可以先通过模型的图示了解这个模型的特点。 1.1 SOFTMAX CRF通常用在序列标注模型上，每个位置的标注可以看作是一个分类问题，于是就可以使用softmax。 通常的做法就可以是将序列进行编码，RNN或者CNN等都可以。然后将编码的每个位置的输出经过softmax分类，如下所示： 模型的一个特点就是它们每个时刻经过softmax后的输出是相互独立的，虽然很多神经网络模型都可以在编码的时候进行上下文的联系，但是softmax在不同时刻的\(y_t\)上还是没有办法进行联系的。 1.2 CRF 上面不考虑输出之间联系的模型显然是有缺陷的，比如在NER任务中，BIO标注的话，每个位置就有三种可能，实体开始，实体中间，其他。而实体中间肯定是在实体开始之后而不是之前的，这就需要模型在每个时刻的输出之间建立某种联系。 在CRF中，抛开和softmax一样的在编码时进行上下文的关联，在输出的时候，crf仍然可以进行进一步的关联，也就是说crf可以将输出层面的关联分离出来，模型的表达能力更强。 当然，CRF不仅仅是引入了对于输出的关联，仅仅关联的话HMM等很多图模型都是可以做到的。CRF的精巧之处，在于它以路径为单位，每次考虑的是路径的概率，实现的也是路径概率的最大化。它们两者的根本不同在于：前者将序列标注看成是独立的n个k分类问题，而后者将序列标注看成是一个\(k …">
 
         <title>条件随机场CRF  · Shangzhi HUANG&#39;s Blog
 </title>
@@ -81,34 +81,39 @@
         <h4>Contents</h4>
         <div class="toc">
 <ul>
-<li><a href="#1">1. 概率无向图</a><ul>
+<li><a href="#1">1. 入门图示</a><ul>
+<li><a href="#11-softmax">1.1 SOFTMAX</a></li>
+<li><a href="#12-crf">1.2 CRF</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 概率无向图</a><ul>
 <li><a href="#_1">因子分解</a></li>
 </ul>
 </li>
-<li><a href="#2">2. 条件随机场</a><ul>
-<li><a href="#_2">定义</a><ul>
-<li><a href="#_3">一般形式</a></li>
-<li><a href="#_4">线性链形式</a></li>
+<li><a href="#3">3. 条件随机场</a><ul>
+<li><a href="#31">3.1 定义</a><ul>
+<li><a href="#_2">一般形式</a></li>
+<li><a href="#_3">线性链形式</a></li>
 </ul>
 </li>
-<li><a href="#_5">参数化形式</a></li>
-<li><a href="#_6">简化形式</a></li>
-<li><a href="#_7">矩阵形式</a></li>
-<li><a href="#hmm">与逻辑回归和HMM的关系</a></li>
+<li><a href="#32">3.2 参数化形式</a></li>
+<li><a href="#33">3.3 简化形式</a></li>
+<li><a href="#34">3.4 矩阵形式</a></li>
+<li><a href="#35-hmm">3.5 与逻辑回归和HMM的关系</a></li>
 </ul>
 </li>
-<li><a href="#3-crf">3. CRF的概率计算</a><ul>
-<li><a href="#_8">前向后向算法</a></li>
-<li><a href="#_9">概率计算</a></li>
-<li><a href="#_10">期望计算</a></li>
+<li><a href="#4-crf">4. CRF的概率计算</a><ul>
+<li><a href="#41">4.1 前向后向算法</a></li>
+<li><a href="#42">4.2 概率计算</a></li>
+<li><a href="#43">4.3 期望计算</a></li>
 </ul>
 </li>
-<li><a href="#4-crf">4. CRF的预测算法</a><ul>
-<li><a href="#_11">预测算法</a></li>
+<li><a href="#5-crf">5. CRF的预测算法</a><ul>
+<li><a href="#_4">预测算法</a></li>
 </ul>
 </li>
-<li><a href="#5-crf">5. CRF的学习算法</a></li>
-<li><a href="#_12">参考资料</a></li>
+<li><a href="#6-crf">6. CRF的学习算法</a></li>
+<li><a href="#_5">参考资料</a></li>
 </ul>
 </div>
         </nav>
@@ -117,7 +122,19 @@
 
             
             
-<h2 id="1">1. 概率无向图</h2>
+<h2 id="1">1. 入门图示</h2>
+<p>在介绍CRF模型的数学知识之前，我们可以先通过模型的图示了解这个模型的特点。</p>
+<h3 id="11-softmax">1.1 SOFTMAX</h3>
+<p>CRF通常用在序列标注模型上，每个位置的标注可以看作是一个分类问题，于是就可以使用softmax。</p>
+<p>通常的做法就可以是将序列进行编码，RNN或者CNN等都可以。然后将编码的每个位置的输出经过softmax分类，如下所示：</p>
+<p><img alt="" src="./images/2018-06-08-13-48-45.jpg"/></p>
+<p>模型的一个特点就是<strong>它们每个时刻经过softmax后的输出是相互独立的</strong>，虽然很多神经网络模型都可以在编码的时候进行上下文的联系，但是softmax在不同时刻的<span class="math">\(y_t\)</span>上还是没有办法进行联系的。</p>
+<h3 id="12-crf">1.2 CRF</h3>
+<p>上面不考虑输出之间联系的模型显然是有缺陷的，比如在NER任务中，BIO标注的话，每个位置就有三种可能，实体开始，实体中间，其他。而实体中间肯定是在实体开始之后而不是之前的，这就需要模型在每个时刻的输出之间建立某种联系。</p>
+<p>在CRF中，抛开和softmax一样的在编码时进行上下文的关联，在输出的时候，crf仍然可以进行进一步的关联，也就是说crf可以将<strong>输出层面的关联分离出来</strong>，模型的表达能力更强。</p>
+<p><img alt="" src="./images/2018-06-08-13-56-55.jpg"/></p>
+<p>当然，CRF不仅仅是引入了对于输出的关联，仅仅关联的话HMM等很多图模型都是可以做到的。CRF的精巧之处，在于它以路径为单位，每次考虑的是路径的概率，实现的也是路径概率的最大化。它们两者的根本不同在于：<strong>前者将序列标注看成是独立的n个k分类问题，而后者将序列标注看成是一个<span class="math">\(k^n\)</span>分类为题</strong>。在解释这些之前，我们先从<code>概率无向图</code>开始一步步解释CRF模型背后的数学原理。</p>
+<h2 id="2">2. 概率无向图</h2>
 <p>不同于HMM中状态序列是有方向的，在CRF中，我们使用的是概率无向图模型。</p>
 <p>状态与状态之间并没有谁推导出谁的先后关系(<span class="math">\(P(y_n|y_{n-1}, y_{n-2}...y_1)\)</span>)，这里我们用的是序列整体的分布<span class="math">\(P(y_1,y_2,...y_n)\)</span>。</p>
 <h3 id="_1">因子分解</h3>
@@ -128,22 +145,23 @@
 <div class="math">$$P(Y) = \frac{\prod_C{\Phi_C(Y_C)}}{Z}$$</div>
 <p>
 其中C是最大团的集合，对于其中每一个最大团，有一个势能函数<span class="math">\(\Phi_C\)</span>，<span class="math">\(Y_C\)</span>为属于这个最大团的节点，<span class="math">\(Z=\sum_Y{\prod_C{\Phi_C(Y_C)}}\)</span>是一个规范化因子，目的是为了让<span class="math">\(P(Y)\)</span>构成一个概率分布。</p>
-<p>由于势函数是严格正的，所以一般就定义为指数函数<span class="math">\(exp(-E(Y_C))\)</span></p>
+<p>由于势函数是严格正的，所以一般就有：</p>
+<p><strong>假设</strong>：势函数符合指数分布函数<span class="math">\(exp(-E(Y_C))\)</span>，即<span class="math">\(\prod_C{\Phi_C(Y_C)}\)</span>可以看作是<span class="math">\(exp(f(y_1, ..., y_n; x)\)</span>。其中f函数可以看作是一个打分函数，它只有进行归一化后才可以看作是概率分布。</p>
 <p><strong>总结：</strong> 概率无向图模型的联合概率分布可以分解为其所有<code>最大团</code>上的势函数的积。</p>
-<h2 id="2">2. 条件随机场</h2>
-<h3 id="_2">定义</h3>
+<h2 id="3">3. 条件随机场</h2>
+<h3 id="31">3.1 定义</h3>
 <p>CRF里的条件指的是在给定随机变量X的条件下，随机变量Y的马尔科夫随机场。</p>
 <p>通常情况，只使用线性链条件随机场，将其用于标注问题，条件概率为P(Y|X)。其中X是给定的观测序列，Y是需要标注的标注序列(状态序列)。</p>
-<h4 id="_3">一般形式</h4>
+<h4 id="_2">一般形式</h4>
 <div class="math">$$P(Y_v|X, Y_w, w\neq v) = P(Y_v | X, Y_w, w～v)$$</div>
 <p>
 对于任意节点v成立，则称条件概率分布P(Y|X)为条件随机场。</p>
 <p>同HMM的条件概率相比较，可以更好的理解CRF的条件概率定义。首先，在HMM中，观测序列中每个位置的观测值只和它所处的状态有关，而在CRF中，所有的观测序列是作为一个整体X来处理的。其次，对于<span class="math">\(w\neq v\)</span>是说除了v以外的所有点，<span class="math">\(w～v\)</span>是说和v相邻的点，也就是状态序列某一位置的状态y只和与它有连接的状态值有关。</p>
-<h4 id="_4">线性链形式</h4>
-<p>线性链形式顾名思义就是状态序列<span class="math">\(Y=(Y_1, Y_2, ..., Y_n)\)</span>是线性的，也就是说某一位置的状态只和它前后两个状态相连。
+<h4 id="_3">线性链形式</h4>
+<p>线性链形式顾名思义就是状态序列<span class="math">\(Y=(Y_1, Y_2, ..., Y_n)\)</span>是线性的，那么和一个状态相邻的状态也只有其前后两个状态。
 </p>
 <div class="math">$$P(Y_i |X, Y_1,...,Y_{i-1},Y_{i+1},...,Y_n) = P(Y_i|X, Y_{i-1}, Y_{i+1})$$</div>
-<h3 id="_5">参数化形式</h3>
+<h3 id="32">3.2 参数化形式</h3>
 <p>根据之前对无向图模型的分解，对于线性链条件随机场，很容易验证每两个相邻的状态节点<span class="math">\(y_{i-1},y_i\)</span>构成一个最大团。
 于是线性链条件随机场的参数化形式可以分解为每个团上的特征函数和X对每个位置i上的特征函数：
 </p>
@@ -152,7 +170,7 @@
 其中<span class="math">\(t_k\)</span>是定义在边上的特征函数，成为<code>转移特征</code>，依赖于当前和前一个位置(构成一个最大团)，<span class="math">\(\lambda_k\)</span>是特征<span class="math">\(t_k\)</span>的权重。<span class="math">\(s_l\)</span>是定义在节点上的特征函数，称为<code>状态特征</code>，依赖于当前位置，<span class="math">\(\mu_l\)</span>为特征<span class="math">\(s_l\)</span>的权重。</p>
 <p><span class="math">\(t_k\)</span>和<span class="math">\(s_l\)</span>都依赖于位置，是局部特征函数，通常，它们的取值为1或0，当满足特征条件时值为1，反之为0.</p>
 <p>条件随机场完全由特征函数<span class="math">\(t_k\)</span>和<span class="math">\(s_l\)</span>及其对应的权重<span class="math">\(\lambda_k\)</span>和<span class="math">\(\mu_l\)</span>确定。</p>
-<h3 id="_6">简化形式</h3>
+<h3 id="33">3.3 简化形式</h3>
 <p>由参数化形式可是对于每个特征函数，它都会计算在所有位置上的值，于是可以对每个局部特征，在所有位置上求和得到一个全局特征函数。</p>
 <p>汇总K1个转移特征和K2个状态特征：</p>
 <ul>
@@ -171,7 +189,7 @@
 如果将权重和特征函数看成向量形式，<span class="math">\(w = (w_1, w_2, ..., w_K)^T\)</span>和<span class="math">\(F(y, x) = (f_1(y,x), f_2(y,x),...,f_K(y,x)\)</span>，则可以将上式化简为：
 </p>
 <div class="math">$$P_w(y|x) = \frac{exp(w\cdot F(y,x))}{Z_w(x)}$$</div>
-<h3 id="_7">矩阵形式</h3>
+<h3 id="34">3.4 矩阵形式</h3>
 <p>上面的简化形式是对于每个特征函数在所有位置上求和，同样的我们也可以考虑在每个位置上对所有特征函数的值求和。
 </p>
 <div class="math">$$M_i(y_{i-1}, y_i|x) = exp(W_i (y_{i-1}, y_i | x)) = exp(\sum_{k=1}^K w_k f_k(y_{i-1}, y_i, x, i)$$</div>
@@ -182,9 +200,11 @@
 <div class="math">$$P(y|x) = exp(\sum^K_{k=1}\sum^{n+1}_{i=1}w_kf_k(y_{i-1},y_i,x,i) =\prod_{i=1}^{n+1}exp(\sum_{k=1}^Kw_kf_k(y_{i-1},y_i,x,i)=\prod_{i=1}^{n+1}M_i(y_{i-1},y_i|x)$$</div>
 <p>
 对于一个给定的序列，依此选取在每个矩阵中对应的元素就得到该路径的非规范概率。规范化因子则是这些矩阵的矩阵和，也对应着所有路径的非规范概率之和。</p>
+<p><strong>注意</strong>：</p>
+<p>在深度学习中，通常考虑RNN和CNN的编码已经充分捕捉了各个y与输出x的联系，因此转移特征通常考虑为与x的无关的，也就是说<span class="math">\(t_k(y_{i-1}, y_i, x, i) = t_k(y_{i-1}, y_i, i)\)</span>，这样看，转移特征这块其实就类似于HMM，是一个与x无关的转移特征矩阵，这对于模型的简化有重要意义。</p>
 <p><strong>总结</strong>：</p>
 <p>建立一个CRF，只需要定义一系列的特征函数，这些特征函数的值依赖于整个句子(x)，当前位置(i)和相邻的标签(<span class="math">\(y_{i-1}\)</span>, <span class="math">\(y_{i}\)</span>)，给出这些特征函数对应的权重，学习到这些权重值就得到了CRF的模型。</p>
-<h3 id="hmm">与逻辑回归和HMM的关系</h3>
+<h3 id="35-hmm">3.5 与逻辑回归和HMM的关系</h3>
 <p><strong>逻辑回归</strong></p>
 <p><img alt="逻辑回归与CRF的联系" src="./images/2018-01-15-19-33-22.jpg"/></p>
 <p>可以看出CRF和逻辑回归的概率表达式非常相似，因为它们都是属于log-linear模型，不同的是逻辑回归是属于分类也就是说y是一个值，而CRF的y是一个序列，CRF是一个序列版的逻辑回归。</p>
@@ -206,9 +226,9 @@
 <li>HMM的<span class="math">\(x_i\)</span>只与当前的状态<span class="math">\(y_i\)</span>有关，而CRF的整个序列y是和整个输入x相连的</li>
 <li>HMM的发射概率<span class="math">\(p(x_i|y_i)\)</span>是一个0到1的数，一个状态对所有发射值的概率和为1，因为是个概率值，而CRF中特征函数的权重则可以是任意值。这其实是因为<strong>HMM的归一化发生在每一个位置，而CRF的归一化发生在整体序列上，对于中间的过程并不要求严格符合概率分布的形式。</strong></li>
 </ul>
-<h2 id="3-crf">3. CRF的概率计算</h2>
+<h2 id="4-crf">4. CRF的概率计算</h2>
 <p>概率的计算是说在给定CRF模型P(Y|X), 输入序列x和输出序列y的情况下，计算条件概率<span class="math">\(P(Y_i = y_i|x)\)</span>和<span class="math">\(P(Y_{i-1} = y_{i-1}, Y_i = y_i, x)\)</span>以及相应的数学期望的问题。</p>
-<h3 id="_8">前向后向算法</h3>
+<h3 id="41">4.1 前向后向算法</h3>
 <p>类似在HMM模型的情况，这里同样定义一套前向后向算法。</p>
 <p>定义前向概率<span class="math">\(\alpha_i(y_i | x)\)</span>表示在位置i的标记是<span class="math">\(y_i\)</span>并且到位置i的前部分标记序列的非规范化概率，定义后向概率<span class="math">\(\beta_i(y_i|x)\)</span>表示在位置i的标记是<span class="math">\(y_i\)</span>并且从位置i+1到n的后部分标记序列的非规范化概率。</p>
 <p>理解起来的话就是说，前向概率<span class="math">\(\alpha_i(y_i|x)\)</span>表示的是<span class="math">\(\sum_{y_0, y_1, ..., y_{i-1}} P(y_0, y_1, .., y_{i-1}, y_i | x)\)</span>对于除<span class="math">\(y_i\)</span>以外的部分序列的所有情况的和。而后向概率<span class="math">\(\beta_i(y_i|x)\)</span>表示的是<span class="math">\(\sum_{y_{n+1}, y_n, ..., y_{i+1}}P(y_{n+1}, y_n, ..., y_{i+1}, y_i|x)\)</span>除<span class="math">\(y_i\)</span>以外的部分序列的所有情况的和。</p>
@@ -245,12 +265,12 @@
 <div class="math">$$Z(x) = \alpha_n^T(x) \cdot \vec{1} = \vec{1}^T \cdot \beta_1(x)$$</div>
 <p>
 稍微说一下个人理解，前向概率最终走到末尾节点<span class="math">\(\alpha_n(x)\)</span>的每一个分量m，对应了一个值<span class="math">\(\alpha_n(y_n = m|x)\)</span>，对各分量求和，得到整个序列的概率和。后向概率最终走到开始节点<span class="math">\(\beta_1(x)\)</span>的每一个分量m，对应了一个值<span class="math">\(y_1 = m\)</span>时，从<span class="math">\(y_2\)</span>到stop的这些路径的概率和，对各分量求和，同样得到整个序列的概率和。</p>
-<h3 id="_9">概率计算</h3>
+<h3 id="42">4.2 概率计算</h3>
 <p>主要是两个概率<span class="math">\(P(Y_i = y_i|x)\)</span>和<span class="math">\(P(Y_{i-1}=y_{i-1}, Y_i = y_i|x)\)</span>
 </p>
 <div class="math">$$P(Y_i = y_i|x) = \frac{\alpha_i^T(y_i|x)\beta_i(y_i|x)}{Z(x)}$$</div>
 <div class="math">$$P(y_{i-1}, y_i |x) = \frac{\alpha_{i-1}^T(y_{i-1}|x)M_i(y_{i-1},y_i|x)\beta_i(y_i|x)}{Z(x)}$$</div>
-<h3 id="_10">期望计算</h3>
+<h3 id="43">4.3 期望计算</h3>
 <p>有了概率的定义，很自然就可以给出特征函数对应的期望。</p>
 <p>特征函数<span class="math">\(f_k\)</span>关于条件分布<span class="math">\(P(Y|X)\)</span>的数学期望是：
 </p>
@@ -262,7 +282,7 @@
 <p>
 后面部分就是条件概率期望的部分。</p>
 <p>注意到线性链CRF的特征函数是定义在<span class="math">\(y_{i-1}y_i\)</span>的边上的，因此概率也拆开为对应边存在的概率</p>
-<h2 id="4-crf">4. CRF的预测算法</h2>
+<h2 id="5-crf">5. CRF的预测算法</h2>
 <p>CRF的预测算法就是在给定CRF模型P(Y|X)和观测序列x的情况下给出概率最大的输出序列，通常情况也就是对于观测序列进行标注。</p>
 <p>用公式表示就是：
 </p>
@@ -274,7 +294,7 @@
 <p>
 其中<span class="math">\(w=(w_1, w_2, ..., w_k)\)</span>，对应k个特征函数的权重，<span class="math">\(F_i(y_{i-1}, y_i, x) = (f_1(y_{i-1}, y_i, x), f_2(y_{i-1}, y_i, x),...,f_k(y_{i-1}, y_i, x))\)</span>对应每个特征函数在位置i上的值，两向量的乘积就表示从<span class="math">\(y_{i-1}\)</span>到<span class="math">\(y_i\)</span>上的“概率”。</p>
 <p>注意上面对于整个路径的概率并没有求乘积，而是求和，这是因为<span class="math">\(w\cdot F\)</span>是从<span class="math">\(exp(w\cdot F)\)</span>中提取出来的，求和就等价于整体求乘积。</p>
-<h3 id="_11">预测算法</h3>
+<h3 id="_4">预测算法</h3>
 <p>对于一条路径，求出所有位置所有状态的组合，最后选择概率最大的，这种方法肯定是不现实的，效率非常低（<span class="math">\(O(n^T)\)</span>）。</p>
 <p>对于这种求最优序列的问题，在每个位置有n个状态，总体概率可以拆解为相邻位置的状态转移概率，求整体最优的序列都可以使用维特比算法，也就是一种动态规划求最优解的方法。</p>
 <p>简单描述：</p>
@@ -284,7 +304,7 @@
 <li>依次递推，每个时刻记录n个概率值，当到达最终点的时候，选出概率最大的状态进行回溯就得到最优路径</li>
 <li>通过上面的方法，每个位置都只要计算<span class="math">\(n^2\)</span>次，时间复杂度为<span class="math">\(O(kn^2)\)</span>与之前<span class="math">\(O(n^k)\)</span>相比大为减少。</li>
 </ul>
-<h2 id="5-crf">5. CRF的学习算法</h2>
+<h2 id="6-crf">6. CRF的学习算法</h2>
 <p>CRF模型的学习就是学习每个特征函数的权重，通常情况下采用最大似然估计的方法进行学习。对于单样本的情况，给定x，y给出CRF的模型的条件概率：
 </p>
 <div class="math">$$p(y|x) = \frac{exp(\sum_{k=1}^K\sum_{i=1}^nw_kf_k(y_{i-1}, y_i, x, i)}{\sum_{y'}exp(\sum_{k=1}^K\sum_{i=1}^nw_kf_k(y'_{i-1}, y'_i, x, i)}$$</div>
@@ -301,9 +321,10 @@
 </p>
 <div class="math">$$w_j := w_j - \alpha \frac{\partial logp}{\partial w_j}$$</div>
 <p>就可以得到最后收敛的参数了。</p>
-<h2 id="_12">参考资料</h2>
-<p>[1] 统计学习方法 - 李航</p>
+<h2 id="_5">参考资料</h2>
+<p>[1] <a href="https://book.douban.com/subject/10590856/">统计学习方法</a> - 李航</p>
 <p>[2] <a href="http://blog.echen.me/2012/01/03/introduction-to-conditional-random-fields/">Introduction to Conditional Random Fields</a> - Edwin Chen</p>
+<p>[3] <a href="https://zhuanlan.zhihu.com/p/37163081">简明条件随机场CRF介绍 | 附带纯Keras实现</a> - 苏剑林</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",

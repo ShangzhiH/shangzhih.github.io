@@ -166,7 +166,7 @@
 </pre></div>
 </td></tr></table>
 <h3 id="24-from-generator">2.4 From generator</h3>
-<p>最后还可以根据generator进行创建，这种方式对我来说使用。首先，我使用数据量一般都大到无法直接读入内存，经常都是采用读取文本创建一个generator的方式进行处理。其次，文本长度经常不一样，从generator创建dataset可以设定shape为None以适应不定长输入。</p>
+<p>最后还可以根据generator进行创建，这种方式对我来说使用最频繁。首先，我使用数据量一般都大到无法直接读入内存，经常都是采用读取文本创建一个generator的方式进行处理。其次，文本长度经常不一样，从generator创建dataset可以设定shape为None以适应不定长输入。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -529,7 +529,7 @@
 </td></tr></table>
 <p>这就相当于只考虑了batch内数据量等于BATCH_SIZE的batch，最后一个如果数据不足的话就不使用了。</p>
 <h3 id="55-repeat">5.5 Repeat</h3>
-<p>daataset.repeat(n)就是设定dataset中的数据可以迭代几次，如果不传入参数就会一直进行下去。</p>
+<p>dataset.repeat(n)就是设定dataset中的数据可以迭代几次，如果不传入参数就会一直进行下去。</p>
 <p>前面说过train的时候我是不需要进行异常处理的，就是采用这样的方式。我会对train的dataset做一个dataset.repeat()的操作，让它可以进行无限多次迭代。然后在使用的时候通过外部的for loop根据最大epoch数和每个epoch内的batch数进行控制，这样比起不停的初始化train的iterator更加方便。</p>
 <h2 id="6">6. 总结</h2>
 <p>Dataset API提供了一种更加快速和自由的创建tensorflow模型数据pipeline的方式。本文主要介绍了它的基本架构：Dataset类，Iterator类和一些Dataset相关的transformation操作，及其它们的使用场景和使用方法。Dataset也可以结合Estimator使用，不过由于我Estimator用的不多，这里就不介绍了。</p>
