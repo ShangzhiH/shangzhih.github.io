@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="TensorFlow, 参数调优, 深度学习, " />
+
+<meta property="og:title" content="神经网络训练过程可视化  - TensorBoard的使用 "/>
+<meta property="og:url" content="/shen-jing-wang-luo-xun-lian-guo-cheng-ke-shi-hua.html" />
+<meta property="og:description" content="1. 什么是TensorBoard 我们在使用神经网络的时候一般将它看作是个黑盒子，里面到底是什么样，是什么样的结构，是怎么训练的，往往是很难搞清楚的。但是和传统机器学习一样，为了尽可能的接近最优解，深度学习的训练也免不了需要有调参的过程。如果没有任何指导指标，单纯盲目进行参数search的效率往往是非常低下的。 而TensorBoard就是一个能够帮助我们可视化数据和训练过程的一个非常好的工具。合理的使用它可以帮助我们把复杂的神经网络训练过程进行可视化，使得我们可以更好地理解，调试并优化程序。 本文的内容结构为： 介绍TensorBoard的启动，及其提供可视化的数据类型 介绍训练过程中Scalar数据类型的可视化，并介绍如何据此来获得对模型内部的直觉认识，合理的回避潜在错误 介绍如何利用Histogram来可视化Vector或者数据集合 通过上述Histogram来比较不同的权重初始化对于神经网络训练时权重更新的影响 在开始之前，确保下面的python库是安装正确的： 1 2 3 4 5 6 7 8 9 10from pandas_datareader import data import matplotlib.pyplot as plt import pandas as pd import …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2018-04-23T20:00:00+08:00" />
+<meta name="twitter:title" content="神经网络训练过程可视化  - TensorBoard的使用 ">
+<meta name="twitter:description" content="1. 什么是TensorBoard 我们在使用神经网络的时候一般将它看作是个黑盒子，里面到底是什么样，是什么样的结构，是怎么训练的，往往是很难搞清楚的。但是和传统机器学习一样，为了尽可能的接近最优解，深度学习的训练也免不了需要有调参的过程。如果没有任何指导指标，单纯盲目进行参数search的效率往往是非常低下的。 而TensorBoard就是一个能够帮助我们可视化数据和训练过程的一个非常好的工具。合理的使用它可以帮助我们把复杂的神经网络训练过程进行可视化，使得我们可以更好地理解，调试并优化程序。 本文的内容结构为： 介绍TensorBoard的启动，及其提供可视化的数据类型 介绍训练过程中Scalar数据类型的可视化，并介绍如何据此来获得对模型内部的直觉认识，合理的回避潜在错误 介绍如何利用Histogram来可视化Vector或者数据集合 通过上述Histogram来比较不同的权重初始化对于神经网络训练时权重更新的影响 在开始之前，确保下面的python库是安装正确的： 1 2 3 4 5 6 7 8 9 10from pandas_datareader import data import matplotlib.pyplot as plt import pandas as pd import …">
+
+        <title>神经网络训练过程可视化  - TensorBoard的使用  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/shen-jing-wang-luo-xun-lian-guo-cheng-ke-shi-hua.html"> 神经网络训练过程可视化  <small> TensorBoard的使用 </small>  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+    <div class="span2 table-of-content">
+        <nav>
+        <h4>Contents</h4>
+        <div class="toc">
+<ul>
+<li><a href="#1-tensorboard">1. 什么是TensorBoard</a></li>
+<li><a href="#2-tensorboard">2. 启动TensorBoard</a></li>
+<li><a href="#3-tensorboard">3. TensorBoard中的不同视图</a></li>
+<li><a href="#4-scalar">4. Scalar数据可视化</a><ul>
+<li><a href="#41">4.1 定义输入输出和权重</a></li>
+<li><a href="#42-logits">4.2 计算Logits，预测，损失和优化方法</a></li>
+<li><a href="#43-summaries">4.3 定义Summaries</a></li>
+<li><a href="#44">4.4 训练神经网络：装载数据，训练，验证及测试</a></li>
+<li><a href="#45">4.5 可视化结果</a><ul>
+<li><a href="#451">4.5.1 可视化计算图</a></li>
+<li><a href="#452-summary">4.5.2 可视化Summary数据</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5">5. 直方图/分布的可视化</a><ul>
+<li><a href="#51-summary">5.1 定义直方图Summary</a></li>
+<li><a href="#52">5.2 训练神经网络</a></li>
+<li><a href="#53">5.3 观察权重和偏差的直方图</a></li>
+<li><a href="#54">5.4 不同初始化的影响</a><ul>
+<li><a href="#_1">两次不同初始化的效果比较</a></li>
+</ul>
+</li>
+<li><a href="#55">5.5 分布视角下的直方图</a></li>
+</ul>
+</li>
+<li><a href="#6-projector">6. Projector可视化</a></li>
+<li><a href="#7">7.总结</a></li>
+<li><a href="#_2">参考文献</a></li>
+</ul>
+</div>
+        </nav>
+    </div>
+    <div class="span8 article-content">
+
+            
+            
+<h2 id="1-tensorboard">1. 什么是TensorBoard</h2>
+<p>我们在使用神经网络的时候一般将它看作是个黑盒子，里面到底是什么样，是什么样的结构，是怎么训练的，往往是很难搞清楚的。但是和传统机器学习一样，为了尽可能的接近最优解，深度学习的训练也免不了需要有调参的过程。如果没有任何指导指标，单纯盲目进行参数search的效率往往是非常低下的。</p>
+<p>而TensorBoard就是一个能够帮助我们可视化数据和训练过程的一个非常好的工具。合理的使用它可以帮助我们把复杂的神经网络训练过程进行可视化，使得我们可以更好地理解，调试并优化程序。</p>
+<p><strong>本文的内容结构为</strong>：</p>
+<ul>
+<li>介绍TensorBoard的启动，及其提供可视化的数据类型</li>
+<li>介绍训练过程中Scalar数据类型的可视化，并介绍如何据此来获得对模型内部的直觉认识，合理的回避潜在错误</li>
+<li>介绍如何利用Histogram来可视化Vector或者数据集合</li>
+<li>通过上述Histogram来比较不同的权重初始化对于神经网络训练时权重更新的影响</li>
+</ul>
+<p>在开始之前，确保下面的python库是安装正确的：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pandas_datareader</span> <span class="kn">import</span> <span class="n">data</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">datetime</span> <span class="kn">as</span> <span class="nn">dt</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span><span class="o">,</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="c1"># This code has been tested with TensorFlow 1.6</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">tensorflow.examples.tutorials.mnist</span> <span class="kn">import</span> <span class="n">input_data</span>
+</pre></div>
+</td></tr></table>
+<h2 id="2-tensorboard">2. 启动TensorBoard</h2>
+<p>要进行TensorBoard的可视化，首先需要启动该服务，一般流程如下：</p>
+<ul>
+<li>打开命令行终端</li>
+<li>进入项目主目录</li>
+<li>确保激活了安装有TensorFlow的Python虚拟环境，我一般用Anaconda进行Python的版本和包管理，非常方便</li>
+<li>命令行执行tensorboard --logdir=summaries</li>
+</ul>
+<p>--logdir后面是tensorflow的summary所在的目录，这里面包含event文件，保存了TensorBoard展示需要的数据，而这些数据就是TensorFlow中的summary数据。启动后，终端会输出查看TensorBoard的url，在浏览器中就可以打开该url进行查看了。</p>
+<p><strong>注意</strong>：
+尽量避免将不同的event文件放在同一个文件夹，这会导致显示很糟糕的曲线。所以如果想要比较不同的训练过程的话，可以分开放到不同的文件夹下，然后tensorboard启动的时候在所有文件夹的上一级文件夹启动。这样就可以将不同超参下的可视化训练结果在同一张图上进行比较。</p>
+<h2 id="3-tensorboard">3. TensorBoard中的不同视图</h2>
+<p>不同的视图用以处理不同的数据类型并区别展示，这可以在网页上方的橙色长条处进行选择：</p>
+<ul>
+<li><code>Scalars</code>：可视化scalar值，可以看作是Shape为(1, 1)的值，例如分类准确率</li>
+<li><code>Graph</code>：可视化TensorFlow模型所构造的计算图</li>
+<li><code>Distributions</code>：可视化数据分布随时间变化的情况，例如神经网络的权重</li>
+<li><code>Histograms</code>：和Distributions一样，也是查看数据分布的变化，不同的是这里是3D视角</li>
+<li><code>Projector</code>：用来对多维向量(大于3维)进行可视化，内置了t-sne非线性降维和PCA线性降维，可以很方便的可视化NLP中经常使用的高维词向量</li>
+<li>Image：可视化图像数据</li>
+<li>Audio：可视化音频数据</li>
+<li>Text：可视化文本数据</li>
+</ul>
+<p>本文主要讨论前面5种视图。</p>
+<h2 id="4-scalar">4. Scalar数据可视化</h2>
+<p>当我们训练深度神经网络的时候，一个很棘手的问题就是对于各种网络结构和超参数的选择产生的影响缺乏理解。</p>
+<p>例如，如果我们忽视权重初始化方式的选择，可能会导致权重之间存在非常大的方差，模型的训练就有可能迅速偏离正轨。另一方面，即使我们在参数选择的时候很小心，也免不了会出问题。比如学习率的选择，过大或过小的学习率会导致模型发散或者掉入局部最优点。然而并没有永远合适的学习率，这些都需要根据观察训练过程来作出合适的选择。</p>
+<p>一个快速定位模型问题的方法就是通过观察模型训练过程的变化，这也是TensorBoard应用的场景。我们可以决定在TensorBoard中展示哪些值，这些值随训练时间的历史变化就会被记录下来，供给我们分析判断。</p>
+<p>首先还是拿最常用的MNIST任务集举例说明TensorBoard的用法，这里我们创建了一个5层的神经网络来进行图片的分类。先定义一个简单计算预测正确率的函数accuracy()</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span><span class="n">labels</span><span class="p">):</span>
+    <span class="sd">'''</span>
+<span class="sd">    Accuracy of a given set of predictions of size (N x n_classes) and</span>
+<span class="sd">    labels of size (N x n_classes)</span>
+<span class="sd">    '''</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">==</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">*</span><span class="mf">100.0</span><span class="o">/</span><span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</td></tr></table>
+<h3 id="41">4.1 定义输入输出和权重</h3>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">layer_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'hidden1'</span><span class="p">,</span><span class="s1">'hidden2'</span><span class="p">,</span><span class="s1">'hidden3'</span><span class="p">,</span><span class="s1">'hidden4'</span><span class="p">,</span><span class="s1">'hidden5'</span><span class="p">,</span><span class="s1">'out'</span><span class="p">]</span>
+<span class="n">layer_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">784</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+
+<span class="n">tf</span><span class="o">.</span><span class="n">reset_default_graph</span><span class="p">()</span>
+
+<span class="c1"># Inputs and Labels</span>
+<span class="n">train_inputs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">layer_sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">name</span><span class="o">=</span><span class="s1">'train_inputs'</span><span class="p">)</span>
+<span class="n">train_labels</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">layer_sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="n">name</span><span class="o">=</span><span class="s1">'train_labels'</span><span class="p">)</span>
+
+<span class="c1"># Weight and Bias definitions</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">lid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">layer_ids</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="n">lid</span><span class="p">):</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'weights'</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">layer_sizes</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">layer_sizes</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]],</span>
+                            <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal_initializer</span><span class="p">(</span><span class="n">stddev</span><span class="o">=</span><span class="mf">0.05</span><span class="p">))</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'bias'</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span> <span class="p">[</span><span class="n">layer_sizes</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]],</span>
+                            <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">random_uniform_initializer</span><span class="p">(</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">))</span>
+</pre></div>
+</td></tr></table>
+<p>通过variable_scope可以更好的进行变量管理。第一层784对应的是MNIST的图片大小28*28.</p>
+<h3 id="42-logits">4.2 计算Logits，预测，损失和优化方法</h3>
+<p>有了输入输出和模型参数的基础上，就可以进行计算Logits部分图的构建了，这里使用简单的全联接+relu激活层。</p>
+<p>随后欧定义损失函数，由于是分类问题，这里使用交叉熵损失。</p>
+<p>最后选择优化器，这里使用TensorFlow自带的MomentumOptimizer。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># Calculating Logits</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">train_inputs</span>
+<span class="k">for</span> <span class="n">lid</span> <span class="ow">in</span> <span class="n">layer_ids</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="n">lid</span><span class="p">,</span><span class="n">reuse</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'weights'</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'bias'</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lid</span> <span class="o">!=</span> <span class="s1">'out'</span><span class="p">:</span>
+          <span class="n">h</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">w</span><span class="p">)</span><span class="o">+</span><span class="n">b</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">lid</span><span class="o">+</span><span class="s1">'_output'</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">h</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">xw_plus_b</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">lid</span><span class="o">+</span><span class="s1">'_output'</span><span class="p">)</span>
+
+<span class="n">tf_predictions</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'predictions'</span><span class="p">)</span>
+<span class="c1"># Calculating Loss</span>
+<span class="n">tf_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax_cross_entropy_with_logits_v2</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">train_labels</span><span class="p">,</span> <span class="n">logits</span><span class="o">=</span><span class="n">h</span><span class="p">),</span><span class="n">name</span><span class="o">=</span><span class="s1">'loss'</span><span class="p">)</span>
+
+<span class="c1"># Optimizer</span>
+<span class="n">tf_learning_rate</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'learning_rate'</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">MomentumOptimizer</span><span class="p">(</span><span class="n">tf_learning_rate</span><span class="p">,</span><span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+<span class="n">grads_and_vars</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">compute_gradients</span><span class="p">(</span><span class="n">tf_loss</span><span class="p">)</span>
+<span class="n">tf_loss_minimize</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">tf_loss</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<h3 id="43-summaries">4.3 定义Summaries</h3>
+<p>接下来就需要定义<code>tf.summary</code>对象了，这也是可以被TensorBoard直接读取展示的实体类型。也就是说，如果想要从TensorBoard观察某个变量的情况，就必须将它封装为<code>tf.summary</code>对象。</p>
+<p>TensorFlow中有多种类型的summary，这一小节我们处理<code>tf.summary.scalar</code>类型。这里我们利用<code>tf.name_scope</code>对不同的summary进行分组，那些拥有相同name scope的变量summary将会在TensorBoard中展示为同一行，方便我们查看。</p>
+<p>这里定义三个scalar类型的summary：</p>
+<ul>
+<li>tf_loss_summary: 利用placeholder传入loss值</li>
+<li>tf_accuracy_summary: 利用placeholder传入预测的准确率</li>
+<li>tf_gradnorm_summary: 传入神经网络最后一层梯度的L2范数。梯度的范数是判断权重是否被正常更新的一个重要指标。它的值很小说明存在梯度消失问题，过大则暗示有梯度爆炸发生的潜在风险。</li>
+</ul>
+<p><strong>注意</strong>: 上面使用placeholder注意的指标说明这些值通常是在grpah外获得的，只在需要记录的时候传入数据。而直接将图中的变量封装为summary则往往是因为这个变量的值是graph的一部分，可以直接通过session.run获得。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># Name scope allows you to group various summaries together</span>
+<span class="c1"># Summaries having the same name_scope will be displayed on the same row</span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s1">'performance'</span><span class="p">):</span>
+    <span class="c1"># Summaries need to be displayed</span>
+    <span class="c1"># Whenever you need to record the loss, feed the mean loss to this placeholder</span>
+    <span class="n">tf_loss_ph</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">'loss_summary'</span><span class="p">)</span>
+    <span class="c1"># Create a scalar summary object for the loss so it can be displayed</span>
+    <span class="n">tf_loss_summary</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'loss'</span><span class="p">,</span> <span class="n">tf_loss_ph</span><span class="p">)</span>
+
+    <span class="c1"># Whenever you need to record the loss, feed the mean test accuracy to this placeholder</span>
+    <span class="n">tf_accuracy_ph</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'accuracy_summary'</span><span class="p">)</span>
+    <span class="c1"># Create a scalar summary object for the accuracy so it can be displayed</span>
+    <span class="n">tf_accuracy_summary</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'accuracy'</span><span class="p">,</span> <span class="n">tf_accuracy_ph</span><span class="p">)</span>
+
+<span class="c1"># Gradient norm summary</span>
+<span class="k">for</span> <span class="n">g</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">grads_and_vars</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s1">'hidden5'</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="ow">and</span> <span class="s1">'weights'</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s1">'gradients'</span><span class="p">):</span>
+            <span class="n">tf_last_grad_norm</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">g</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+            <span class="n">tf_gradnorm_summary</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'grad_norm'</span><span class="p">,</span> <span class="n">tf_last_grad_norm</span><span class="p">)</span>
+            <span class="k">break</span>
+<span class="c1"># Merge all summaries together</span>
+<span class="n">performance_summaries</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">merge</span><span class="p">([</span><span class="n">tf_loss_summary</span><span class="p">,</span><span class="n">tf_accuracy_summary</span><span class="p">])</span>
+</pre></div>
+</td></tr></table>
+<h3 id="44">4.4 训练神经网络：装载数据，训练，验证及测试</h3>
+<p>首先，创建一个tf的session，只有在session内，才可以执行之前定义的计算图。随后，创建一个保存summary文件的文件夹。接着利用这个文件夹创建一个<code>summary_writer</code>，利用它来实现对summary对象的文件写入操作。</p>
+<p>训练时，每次迭代时都执行之前定义的<code>gradnorm_summary</code>进行记录。每个epoch结束后，计算该epoch内的平均训练损失。</p>
+<p>最后，在测试阶段，记录每个batch的accuracy，然后计算整个测试集的平均accuracy。最后通过placeholder传入之前的<code>performance_summaries</code>，再将其也加入<code>summary_writer</code>.</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">image_size</span> <span class="o">=</span> <span class="mi">28</span>
+<span class="n">n_channels</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">n_classes</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">n_train</span> <span class="o">=</span> <span class="mi">55000</span>
+<span class="n">n_valid</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">n_test</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">25</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ConfigProto</span><span class="p">(</span><span class="n">allow_soft_placement</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">config</span><span class="o">.</span><span class="n">gpu_options</span><span class="o">.</span><span class="n">allow_growth</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">config</span><span class="o">.</span><span class="n">gpu_options</span><span class="o">.</span><span class="n">per_process_gpu_memory_fraction</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="c1"># making sure Tensorflow doesn't overflow the GPU</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">InteractiveSession</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">'summaries'</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">'summaries'</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'summaries'</span><span class="p">,</span><span class="s1">'first'</span><span class="p">)):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'summaries'</span><span class="p">,</span><span class="s1">'first'</span><span class="p">))</span>
+
+<span class="n">summ_writer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">FileWriter</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'summaries'</span><span class="p">,</span><span class="s1">'first'</span><span class="p">),</span> <span class="n">session</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span> <span class="c1"># create summary_writer and add graph in it</span>
+
+<span class="n">tf</span><span class="o">.</span><span class="n">global_variables_initializer</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="n">accuracy_per_epoch</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">mnist_data</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">read_data_sets</span><span class="p">(</span><span class="s1">'MNIST_data'</span><span class="p">,</span> <span class="n">one_hot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
+    <span class="n">loss_per_epoch</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_train</span><span class="o">//</span><span class="n">batch_size</span><span class="p">):</span>
+
+        <span class="c1"># =================================== Training for one step ========================================</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">mnist_data</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">next_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>    <span class="c1"># Get one batch of training data</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Only for the first epoch, get the summary data</span>
+            <span class="c1"># Otherwise, it can clutter the visualization</span>
+            <span class="n">l</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">gn_summ</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">tf_loss</span><span class="p">,</span><span class="n">tf_loss_minimize</span><span class="p">,</span><span class="n">tf_gradnorm_summary</span><span class="p">],</span>
+                                      <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">train_inputs</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span><span class="n">image_size</span><span class="o">*</span><span class="n">image_size</span><span class="p">),</span>
+                                                 <span class="n">train_labels</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                <span class="n">tf_learning_rate</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">})</span>
+            <span class="n">summ_writer</span><span class="o">.</span><span class="n">add_summary</span><span class="p">(</span><span class="n">gn_summ</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Optimize with training data</span>
+            <span class="n">l</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">tf_loss</span><span class="p">,</span><span class="n">tf_loss_minimize</span><span class="p">],</span>
+                              <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">train_inputs</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span><span class="n">image_size</span><span class="o">*</span><span class="n">image_size</span><span class="p">),</span>
+                                         <span class="n">train_labels</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                         <span class="n">tf_learning_rate</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">})</span>
+        <span class="n">loss_per_epoch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s1">'Average loss in epoch </span><span class="si">%d</span><span class="s1">: </span><span class="si">%.5f</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss_per_epoch</span><span class="p">)))</span>    
+    <span class="n">avg_loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss_per_epoch</span><span class="p">)</span>
+
+    <span class="c1"># ====================== Calculate the Validation Accuracy ==========================</span>
+    <span class="n">valid_accuracy_per_epoch</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_valid</span><span class="o">//</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">valid_images</span><span class="p">,</span><span class="n">valid_labels</span> <span class="o">=</span> <span class="n">mnist_data</span><span class="o">.</span><span class="n">validation</span><span class="o">.</span><span class="n">next_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">valid_batch_predictions</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">tf_predictions</span><span class="p">,</span><span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">train_inputs</span><span class="p">:</span> <span class="n">valid_images</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span><span class="n">image_size</span><span class="o">*</span><span class="n">image_size</span><span class="p">)})</span>
+        <span class="n">valid_accuracy_per_epoch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accuracy</span><span class="p">(</span><span class="n">valid_batch_predictions</span><span class="p">,</span><span class="n">valid_labels</span><span class="p">))</span>
+
+    <span class="n">mean_v_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">valid_accuracy_per_epoch</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Average Valid Accuracy in epoch </span><span class="si">%d</span><span class="s1">: </span><span class="si">%.5f</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">valid_accuracy_per_epoch</span><span class="p">)))</span>
+
+    <span class="c1"># ===================== Calculate the Test Accuracy ===============================</span>
+    <span class="n">accuracy_per_epoch</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_test</span><span class="o">//</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">test_images</span><span class="p">,</span> <span class="n">test_labels</span> <span class="o">=</span> <span class="n">mnist_data</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">next_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">test_batch_predictions</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">tf_predictions</span><span class="p">,</span><span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">train_inputs</span><span class="p">:</span> <span class="n">test_images</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span><span class="n">image_size</span><span class="o">*</span><span class="n">image_size</span><span class="p">)}</span>
+        <span class="p">)</span>
+        <span class="n">accuracy_per_epoch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accuracy</span><span class="p">(</span><span class="n">test_batch_predictions</span><span class="p">,</span><span class="n">test_labels</span><span class="p">))</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Average Test Accuracy in epoch </span><span class="si">%d</span><span class="s1">: </span><span class="si">%.5f</span><span class="se">\n</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_per_epoch</span><span class="p">)))</span>
+    <span class="n">avg_test_accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_per_epoch</span><span class="p">)</span>
+
+    <span class="c1"># Execute the summaries defined above</span>
+    <span class="n">summ</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">performance_summaries</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">tf_loss_ph</span><span class="p">:</span><span class="n">avg_loss</span><span class="p">,</span> <span class="n">tf_accuracy_ph</span><span class="p">:</span><span class="n">avg_test_accuracy</span><span class="p">})</span>
+
+    <span class="c1"># Write the obtained summaries to the file, so it can be displayed in the TensorBoard</span>
+    <span class="n">summ_writer</span><span class="o">.</span><span class="n">add_summary</span><span class="p">(</span><span class="n">summ</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+
+<span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</td></tr></table>
+<h3 id="45">4.5 可视化结果</h3>
+<h4 id="451">4.5.1 可视化计算图</h4>
+<p>因为上面创建summary_writer的时候，我们已经把session.graph直接传进去了，所以TensorBoard上直接就可以查看定义的图结构了。</p>
+<p><img alt="" src="./images/2018-07-25-23-07-56.jpg"/></p>
+<p>从上面的图中，我们可以很清晰的看到数据通过5个隐藏层，从<code>train_inputs</code>到<code>loss</code>和<code>predictions</code>完整的“流动”过程，方便我们查看模型的构造结构有没有问题。</p>
+<h4 id="452-summary">4.5.2 可视化Summary数据</h4>
+<p>MNIST是一个很简单的分类问题，但是用5层神经网络的话仍然是会有误差的。通过TensorBoard的展示，我们可以看到在5个epoch内，模型就达到了90%以上的准确率。让我们看看TensorBoard中具体的显示情况：</p>
+<p><img alt="" src="./images/2018-07-25-23-14-57.jpg"/></p>
+<p><strong>观察及结论</strong>：</p>
+<p>从上图可以看到准确率在不断上升，但是上升速度很慢，而且梯度却在不断的增长。这其实是很奇怪的，因为正常来说，损失下降，准确率上升，意味着模型正在逐渐收敛，这个时候梯度理应慢慢变小(接近于0)，而不是像上图一样上升。</p>
+<p>但是因为准确率是的确在上升的，说明我们的训练是在正确进行的，这就预示着可能我们的学习率选的太小了。接着尝试0.01的学习率，和之前一样的训练过程，这次的结果如下：</p>
+<p><img alt="" src="./images/2018-07-25-23-25-06.jpg"/></p>
+<p><strong>观察与结论</strong>：</p>
+<p>这次可以看到准确率迅速就接近100了，而且梯度也在逐渐下降直至趋近于0。和之前相比，明显我们提高学习率之后的结果好多了，说明之前的分析也是合理的。</p>
+<h2 id="5">5. 直方图/分布的可视化</h2>
+<p>我们已经了解了如何通过观察Scalar类型的变量来了解模型的行为并修复潜在的问题。除此之外，计算图的可视化让我们可以更直观的感受数据在TensorFlow模型中的流动，这点对于我们查看梯度下降能否顺利进行有着非常重要的意义。</p>
+<p>如果图中有参数和预测是不相连的，也就和损失loss是隔离的，那样梯度下降肯定就没办法更新到这些孤立的参数。当然对于那些我们本来就不想让它们进行更新的参数除外。</p>
+<p>接下来，就是时候来看数据的分布了。毕竟TensorFlow中大部分的参数都是向量或者矩阵类型的，这个时候如果只看它们的范数或者某一个维度的值都不是最好的选择，而直方图就是观察这种变量的一个很好的方案。</p>
+<p>直方图是对于一个数据集合分布的一种表示方式，它体现了每一个变量值的出现次数或者概率密度。观察网络权重的分布是很重要的，如果权重在训练过程中变化的过于剧烈，那往往意味着在权重初始化或者学习率上存在问题。</p>
+<p>接下来的例子首先使用<code>truncated_normal_initializer()</code>进行权重初始化</p>
+<h3 id="51-summary">5.1 定义直方图Summary</h3>
+<p>同样的，直方图Summary也是tf.summary对象。我们对每一层的权重和偏差定义两个直方图summar，<code>tf_w_hist</code>和<code>tf_b_hist</code>。为了观察时方便，我们给每一层定义各自的命名空间。</p>
+<p>最后，再使用<code>tf.summary.merge</code>定义一个执行所有summary的op。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># Summaries need to be displayed</span>
+<span class="c1"># Create a summary for each weight bias in each layer</span>
+<span class="n">all_summaries</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">lid</span> <span class="ow">in</span> <span class="n">layer_ids</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="n">lid</span><span class="o">+</span><span class="s1">'_hist'</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="n">lid</span><span class="p">,</span><span class="n">reuse</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="n">w</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'weights'</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'bias'</span><span class="p">)</span>
+
+            <span class="c1"># Create a scalar summary object for the loss so it can be displayed</span>
+            <span class="n">tf_w_hist</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="s1">'weights_hist'</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">w</span><span class="p">,[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">tf_b_hist</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="s1">'bias_hist'</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="n">all_summaries</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">tf_w_hist</span><span class="p">,</span> <span class="n">tf_b_hist</span><span class="p">])</span>
+
+<span class="c1"># Merge all parameter histogram summaries together</span>
+<span class="n">tf_param_summaries</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">all_summaries</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<h3 id="52">5.2 训练神经网络</h3>
+<p>这一步和之前训练的过程几乎一样了，只是多了一个<code>tf_param_summaries</code></p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">image_size</span> <span class="o">=</span> <span class="mi">28</span>
+<span class="n">n_channels</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">n_classes</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">n_train</span> <span class="o">=</span> <span class="mi">55000</span>
+<span class="n">n_valid</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">n_test</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">25</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ConfigProto</span><span class="p">(</span><span class="n">allow_soft_placement</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">config</span><span class="o">.</span><span class="n">gpu_options</span><span class="o">.</span><span class="n">allow_growth</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">config</span><span class="o">.</span><span class="n">gpu_options</span><span class="o">.</span><span class="n">per_process_gpu_memory_fraction</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="c1"># making sure Tensorflow doesn't overflow the GPU</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">InteractiveSession</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">'summaries'</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">'summaries'</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'summaries'</span><span class="p">,</span><span class="s1">'third'</span><span class="p">)):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'summaries'</span><span class="p">,</span><span class="s1">'third'</span><span class="p">))</span>
+
+<span class="n">summ_writer_3</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">FileWriter</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'summaries'</span><span class="p">,</span><span class="s1">'third'</span><span class="p">),</span> <span class="n">session</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+
+<span class="n">tf</span><span class="o">.</span><span class="n">global_variables_initializer</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="n">accuracy_per_epoch</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">mnist_data</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">read_data_sets</span><span class="p">(</span><span class="s1">'MNIST_data'</span><span class="p">,</span> <span class="n">one_hot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
+    <span class="n">loss_per_epoch</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_train</span><span class="o">//</span><span class="n">batch_size</span><span class="p">):</span>
+
+        <span class="c1"># =================================== Training for one step ========================================</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">mnist_data</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">next_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>    <span class="c1"># Get one batch of training data</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Only for the first epoch, get the summary data</span>
+            <span class="c1"># Otherwise, it can clutter the visualization</span>
+            <span class="n">l</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">gn_summ</span><span class="p">,</span> <span class="n">wb_summ</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">tf_loss</span><span class="p">,</span><span class="n">tf_loss_minimize</span><span class="p">,</span><span class="n">tf_gradnorm_summary</span><span class="p">,</span> <span class="n">tf_param_summaries</span><span class="p">],</span>
+                                      <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">train_inputs</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span><span class="n">image_size</span><span class="o">*</span><span class="n">image_size</span><span class="p">),</span>
+                                                 <span class="n">train_labels</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                <span class="n">tf_learning_rate</span><span class="p">:</span> <span class="mf">0.00001</span><span class="p">})</span>
+            <span class="n">summ_writer_3</span><span class="o">.</span><span class="n">add_summary</span><span class="p">(</span><span class="n">gn_summ</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+            <span class="n">summ_writer_3</span><span class="o">.</span><span class="n">add_summary</span><span class="p">(</span><span class="n">wb_summ</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Optimize with training data</span>
+            <span class="n">l</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">tf_loss</span><span class="p">,</span><span class="n">tf_loss_minimize</span><span class="p">],</span>
+                              <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">train_inputs</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span><span class="n">image_size</span><span class="o">*</span><span class="n">image_size</span><span class="p">),</span>
+                                         <span class="n">train_labels</span><span class="p">:</span> <span class="n">batch</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                         <span class="n">tf_learning_rate</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">})</span>
+        <span class="n">loss_per_epoch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s1">'Average loss in epoch </span><span class="si">%d</span><span class="s1">: </span><span class="si">%.5f</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss_per_epoch</span><span class="p">)))</span>    
+    <span class="n">avg_loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss_per_epoch</span><span class="p">)</span>
+
+    <span class="c1"># ====================== Calculate the Validation Accuracy ==========================</span>
+    <span class="n">valid_accuracy_per_epoch</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_valid</span><span class="o">//</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">valid_images</span><span class="p">,</span><span class="n">valid_labels</span> <span class="o">=</span> <span class="n">mnist_data</span><span class="o">.</span><span class="n">validation</span><span class="o">.</span><span class="n">next_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">valid_batch_predictions</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">tf_predictions</span><span class="p">,</span><span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">train_inputs</span><span class="p">:</span> <span class="n">valid_images</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span><span class="n">image_size</span><span class="o">*</span><span class="n">image_size</span><span class="p">)})</span>
+        <span class="n">valid_accuracy_per_epoch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accuracy</span><span class="p">(</span><span class="n">valid_batch_predictions</span><span class="p">,</span><span class="n">valid_labels</span><span class="p">))</span>
+
+    <span class="n">mean_v_acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">valid_accuracy_per_epoch</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Average Valid Accuracy in epoch </span><span class="si">%d</span><span class="s1">: </span><span class="si">%.5f</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">valid_accuracy_per_epoch</span><span class="p">)))</span>
+
+    <span class="c1"># ===================== Calculate the Test Accuracy ===============================</span>
+    <span class="n">accuracy_per_epoch</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_test</span><span class="o">//</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">test_images</span><span class="p">,</span> <span class="n">test_labels</span> <span class="o">=</span> <span class="n">mnist_data</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">next_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">test_batch_predictions</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">tf_predictions</span><span class="p">,</span><span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">train_inputs</span><span class="p">:</span> <span class="n">test_images</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span><span class="n">image_size</span><span class="o">*</span><span class="n">image_size</span><span class="p">)}</span>
+        <span class="p">)</span>
+        <span class="n">accuracy_per_epoch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accuracy</span><span class="p">(</span><span class="n">test_batch_predictions</span><span class="p">,</span><span class="n">test_labels</span><span class="p">))</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Average Test Accuracy in epoch </span><span class="si">%d</span><span class="s1">: </span><span class="si">%.5f</span><span class="se">\n</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_per_epoch</span><span class="p">)))</span>
+    <span class="n">avg_test_accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracy_per_epoch</span><span class="p">)</span>
+
+    <span class="c1"># Execute the summaries defined above</span>
+    <span class="n">summ</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">performance_summaries</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">tf_loss_ph</span><span class="p">:</span><span class="n">avg_loss</span><span class="p">,</span> <span class="n">tf_accuracy_ph</span><span class="p">:</span><span class="n">avg_test_accuracy</span><span class="p">})</span>
+
+    <span class="c1"># Write the obtained summaries to the file, so they can be displayed</span>
+    <span class="n">summ_writer_3</span><span class="o">.</span><span class="n">add_summary</span><span class="p">(</span><span class="n">summ</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+
+<span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</td></tr></table>
+<h3 id="53">5.3 观察权重和偏差的直方图</h3>
+<p>接下来的图就是权重和偏差的直方图了。可以看到图是个3D视角的，x轴(前后方向)是时间，y轴(左右方向)是具体的值，然后z轴(高度)是该值的频次。</p>
+<p>颜色越浅的部分说明是越新的数据。然后越高的区域说明所表示的向量包含这个区域的值更多。</p>
+<p><img alt="" src="./images/2018-07-27-11-44-46.jpg"/></p>
+<h3 id="54">5.4 不同初始化的影响</h3>
+<p>不同于上面使用的<code>truncated_normal_initializer()</code>，这次我们使用<code>xavier_initializer()</code>。在一般的深度学习场景中，这通常是更好的选择。</p>
+<p>不同于truncated_normal_initializer由用户指定参数初始化时的方差，xavier初始化可以基于当前层的输入和输出维度自动计算合适的标准差。这可以有效的帮助梯度从顶层向底层流动，避免出现梯度消失的问题。</p>
+<p>代码基本是一样的，只是使用了xavier初始化：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">layer_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'hidden1'</span><span class="p">,</span><span class="s1">'hidden2'</span><span class="p">,</span><span class="s1">'hidden3'</span><span class="p">,</span><span class="s1">'hidden4'</span><span class="p">,</span><span class="s1">'hidden5'</span><span class="p">,</span><span class="s1">'out'</span><span class="p">]</span>
+<span class="n">layer_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">784</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+
+<span class="n">tf</span><span class="o">.</span><span class="n">reset_default_graph</span><span class="p">()</span>
+
+<span class="c1"># Inputs and Labels</span>
+<span class="n">train_inputs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">layer_sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">name</span><span class="o">=</span><span class="s1">'train_inputs'</span><span class="p">)</span>
+<span class="n">train_labels</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">layer_sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="n">name</span><span class="o">=</span><span class="s1">'train_labels'</span><span class="p">)</span>
+
+<span class="c1"># Weight and Bias definitions</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">lid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">layer_ids</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="n">lid</span><span class="p">):</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'weights'</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">layer_sizes</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">layer_sizes</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]],</span>
+                            <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">xavier_initializer</span><span class="p">())</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'bias'</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span> <span class="p">[</span><span class="n">layer_sizes</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]],</span>
+                            <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">random_uniform_initializer</span><span class="p">(</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">))</span>
+</pre></div>
+</td></tr></table>
+<h4 id="_1">两次不同初始化的效果比较</h4>
+<p>通过两次不同的初始化方式，得到如下不同的结果比较：</p>
+<p><img alt="" src="./images/2018-07-27-13-21-07.jpg"/></p>
+<p>可以看到，xavier_initializer相对正态初始化，可以使得更多的权重非零。这就使得xavier初始化的网络可以更快速的收敛。</p>
+<h3 id="55">5.5 分布视角下的直方图</h3>
+<p>对于数据分布的观察，除了上面的直方图视角，TensorBoard还提供一种distribution view。</p>
+<p><img alt="" src="./images/2018-07-27-13-27-16.jpg"/></p>
+<p>它所显示的信息和之前是一样的，只是表达方式不同。它是Histogram的俯视视角。</p>
+<h2 id="6-projector">6. Projector可视化</h2>
+<p>Projector顾名思义，是起投影作用的，可以将高维空间投影到低维向量空间。因为人只能直观感受3维以下的空间。而NLP中常用的词向量embedding都是几百维的，这就导致可视化非常困难。因此我们以词向量的展示来解释Projector是如何进行降维并观察这些高维词向量的。</p>
+<p>Projector和之前summary对象略有不同，这里并不定义summary对象，因此也没有event文件。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tensorflow.contrib.tensorboard.plugins</span> <span class="kn">import</span> <span class="n">projector</span>
+
+<span class="c1"># create graph and intialize embedding variable by pretrained vectors</span>
+<span class="n">graph</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">graph</span><span class="o">.</span><span class="n">as_default</span><span class="p">():</span>
+    <span class="n">embedding_matrix</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">embedding_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+    <span class="n">saver</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">([</span><span class="n">embedding_matrix</span><span class="p">])</span>
+
+<span class="c1"># save model which stores embedding vectors</span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">graph</span><span class="p">)</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">global_variables_initializer</span><span class="p">())</span>
+    <span class="n">saver</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">summary_path</span><span class="p">,</span> <span class="s2">"model.ckpt"</span><span class="p">)))</span>
+
+<span class="c1"># projector config</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">projector</span><span class="o">.</span><span class="n">ProjectorConfig</span><span class="p">()</span>
+<span class="n">vectors</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">embeddings</span><span class="o">.</span><span class="n">add</span><span class="p">()</span>
+<span class="n">vectors</span><span class="o">.</span><span class="n">tensor_name</span> <span class="o">=</span> <span class="n">embedding_matrix</span><span class="o">.</span><span class="n">name</span>
+<span class="n">vectors</span><span class="o">.</span><span class="n">metadata_path</span> <span class="o">=</span> <span class="s2">"vocabulary.tsv"</span>
+
+<span class="n">summary_writer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">FileWriter</span><span class="p">(</span><span class="n">summary_path</span><span class="p">)</span>
+<span class="n">projector</span><span class="o">.</span><span class="n">visualize_embeddings</span><span class="p">(</span><span class="n">summary_writer</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+<p>projector并从event文件中读入summary对象的数据，它从ckpt模型文件中读取embedding变量的值。因此在创建的时候会生成一个projector_config.pbtxt文件。内容如下：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">embeddings</span> <span class="p">{</span>
+  <span class="n">tensor_name</span><span class="p">:</span> <span class="s2">"Variable:0"</span>
+  <span class="n">metadata_path</span><span class="p">:</span> <span class="s2">"vocabulary.tsv"</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table>
+<p>其中tensor_name会指明在ckpt模型文件中读入哪个tensor的值，而meta文件代表embedding的key，就是具体的词表了，这个也是在上面我们自己生成的，这个要注意，如果词表和向量矩阵错位的话，展示的词可能就对应串了。没有ckpt文件，projector无法获取向量，无从展示。没有meta文件，projector纯展示向量在空间的点，没办法进行分析。</p>
+<p><strong>PCA降维展示结果</strong>：</p>
+<p><img alt="" src="./images/2018-07-27-13-55-48.jpg"/></p>
+<p>可以看到点在3维空间中并没有很好出现clustering的效果，直接看基本都离散的，看不出点与点直接的联系。这也很正常，因为PCA的降维是线性降维，3个主成分可以解释的variance只有16.1%，说明为了实现这样的降维，丢掉了词太多的语义信息，也难怪可视化的效果不佳。</p>
+<p><img alt="" src="./images/2018-07-27-13-56-24.jpg"/></p>
+<p>虽然可视化结果不佳，但是当我们选择点的时候，发现距离它最近的点还是很符合词向量特点的，基本是同义词或者语义特征很相似的词。</p>
+<p><strong>T-SNE降维展示结果</strong>：
+出于t-sne算法的效率考虑，这里我选择了top8000的词。</p>
+<p><img alt="" src="./images/2018-07-27-14-05-09.jpg"/></p>
+<p>作为非线性降维的典范，t-sne降维保留了更多的词向量语义，结果也直观得多。随着算法的收敛，点在空间中很快出现不同区域的密集分布了。我们查看一下几个比较密的区域的词的性质。</p>
+<p><img alt="" src="./images/2018-07-27-14-06-37.jpg"/></p>
+<p>可以看到右下角的区域都是一堆中国人名的姓。</p>
+<p><img alt="" src="./images/2018-07-27-14-12-35.jpg"/></p>
+<p>左下角是理发修容相关的。</p>
+<p><img alt="" src="./images/2018-07-27-14-14-14.jpg"/></p>
+<p>左上角是蔬菜。</p>
+<p><img alt="" src="./images/2018-07-27-14-15-42.jpg"/></p>
+<p>中间又有一片区域是水果。</p>
+<p>是不是很酷？而且理论上来说词向量训练的越好，这样的性质就会越明显。有的时候甚至能进行<code>中国 - 北京 = 法国 - 巴黎</code>这样的语义推断。词向量还有很多有意思的特性，感兴趣的小伙伴可以自己去挖掘，而合理的使用TensorBoard可以更方便的帮我们进行这样的直观操作。</p>
+<h2 id="7">7.总结</h2>
+<p>在这篇TensorBoard的教程中，我们通过一个多层的前向网络处理了MNIST问题。并在处理问题中学会了如何使用TensorBoard中的Scalar，Histogram等summary来观察训练过程中的指标。通过这些指标来诊断模型潜在的诸如学习率，初始化方式等问题。</p>
+<p>然后我们讲解了如何通过Projector来对高维向量进行降维后可视化的操作，使得我们可以方便直观的观察词向量的训练结果，直观判断一份词向量的好坏。</p>
+<p>当然，深度学习模型的调参优化并没有一蹴而就的方法，本文所讲的也是几种比较浅显的手段。要成为一名合格的算法工程师，在理论基础上多做实验，多思考积累经验才能更好的应对模型训练过程中出现的问题。</p>
+<h2 id="_2">参考文献</h2>
+<p>[1] <a href="https://www.tensorflow.org/versions/r1.1/get_started/embedding_viz">TensorBoard官方教程</a></p>
+            
+            
+            <hr/>
+            <aside>
+            <nav>
+            <ul class="articles-timeline">
+                <li class="previous-article">« <a href="/tensorflowshu-ju-du-qu.html" title="Previous: TensorFlow数据读取 - Dataset API的使用">TensorFlow数据读取 <small>Dataset API的使用</small></a></li>
+            </ul>
+            </nav>
+            </aside>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2018-04-23T20:00:00+08:00">2018  - 04  - 23</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#shen-du-xue-xi-ref">深度学习
+                <span>(10)</span>
+</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#can-shu-diao-you-ref">参数调优
+                    <span>1</span>
+</a></li>
+                <li><a href="/tags.html#tensorflow-ref">TensorFlow
+                    <span>2</span>
+</a></li>
+            </ul>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>

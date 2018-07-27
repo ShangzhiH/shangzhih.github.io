@@ -1,5 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Sun, 01 Apr 2018 20:00:00 +0800</lastBuildDate><item><title>TensorFlow数据读取</title><link>/tensorflowshu-ju-du-qu.html</link><description>
+<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Mon, 23 Apr 2018 20:00:00 +0800</lastBuildDate><item><title>神经网络训练过程可视化</title><link>/shen-jing-wang-luo-xun-lian-guo-cheng-ke-shi-hua.html</link><description>
+&lt;h2 id="1-tensorboard"&gt;1. 什么是TensorBoard&lt;/h2&gt;
+&lt;p&gt;我们在使用神经网络的时候一般将它看作是个黑盒子，里面到底是什么样，是什么样的结构，是怎么训练的，往往是很难搞清楚的。但是和传统机器学习一样，为了尽可能的接近最优解，深度学习的训练也免不了需要有调参的过程。如果没有任何指导指标，单纯盲目进行参数search的效率往往是非常低下的。&lt;/p&gt;
+&lt;p&gt;而TensorBoard就是一个能够帮助我们可视化数据和训练过程的一个非常好的工具。合理的使用它可以帮助我们把复杂的神经网络训练过程进行可视化，使得我们可以更好地理解，调试并优化程序。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;本文的内容结构为&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;介绍TensorBoard的启动，及其提供可视化的数据类型&lt;/li&gt;
+&lt;li&gt;介绍训练过程中Scalar数据类型的可视化，并介绍如何据此来获得对模型内部的直觉认识，合理的回避潜在错误&lt;/li&gt;
+&lt;li&gt;介绍如何利用Histogram来可视化Vector或者数据集合&lt;/li&gt;
+&lt;li&gt;通过上述Histogram来比较不同的权重初始化对于神经网络训练时权重更新的影响&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在开始之前，确保下面的python库是安装正确的：&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pandas_datareader&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;matplotlib.pyplot&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;plt&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="kn"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+&lt;span class="kn"&gt;import …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Mon, 23 Apr 2018 20:00:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-04-23:/shen-jing-wang-luo-xun-lian-guo-cheng-ke-shi-hua.html</guid><category>TensorFlow</category><category>参数调优</category></item><item><title>TensorFlow数据读取</title><link>/tensorflowshu-ju-du-qu.html</link><description>
 &lt;p&gt;作为TensorFlow的入门玩家，之前向模型中输入数据的方式一直是采用定义输入placeholder，然后在session.run的时候通过feed_dict
 将处理后的数据传入模型进行计算。但是根据TensorFlow官网说的，这种方式传数据是非常低效的，更推荐大家使用Dateset相关的api构建模型的输入pipeline，以保证GPU在工作的时候无需等待新数据的输入，提高训练效率。&lt;/p&gt;
 &lt;p&gt;本文就简单介绍一下，我在将feed_dict改为dataset api过程的一些总结。&lt;/p&gt;
