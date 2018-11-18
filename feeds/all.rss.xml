@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Mon, 23 Apr 2018 20:00:00 +0800</lastBuildDate><item><title>神经网络训练过程可视化</title><link>/shen-jing-wang-luo-xun-lian-guo-cheng-ke-shi-hua.html</link><description>
+<rss version="2.0"><channel><title>Shangzhi HUANG's Blog</title><link>/</link><description></description><lastBuildDate>Thu, 01 Nov 2018 19:55:00 +0800</lastBuildDate><item><title>Google基于双向Transformer预训练模型在语言理解上的应用</title><link>/googleji-yu-shuang-xiang-transformeryu-xun-lian-mo-xing-zai-yu-yan-li-jie-shang-de-ying-yong.html</link><description>
+&lt;blockquote&gt;
+&lt;p&gt;该论文介绍了一种新的语言表征模型BERT，Bidirectional Encoder Representations from Transformers。以往的语言模型往往都只关注单向的生成过程，而在BERT中所有层都会同时考虑正向和反向两个方向的语义，从而对语义的建模更完善。
+作者在论文中展示了BERT对NLP语义强大的表征能力，对于预训练很完善的模型，针对不同的任务，模型只需要稍加修改然后经过网络微调就可以达到媲美甚至超越SOTA的表现了。基于此，BERT刷新了11项NLP任务的SOTA，在GLUE任务和MultiNLI任务上提升尤其明显，在SQuAD问答数据集上甚至超越了人类的表现。
+本文作为自己学习BERT的笔记，结合git上的google开源的代码简要介绍一下BERT的概念，代码实现及其应用。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="1"&gt;1. 简介&lt;/h2&gt;
+&lt;p&gt;近年来，预训练语言模型在NLP任务上发挥着越来越重要的作用，尤其是对于很多标记数据不足的场景。通过使用大量未标记的文本数据训练一个好的语言模型，再进行迁移学习通常会明显改善模型的表现。&lt;/p&gt;
+&lt;p&gt;从早期的神经网络语言模型，到Word2Vec，再到近年来RNN相关的语言模型ELMo，再带基于去年google发布的Transformer模型的语言模型OpenAI GPT。语言模型的种类很多，但是大致在应用上有两种方案：&lt;/p&gt;
+&lt;p&gt;第一种是feature-based的，例如ELMo，这种方案里预训练模型通常只是作为一个特征补充的方案，模型的结构还是得按照具体的任务来定。而另一种是fine-tuning的方式，例如OpenAI GPT，在这种方案里，模型的参数基本是与任务无关的，预训练做好后，针对特定的任务只要对模型进行微调就好了。在以前的方法里，这些预训练都是基于同样的损失函数: 序列的交叉熵损失，而且学到也都是单向的语言生成模型。&lt;/p&gt;
+&lt;p&gt;单向语言模型严重制约了预训练模型的表征能力 …&lt;/p&gt;</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Shangzhi HUANG</dc:creator><pubDate>Thu, 01 Nov 2018 19:55:00 +0800</pubDate><guid isPermaLink="false">tag:None,2018-11-01:/googleji-yu-shuang-xiang-transformeryu-xun-lian-mo-xing-zai-yu-yan-li-jie-shang-de-ying-yong.html</guid><category>算法</category><category>语言模型</category><category>深度学习</category><category>Paper Reading</category><category>NLP</category></item><item><title>神经网络训练过程可视化</title><link>/shen-jing-wang-luo-xun-lian-guo-cheng-ke-shi-hua.html</link><description>
 &lt;h2 id="1-tensorboard"&gt;1. 什么是TensorBoard&lt;/h2&gt;
 &lt;p&gt;我们在使用神经网络的时候一般将它看作是个黑盒子，里面到底是什么样，是什么样的结构，是怎么训练的，往往是很难搞清楚的。但是和传统机器学习一样，为了尽可能的接近最优解，深度学习的训练也免不了需要有调参的过程。如果没有任何指导指标，单纯盲目进行参数search的效率往往是非常低下的。&lt;/p&gt;
 &lt;p&gt;而TensorBoard就是一个能够帮助我们可视化数据和训练过程的一个非常好的工具。合理的使用它可以帮助我们把复杂的神经网络训练过程进行可视化，使得我们可以更好地理解，调试并优化程序。&lt;/p&gt;

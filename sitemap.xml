@@ -5,29 +5,36 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/</loc>
-<lastmod>2018-08-23T14:16:31-00:00</lastmod>
+<lastmod>2018-11-18T21:35:01-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/archives.html</loc>
-<lastmod>2018-08-23T14:16:31-00:00</lastmod>
+<lastmod>2018-11-18T21:35:01-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/tags.html</loc>
-<lastmod>2018-08-23T14:16:31-00:00</lastmod>
+<lastmod>2018-11-18T21:35:01-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/categories.html</loc>
-<lastmod>2018-08-23T14:16:31-00:00</lastmod>
+<lastmod>2018-11-18T21:35:01-00:00</lastmod>
 <changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/googleji-yu-shuang-xiang-transformeryu-xun-lian-mo-xing-zai-yu-yan-li-jie-shang-de-ying-yong.html</loc>
+<lastmod>2018-11-01T19:55:00+08:00</lastmod>
+<changefreq>monthly</changefreq>
 <priority>0.5</priority>
 </url>
 
@@ -166,7 +173,42 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/category/zi-ran-yu-yan-chu-li.html</loc>
-<lastmod>2018-03-10T20:00:00+08:06</lastmod>
+<lastmod>2018-11-01T19:55:00+08:06</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/tag/suan-fa.html</loc>
+<lastmod>2018-11-01T19:55:00+08:06</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/tag/yu-yan-mo-xing.html</loc>
+<lastmod>2018-11-01T19:55:00+08:06</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/tag/shen-du-xue-xi.html</loc>
+<lastmod>2018-11-01T19:55:00+08:06</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/tag/paper-reading.html</loc>
+<lastmod>2018-11-01T19:55:00+08:06</lastmod>
+<changefreq>daily</changefreq>
+<priority>0.5</priority>
+</url>
+
+<url>
+<loc>/tag/nlp.html</loc>
+<lastmod>2018-11-01T19:55:00+08:06</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
@@ -193,35 +235,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </url>
 
 <url>
-<loc>/tag/nlp.html</loc>
-<lastmod>2018-03-10T20:00:00+08:06</lastmod>
-<changefreq>daily</changefreq>
-<priority>0.5</priority>
-</url>
-
-<url>
-<loc>/tag/yu-yan-mo-xing.html</loc>
-<lastmod>2018-03-10T20:00:00+08:06</lastmod>
-<changefreq>daily</changefreq>
-<priority>0.5</priority>
-</url>
-
-<url>
-<loc>/tag/suan-fa.html</loc>
-<lastmod>2018-02-16T20:55:00+08:06</lastmod>
-<changefreq>daily</changefreq>
-<priority>0.5</priority>
-</url>
-
-<url>
 <loc>/tag/rnn.html</loc>
-<lastmod>2018-02-16T20:55:00+08:06</lastmod>
-<changefreq>daily</changefreq>
-<priority>0.5</priority>
-</url>
-
-<url>
-<loc>/tag/shen-du-xue-xi.html</loc>
 <lastmod>2018-02-16T20:55:00+08:06</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
@@ -257,13 +271,6 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/tag/attention.html</loc>
-<lastmod>2017-12-02T19:55:00+08:06</lastmod>
-<changefreq>daily</changefreq>
-<priority>0.5</priority>
-</url>
-
-<url>
-<loc>/tag/paper-reading.html</loc>
 <lastmod>2017-12-02T19:55:00+08:06</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
@@ -334,7 +341,7 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/author/shangzhi-huang.html</loc>
-<lastmod>2018-04-23T20:00:00+08:06</lastmod>
+<lastmod>2018-11-01T19:55:00+08:06</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>

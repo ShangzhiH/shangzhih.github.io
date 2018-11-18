@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Shangzhi HUANG" />
+        <meta name="copyright" content="Shangzhi HUANG" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="算法, 语言模型, 深度学习, Paper Reading, NLP, 自然语言处理, " />
+
+<meta property="og:title" content="Google基于双向Transformer预训练模型在语言理解上的应用  - 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解及源码解析 "/>
+<meta property="og:url" content="/googleji-yu-shuang-xiang-transformeryu-xun-lian-mo-xing-zai-yu-yan-li-jie-shang-de-ying-yong.html" />
+<meta property="og:description" content="该论文介绍了一种新的语言表征模型BERT，Bidirectional Encoder Representations from Transformers。以往的语言模型往往都只关注单向的生成过程，而在BERT中所有层都会同时考虑正向和反向两个方向的语义，从而对语义的建模更完善。 作者在论文中展示了BERT对NLP语义强大的表征能力，对于预训练很完善的模型，针对不同的任务，模型只需要稍加修改然后经过网络微调就可以达到媲美甚至超越SOTA的表现了。基于此，BERT刷新了11项NLP任务的SOTA，在GLUE任务和MultiNLI任务上提升尤其明显，在SQuAD问答数据集上甚至超越了人类的表现。 本文作为自己学习BERT的笔记，结合git上的google开源的代码简要介绍一下BERT的概念，代码实现及其应用。 1. 简介 近年来，预训练语言模型在NLP任务上发挥着越来越重要的作用，尤其是对于很多标记数据不足的场景。通过使用大量未标记的文本数据训练一个好的语言模型，再进行迁移学习通常会明显改善模型的表现。 从早期的神经网络语言模型，到Word2Vec，再到近年来RNN相关的语言模型ELMo，再带基于去年google发布的Transformer模型的语言模型OpenAI GPT。语言模型的种类很多，但是大致在应用上有两种方案： 第一种是feature-based的，例如ELMo，这种方案里预训练模型通常只是作为一个特征补充的方案，模型的结构还是得按照具体的任务来定。而另一种是fine-tuning的方式，例如OpenAI GPT，在这种方案里，模型的参数基本是与任务无关的，预训练做好后，针对特定的任务只要对模型进行微调就好了。在以前的方法里，这些预训练都是基于同样的损失函数: 序列的交叉熵损失，而且学到也都是单向的语言生成模型。 单向语言模型严重制约了预训练模型的表征能力 …" />
+<meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
+<meta property="og:article:author" content="Shangzhi HUANG" />
+<meta property="og:article:published_time" content="2018-11-01T19:55:00+08:00" />
+<meta name="twitter:title" content="Google基于双向Transformer预训练模型在语言理解上的应用  - 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解及源码解析 ">
+<meta name="twitter:description" content="该论文介绍了一种新的语言表征模型BERT，Bidirectional Encoder Representations from Transformers。以往的语言模型往往都只关注单向的生成过程，而在BERT中所有层都会同时考虑正向和反向两个方向的语义，从而对语义的建模更完善。 作者在论文中展示了BERT对NLP语义强大的表征能力，对于预训练很完善的模型，针对不同的任务，模型只需要稍加修改然后经过网络微调就可以达到媲美甚至超越SOTA的表现了。基于此，BERT刷新了11项NLP任务的SOTA，在GLUE任务和MultiNLI任务上提升尤其明显，在SQuAD问答数据集上甚至超越了人类的表现。 本文作为自己学习BERT的笔记，结合git上的google开源的代码简要介绍一下BERT的概念，代码实现及其应用。 1. 简介 近年来，预训练语言模型在NLP任务上发挥着越来越重要的作用，尤其是对于很多标记数据不足的场景。通过使用大量未标记的文本数据训练一个好的语言模型，再进行迁移学习通常会明显改善模型的表现。 从早期的神经网络语言模型，到Word2Vec，再到近年来RNN相关的语言模型ELMo，再带基于去年google发布的Transformer模型的语言模型OpenAI GPT。语言模型的种类很多，但是大致在应用上有两种方案： 第一种是feature-based的，例如ELMo，这种方案里预训练模型通常只是作为一个特征补充的方案，模型的结构还是得按照具体的任务来定。而另一种是fine-tuning的方式，例如OpenAI GPT，在这种方案里，模型的参数基本是与任务无关的，预训练做好后，针对特定的任务只要对模型进行微调就好了。在以前的方法里，这些预训练都是基于同样的损失函数: 序列的交叉熵损失，而且学到也都是单向的语言生成模型。 单向语言模型严重制约了预训练模型的表征能力 …">
+
+        <title>Google基于双向Transformer预训练模型在语言理解上的应用  - 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解及源码解析  · Shangzhi HUANG&#39;s Blog
+</title>
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/theme/css/pygments.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/tipuesearch/tipuesearch.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/elegant.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/theme/css/custom.css" media="screen">
+        <link rel="shortcut icon" href="/theme/images/favicon.ico" type="image/x-icon" type="image/png" />
+        <link rel="icon" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link href="/feeds/all.rss.xml" type="application/rss+xml" rel="alternate" title="Shangzhi HUANG&#39;s Blog - Full RSS Feed" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="/"><span class=site-name>Shangzhi HUANG's Blog</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="/">Home</a></li>
+                            <li ><a href="/categories.html">Categories</a></li>
+                            <li ><a href="/tags.html">Tags</a></li>
+                            <li ><a href="/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
+<article>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+    <h1><a href="/googleji-yu-shuang-xiang-transformeryu-xun-lian-mo-xing-zai-yu-yan-li-jie-shang-de-ying-yong.html"> Google基于双向Transformer预训练模型在语言理解上的应用  <small> 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解及源码解析 </small>  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+    <div class="span2 table-of-content">
+        <nav>
+        <h4>Contents</h4>
+        <div class="toc">
+<ul>
+<li><a href="#1">1. 简介</a></li>
+<li><a href="#2">2. 相关工作</a><ul>
+<li><a href="#21-feature-based">2.1 Feature-based方法</a></li>
+<li><a href="#22-fine-tuning">2.2 Fine-tuning方法</a></li>
+<li><a href="#23">2.3 利用标记数据进行迁移学习</a></li>
+</ul>
+</li>
+<li><a href="#3-bert">3. BERT</a><ul>
+<li><a href="#31">3.1 模型结构</a></li>
+<li><a href="#32">3.2 输入表示</a></li>
+<li><a href="#33">3.3 预训练任务</a><ul>
+<li><a href="#331-task-1-masked-lm">3.3.1 Task #1: Masked LM</a></li>
+<li><a href="#332-task-2-next-sentence-prediction">3.3.2 Task #2: Next Sentence Prediction</a></li>
+</ul>
+</li>
+<li><a href="#34-pre-training">3.4 Pre-training过程</a></li>
+<li><a href="#35-fine-tuning">3.5 Fine-tuning过程</a></li>
+<li><a href="#36-bertopenai-gpt">3.6 BERT与OpenAI GPT的对比</a></li>
+</ul>
+</li>
+<li><a href="#4">4. 试验</a><ul>
+<li><a href="#41-sentence-pairsingle-sentence">4.1 Sentence粒度 - Pair/Single Sentence分类</a></li>
+<li><a href="#42-squad">4.2 SQuAD</a></li>
+<li><a href="#43-ner">4.3 NER</a></li>
+<li><a href="#44-swag">4.4 SWAG</a></li>
+</ul>
+</li>
+<li><a href="#5">5. 对比试验</a><ul>
+<li><a href="#51">5.1 预训练模型架构的影响</a></li>
+<li><a href="#52">5.2 模型规模</a></li>
+<li><a href="#53">5.3 训练步数</a></li>
+<li><a href="#54-bertfeature-based">5.4 BERT在feature-based方面的应用</a></li>
+</ul>
+</li>
+<li><a href="#6">6. 总结</a></li>
+</ul>
+</div>
+        </nav>
+    </div>
+    <div class="span8 article-content">
+
+            
+            
+<blockquote>
+<p>该论文介绍了一种新的语言表征模型BERT，Bidirectional Encoder Representations from Transformers。以往的语言模型往往都只关注单向的生成过程，而在BERT中所有层都会同时考虑正向和反向两个方向的语义，从而对语义的建模更完善。
+作者在论文中展示了BERT对NLP语义强大的表征能力，对于预训练很完善的模型，针对不同的任务，模型只需要稍加修改然后经过网络微调就可以达到媲美甚至超越SOTA的表现了。基于此，BERT刷新了11项NLP任务的SOTA，在GLUE任务和MultiNLI任务上提升尤其明显，在SQuAD问答数据集上甚至超越了人类的表现。
+本文作为自己学习BERT的笔记，结合git上的google开源的代码简要介绍一下BERT的概念，代码实现及其应用。</p>
+</blockquote>
+<h2 id="1">1. 简介</h2>
+<p>近年来，预训练语言模型在NLP任务上发挥着越来越重要的作用，尤其是对于很多标记数据不足的场景。通过使用大量未标记的文本数据训练一个好的语言模型，再进行迁移学习通常会明显改善模型的表现。</p>
+<p>从早期的神经网络语言模型，到Word2Vec，再到近年来RNN相关的语言模型ELMo，再带基于去年google发布的Transformer模型的语言模型OpenAI GPT。语言模型的种类很多，但是大致在应用上有两种方案：</p>
+<p>第一种是feature-based的，例如ELMo，这种方案里预训练模型通常只是作为一个特征补充的方案，模型的结构还是得按照具体的任务来定。而另一种是fine-tuning的方式，例如OpenAI GPT，在这种方案里，模型的参数基本是与任务无关的，预训练做好后，针对特定的任务只要对模型进行微调就好了。在以前的方法里，这些预训练都是基于同样的损失函数: 序列的交叉熵损失，而且学到也都是单向的语言生成模型。</p>
+<p>单向语言模型严重制约了预训练模型的表征能力，本文提出的BERT模型通过使用新的训练目标“Masked Language Model”(MLM)来解决单向语言模型的局限性。MLM将随机选择输入中的某些词作为masked词，然后基于其上下文来预测这个masked词。不像之前的从左到右的预训练模型，MLM允许我们融合左语境和右语境，来训练一个双向的深度Transformer模型。除此之外，本文还引入了另外一个简单的预测任务来预测两个句子是否匹配关系。</p>
+<p>论文主要贡献为：</p>
+<ul>
+<li>验证了双向预训练对于语言表征的重要性</li>
+<li>展示了预训练可以减轻很多繁重的基于特定任务结构设计问题。BERT是首个在sentence级别和token级别都刷新SOTA成绩的基于fine-tuning的表征模型</li>
+<li>BERT刷新了11项NLP任务记录。模型的双向特征是BERT最重要的一个贡献。</li>
+</ul>
+<h2 id="2">2. 相关工作</h2>
+<p>简单介绍一下预训练语言表征的发展历史。</p>
+<h3 id="21-feature-based">2.1 Feature-based方法</h3>
+<p>基于特征的方法通常是用来获取预训练embedding向量的，训练好的embedding相对于随机初始化的embedding来说，通常会显著提高相关NLP模型的表现，尤其是在标注数据缺乏的情况。这种方法也被延伸到获取sentence和paragraph的embedding。</p>
+<h3 id="22-fine-tuning">2.2 Fine-tuning方法</h3>
+<p>从语言模型迁移学习的最近趋势是采用预训练相同结构的无监督模型，在实际任务的时候根据监督模型的数据对模型进行网络微调。这种方法的特点是，对于预训练好的模型，后续的调整很少，模型训练很快。</p>
+<h3 id="23">2.3 利用标记数据进行迁移学习</h3>
+<p>通常来说，无监督预训练的一大好处是数据量的充足，就那NLP来说，纯文本内容例如用户评论简直是要多少有多少。但是对于有监督学习来说，很多研究表明一个好的无监督预训练然后再进行迁移学习同样可以提升有监督学习的模型表现。</p>
+<h2 id="3-bert">3. BERT</h2>
+<p>终于到本文的重点，BERT模型的具体介绍了。这里详细介绍一下BERT的模型结构和输入表示。然后也介绍了模型的预训练过程，和训练好之后在不同NLP任务上的fine tuning的过程。最后再比较了一下BERT和OpenAO GPT的区别。</p>
+<h3 id="31">3.1 模型结构</h3>
+<p>BERT模型是一个双向多层的TransformerEncoder模型，Transformer的介绍可以参考之前的文章，这里不详细介绍了。下面的结构中，L表示Transformer的层数，H表示隐藏层单元数，A表示多头self-attention的个数。然后所有的前向全联接的维度为4H。测试了两种模型大小的表现</p>
+<ul>
+<li>BERT_Base: L=12, H=768, A=12, 总参数量110M</li>
+<li>BERT_LARGE: L=24, H=1024, A=16, 总参数量340M</li>
+</ul>
+<p>作为对比，BERT_Base模型使用的参数量和OpenAI GPT模型相当。不同的地方在于BERT采用的双向的Transformer，而OpenAI GPT采用的是单向的Transformer。双向的通常被成为Encoder版本的Transformer，而从左到有单向的被称为Decoder，因为对于某个字而言，只有左边的上文是“可见”的，可以被用作文本生成。BERT，OpenAI GPT和ELMo的模型对比如下图：</p>
+<p><img alt="" src="./images/2018-11-09-15-42-09.jpg"/></p>
+<h3 id="32">3.2 输入表示</h3>
+<p>BERT模型既可以以单个句子为输入，也可以处理类似问答系统这样的两个句子的情形。对于一个token，它的输入表示为所有对应的token，segment，position的embedding之和，如下图：</p>
+<p><img alt="" src="./images/2018-11-09-15-44-49.jpg"/></p>
+<p>具体而言：</p>
+<ul>
+<li>使用了包括WordPiece的30000个token的词表。对于分开的word piece用##表示</li>
+<li>支持最大长度为512token序列的位置embedding</li>
+<li>每句话的第一个token都被置为[CLS], 是一个特殊的embedding。对于分类问题来说，这个token的embedding就作为序列整体的表示。对于非分类问题，这个embedding被忽略</li>
+<li>句子对(eg: 问答任务)的两个句子被链接在一个序列中。两个句子的区分在于：首先用[SEP]分隔符将两句话分开，其次定义两个特殊的segment embedding，E[A]和E[B]，分别代表A句和B句的每个token</li>
+<li>对于单句输入，只考虑句子A的embedding</li>
+</ul>
+<h3 id="33">3.3 预训练任务</h3>
+<p>不同于传统的训练单向语言模型的方法，BERT创新性地引入了两个训练任务</p>
+<h4 id="331-task-1-masked-lm">3.3.1 Task #1: Masked LM</h4>
+<p>直觉上，深度双向的模型肯定是要比单向的语言模型或者说浅层的语言模型要好。但是传统的单向条件语言模型(根据上文预测下文将出现的字)只能从左到右训练或者从右到左训练。</p>
+<p>为了训练一个双向的语言模型，BERT使用了一种不同的方法。类似于完形填空，BERT会随机遮住15%的词来预测这些词，所以是一种masked LM，需要预测的只是被mask的位置上的词，而不需要重现整个句子。</p>
+<p>虽然这样做可以让我们得到一个双向的模型，但是也会有两个缺点。首先，我们将遮住的词替换为[Mask]，但是在实际fine-tuning的时候并没有这个token，这就导致预训练和fine-tunining不一致。因此，我们的做法是随机选择15%的token，例如对于<code>my dog is hairy</code>选择了hairy，进行如下操作：</p>
+<ul>
+<li>80%的情况下将这个词替换为[Mask]</li>
+<li>10%的情况将这个词替换为一个随机的词</li>
+<li>10%的情况保持词不变，这个目的是使模型表示适当偏向当前观测值</li>
+</ul>
+<p>因为这样的Transformer encoder并不知道具体会预测哪个值，也不知道被遮住的是哪个词，所以对于每个token，他会尽量学习其分布式的语义表示。又因为只有1.5%的token被随机替换，这样的噪声并不会对模型的语言理解能力造成大的影响。</p>
+<p>另外一个缺点就是由于每个batch只有15%的token被训练了，模型收敛起来会比传统语言模型更慢。不过相对于BERT对于精度的提升，这点效率损失也可以接收，预训练通常也不需要经常进行。</p>
+<h4 id="332-task-2-next-sentence-prediction">3.3.2 Task #2: Next Sentence Prediction</h4>
+<p>许多基于对话问答（QA）或者自然语言推理（NLI）的任务都是基于两句话关系的理解基础上的，而上面的语言模型显然并不能很好的捕捉这种特性。因此这里引入了一个被称为“下一句预测”的简单分类任务，随机从语料中选择句子A和B，其中50%的情况B是A的下一句话。50%的情况B是语料中随机的一句话：</p>
+<p><img alt="" src="./images/2018-11-09-17-36-02.jpg"/></p>
+<p>最后的预训练模型对于这个分类问题达到了97%-98%的准确率。尽管这个任务看上去很简单，但是后面可以看到它对QA和NLI任务起到了积极的作用。</p>
+<h3 id="34-pre-training">3.4 Pre-training过程</h3>
+<p>使用了BooksCorpus和英文Wiki的语料。为了提取出长的序列，最好使用文档级别的语料而不是句子级别的语料。</p>
+<p>然后为了获取训练数据，从语料中采样“两段”文本内容，代表“sentences”，虽然它比语言上定义的实际的句子要长很多或者短很多。第一句使用seg A的embedding，第二句使用seg B的embedding，50%的概率B是A的下一句话，50%的概率B是随机的一句话。两个句子拼接起来的长度小于512个token。得到了这样的数据后，对word piece的token按15%的概率选择进行mask的操作，然后对每个被选择的token按照上文讲的三种方式处理。</p>
+<p>训练模型时的一些超参选择如下：</p>
+<ul>
+<li>batch_size 256(256 * 512 = 128000 tokens/batch)</li>
+<li>共1000000step，40个epoch</li>
+<li>adam，<span class="math">\(\beta_1\)</span>=0.9，<span class="math">\(\beta_2\)</span>=0.999</li>
+<li>L2正则系数0.01</li>
+<li>学习率前10000个step不变，后面线性减小</li>
+<li>dropout 0.1</li>
+<li>激活函数使用gelu</li>
+</ul>
+<h3 id="35-fine-tuning">3.5 Fine-tuning过程</h3>
+<p>对于句子分类任务的fine-tuning，做法很简单，就是在前面提到的模型第一个特殊标志符[CLS]的输出上加一层softmax，将H维度映射到K，K表示分类任务的预测类的个数。span-level和token-level的fine-tuning略有不同，在后面介绍具体任务的时候再提。</p>
+<p>在fine-tuning过程中，官方给的超参数设置建议是：</p>
+<ul>
+<li>dropout保持0.1</li>
+<li>batch-size使用16，32</li>
+<li>adam学习率5e-5, 3e-5, 2e-5</li>
+<li>epoch 3，4</li>
+</ul>
+<p>由于fine-tuning比较快，可以考虑搜索不同超参组合，获得最优值。</p>
+<h3 id="36-bertopenai-gpt">3.6 BERT与OpenAI GPT的对比</h3>
+<p>在BERT中，除了LM和下一句预测这两个创新点外，它和GPT还有一些其他的差别：</p>
+<ul>
+<li>训练数据不一样，GPT基于BooksCorpus(800M个词)，BERT基于BooksCorpus(800M个词)和Wikipedia(2500M个词)</li>
+<li>GPT只在fine-tuning的过程中引入句子分隔符[SEP]和分类符[CLS]，而BERT在预训练的时候就会学习这些特殊符号(还包括A／B句子区别符号)的embedding表示</li>
+<li>GPT在32000batchsize的基础上训练了1M步，BERT在128000batchsize的基础上训练了1M步</li>
+<li>GPT对于所有的微调试验都是用了固定的5e-5的学习率，BERT针对不同的任务试用了最优的学习率</li>
+</ul>
+<p>为了证明BERT带来的效果提升是主要由于两个创新点而不是这些参数不同导致的，在后面google也做了一系列的试验来说明。</p>
+<h2 id="4">4. 试验</h2>
+<p>Google利用预训练好的BERT模型一共在11个任务通过fine-tuning获得了SOTA的表现。这11个任务可以被归为4种类型，这里介绍一下BERT模型在每类上的微调方法。</p>
+<p><img alt="" src="./images/2018-11-18-18-36-03.jpg"/></p>
+<h3 id="41-sentence-pairsingle-sentence">4.1 Sentence粒度 - Pair/Single Sentence分类</h3>
+<p>Pair和Single分别对应了上图的a和b，这种任务的fine-tuning过程非常简单。在预训练的BERT的结构上，对第一个位置[CLS]token的输出添加一个softmax进行分类，也就是上只需要额外增加一个全联接上的K*H个参数，其中K对应分类的类别。</p>
+<p>论文中还提到了一些细节，Google使用了32的batch size训练了3个epoch。并且分别使用了5e-5，4e-5，3e-5，2e-5的初始fine tuning学习率，并且选择了在dev上最优的试验表现作为最终结果。除此之外，google提到large版本的BERT对于小样本集的fine-tuning并不稳定，因此google做了多次不同的随机初始化，选择了在dev上获得最优fine-tuning结果的模型作为最终模型。</p>
+<h3 id="42-squad">4.2 SQuAD</h3>
+<p>对应着图中的任务c，虽然输出问答Task，但是这个任务并不属于生成式模型的范畴。对于给定的问题，解答是给定段落中截取的部分原文：</p>
+<p><img alt="" src="./images/2018-11-18-18-50-22.jpg"/></p>
+<p>虽然和上面的分类问题很不一样，但是BERT仍然可以解决这个问题。Google的做法是将问题和段落合并在一起，按照训练时的方式，利用[SEP]和A／B的token embedding将它们分开。然后模型需要新增的参数是一个START向量和END向量，<span class="math">\(S\in R^H\)</span>和<span class="math">\(E\in R^H\)</span>。然后要做的就是预测在所有token中哪个是START，哪个是END。
+对于每个token最终一层的输出，它是START的概率为：</p>
+<div class="math">$$P_i = \frac{e^{ST_i}}{\sum_j{e^{ST_j}}}$$</div>
+<p>而概率最大的token就是START。预测END的情况类似，训练的目标函数是两者的对数似然值。</p>
+<p>Google使用5e-5的学习率和32的batchsize训练了3个epoch。预测的时候增加了END必须出现在START之后的条件。</p>
+<h3 id="43-ner">4.3 NER</h3>
+<p>NER任务也是token粒度的任务，对应图中的d。在BERT之前，NER任务通常会对最终的输出加一个条件模型限制，常用的是CRF。但是这里，google并没有这样做，只对每个token使用简单的Softmax，但依然获得了SOTA，</p>
+<h3 id="44-swag">4.4 SWAG</h3>
+<p>The Situations With Adversarial Generations (SWAG)要解决的问题是给定一句话，在给定的4句候选句子中选择衔接最恰当的一句。</p>
+<p>BERT处理SWAG的方式和之前分类的情况类似。对于每个例子，构建4个输入句子，每一个是给定句子(A)和第i个候选句子(<span class="math">\(B_i\)</span>)的拼接，得到它在[CLS]位置上的输出<span class="math">\(C_i\)</span>。模型新增的参数就是一个向量<span class="math">\(V\in R^H\)</span>。然后在这四个句子上的概率为：</p>
+<div class="math">$$P_i = \frac{e^{VC_i}}{\sum^4_{j=1}e^{VC_j}}$$</div>
+<p>使其概率最大的句子就是预测的答案。</p>
+<p>fine-tuning时，使用2e-5的学习率，16的batch-size进行了3个epoch</p>
+<h2 id="5">5. 对比试验</h2>
+<p>虽然上面的试验结果展示了BERT在不同任务上带来的效果提升，但是并没有展示这些提升分别来自BERT模型的哪一方面。这一节，介绍了大量的对比试验来更好的理解BERT不同部分对效果的影响。</p>
+<h3 id="51">5.1 预训练模型架构的影响</h3>
+<p>在BERT base模型的基础上测试了如下两个变形：</p>
+<ul>
+<li>No NSP：使用MLM，但是不使用next sentence prediction任务</li>
+<li>LTR &amp; No NSP：采用传统的单向LM（Left to right）进行预训练和fine-tuning。这种情形下除了数据集，输入的表示方法和fine-tuning方法外，等同于OpenAI GPT</li>
+</ul>
+<p><img alt="" src="./images/2018-11-18-21-01-14.jpg"/></p>
+<p>可以看到MLM和NSP对模型表现的提升都有重要作用，哪怕在LTR最后加上BiLSTM，得到的模型也完全无法与有MLM的模型相比。</p>
+<h3 id="52">5.2 模型规模</h3>
+<p>这块就是对比了多种规模的模型效果，如下：</p>
+<p><img alt="" src="./images/2018-11-18-21-01-22.jpg"/></p>
+<p>从上面的结果可以看到，越是复杂的模型，最终的效果越好。</p>
+<p>长久以来，人们认为对于诸如语言模型，机器翻译这样的大规模NLP任务，增加模型的复杂程度会提高模型表现，这也可以从上表LM的ppl值的下降看出来。但是BERT的出现说明了，哪怕是在小规模任务上，在模型可以被充分预训练的基础上，提升模型复杂度同样可以带来效果的提升。</p>
+<h3 id="53">5.3 训练步数</h3>
+<p><img alt="" src="./images/2018-11-18-21-08-31.jpg"/></p>
+<p>上图是对预训练K步后的模型fine-tuning后在MNLI验证集上的表现。从中可以得到如下两个结论：</p>
+<ul>
+<li>BERT预训练28,000 words/batch * 1,000,000 steps这种规模是必要的。1M步相比500K步提升了将近1%</li>
+<li>由于MLM每次只能训练到15%的词，它相对LTR模型收敛慢。但是，即使收敛速度慢，但是它在模型准确度上立刻就超过了LTR模型</li>
+</ul>
+<h3 id="54-bertfeature-based">5.4 BERT在feature-based方面的应用</h3>
+<p>目前为止介绍的BERT应用都是基于fine-tuning的，也就是说在BERT输出上加个简单的分类层就可以解决的任务。但是现实中，并不是所有任务都可以用Transformer模型解决的，这时就需要feature-based的方法，从预训练模型中抽出一些特征向量作为具体任务模型的初始化参数。</p>
+<p>采用这种方法重新解决之前的NER任务，Google从预训练的BERT模型中，抽取了一层或多层的激活值，这些值作为输入进入一个随机初始化的768维的BiLSTM，得到如下结果：</p>
+<p><img alt="" src="./images/2018-11-18-21-31-08.jpg"/></p>
+<p>最佳的表现来自将最后四层的输出进行拼接作为输入的方案，得到了96.1%的F1，只比之前的最佳模型96.4%低0.3%。这验证了BERT无论是对于fine-tuning方法还是feature-based的方法都是很有效的。</p>
+<h2 id="6">6. 总结</h2>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+            
+            
+            <hr/>
+            <aside>
+            <nav>
+            <ul class="articles-timeline">
+                <li class="previous-article">« <a href="/shen-jing-wang-luo-xun-lian-guo-cheng-ke-shi-hua.html" title="Previous: 神经网络训练过程可视化 - TensorBoard的使用">神经网络训练过程可视化 <small>TensorBoard的使用</small></a></li>
+            </ul>
+            </nav>
+            </aside>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2018-11-01T19:55:00+08:00">2018  - 11  - 01</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#zi-ran-yu-yan-chu-li-ref">自然语言处理
+                <span>(4)</span>
+</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="/tags.html#nlp-ref">NLP
+                    <span>4</span>
+</a></li>
+                <li><a href="/tags.html#paper-reading-ref">Paper Reading
+                    <span>3</span>
+</a></li>
+                <li><a href="/tags.html#shen-du-xue-xi-ref">深度学习
+                    <span>10</span>
+</a></li>
+                <li><a href="/tags.html#suan-fa-ref">算法
+                    <span>13</span>
+</a></li>
+                <li><a href="/tags.html#yu-yan-mo-xing-ref">语言模型
+                    <span>2</span>
+</a></li>
+            </ul>
+                <div class="widget blogroll">
+                        <h4>Blogroll</h4>
+                        <ul>
+                            <li><a href="http://blogwall.us/">Blogwall</a></li>
+                            <li><a href="http://www.matrix67.com/">Matrix67</a></li>
+                            <li><a href="http://blog.echen.me/">EdwinChen</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+<h4>Contact</h4>
+    <a href="mailto:shangzhi.huang@gmail.com" title="My email Address" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-envelope sidebar-social-links"></i></a>
+    <a href="https://github.com/ShangzhiH" title="My github Profile" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-github sidebar-social-links"></i></a>
+    <a href="feeds/all.rss.xml" title="Subscribe in a reader" class="sidebar-social-links" target="_blank">
+    <i class="fa fa-rss sidebar-social-links"></i></a>
+        </div>
+        </section>
+</div>
+</article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+        <div id="push"></div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    
+    </body>
+    <!-- Theme: Elegant built for Pelican
+    License : http://oncrashreboot.com/pelican-elegant -->
+</html>
