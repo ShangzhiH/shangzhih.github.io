@@ -12,16 +12,16 @@
 
 <meta name="keywords" content="算法, 语言模型, 深度学习, Paper Reading, NLP, 自然语言处理, " />
 
-<meta property="og:title" content="Google基于双向Transformer预训练模型在语言理解上的应用  - 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解及源码解析 "/>
+<meta property="og:title" content="Google基于双向Transformer预训练模型在语言理解上的应用  - 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解 "/>
 <meta property="og:url" content="/googleji-yu-shuang-xiang-transformeryu-xun-lian-mo-xing-zai-yu-yan-li-jie-shang-de-ying-yong.html" />
 <meta property="og:description" content="该论文介绍了一种新的语言表征模型BERT，Bidirectional Encoder Representations from Transformers。以往的语言模型往往都只关注单向的生成过程，而在BERT中所有层都会同时考虑正向和反向两个方向的语义，从而对语义的建模更完善。 作者在论文中展示了BERT对NLP语义强大的表征能力，对于预训练很完善的模型，针对不同的任务，模型只需要稍加修改然后经过网络微调就可以达到媲美甚至超越SOTA的表现了。基于此，BERT刷新了11项NLP任务的SOTA，在GLUE任务和MultiNLI任务上提升尤其明显，在SQuAD问答数据集上甚至超越了人类的表现。 本文作为自己学习BERT的笔记，结合git上的google开源的代码简要介绍一下BERT的概念，代码实现及其应用。 1. 简介 近年来，预训练语言模型在NLP任务上发挥着越来越重要的作用，尤其是对于很多标记数据不足的场景。通过使用大量未标记的文本数据训练一个好的语言模型，再进行迁移学习通常会明显改善模型的表现。 从早期的神经网络语言模型，到Word2Vec，再到近年来RNN相关的语言模型ELMo，再带基于去年google发布的Transformer模型的语言模型OpenAI GPT。语言模型的种类很多，但是大致在应用上有两种方案： 第一种是feature-based的，例如ELMo，这种方案里预训练模型通常只是作为一个特征补充的方案，模型的结构还是得按照具体的任务来定。而另一种是fine-tuning的方式，例如OpenAI GPT，在这种方案里，模型的参数基本是与任务无关的，预训练做好后，针对特定的任务只要对模型进行微调就好了。在以前的方法里，这些预训练都是基于同样的损失函数: 序列的交叉熵损失，而且学到也都是单向的语言生成模型。 单向语言模型严重制约了预训练模型的表征能力 …" />
 <meta property="og:site_name" content="Shangzhi HUANG&#39;s Blog" />
 <meta property="og:article:author" content="Shangzhi HUANG" />
 <meta property="og:article:published_time" content="2018-11-01T19:55:00+08:00" />
-<meta name="twitter:title" content="Google基于双向Transformer预训练模型在语言理解上的应用  - 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解及源码解析 ">
+<meta name="twitter:title" content="Google基于双向Transformer预训练模型在语言理解上的应用  - 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解 ">
 <meta name="twitter:description" content="该论文介绍了一种新的语言表征模型BERT，Bidirectional Encoder Representations from Transformers。以往的语言模型往往都只关注单向的生成过程，而在BERT中所有层都会同时考虑正向和反向两个方向的语义，从而对语义的建模更完善。 作者在论文中展示了BERT对NLP语义强大的表征能力，对于预训练很完善的模型，针对不同的任务，模型只需要稍加修改然后经过网络微调就可以达到媲美甚至超越SOTA的表现了。基于此，BERT刷新了11项NLP任务的SOTA，在GLUE任务和MultiNLI任务上提升尤其明显，在SQuAD问答数据集上甚至超越了人类的表现。 本文作为自己学习BERT的笔记，结合git上的google开源的代码简要介绍一下BERT的概念，代码实现及其应用。 1. 简介 近年来，预训练语言模型在NLP任务上发挥着越来越重要的作用，尤其是对于很多标记数据不足的场景。通过使用大量未标记的文本数据训练一个好的语言模型，再进行迁移学习通常会明显改善模型的表现。 从早期的神经网络语言模型，到Word2Vec，再到近年来RNN相关的语言模型ELMo，再带基于去年google发布的Transformer模型的语言模型OpenAI GPT。语言模型的种类很多，但是大致在应用上有两种方案： 第一种是feature-based的，例如ELMo，这种方案里预训练模型通常只是作为一个特征补充的方案，模型的结构还是得按照具体的任务来定。而另一种是fine-tuning的方式，例如OpenAI GPT，在这种方案里，模型的参数基本是与任务无关的，预训练做好后，针对特定的任务只要对模型进行微调就好了。在以前的方法里，这些预训练都是基于同样的损失函数: 序列的交叉熵损失，而且学到也都是单向的语言生成模型。 单向语言模型严重制约了预训练模型的表征能力 …">
 
-        <title>Google基于双向Transformer预训练模型在语言理解上的应用  - 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解及源码解析  · Shangzhi HUANG&#39;s Blog
+        <title>Google基于双向Transformer预训练模型在语言理解上的应用  - 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解  · Shangzhi HUANG&#39;s Blog
 </title>
         <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
@@ -71,7 +71,7 @@
 <article>
 <div class="row-fluid">
     <header class="page-header span10 offset2">
-    <h1><a href="/googleji-yu-shuang-xiang-transformeryu-xun-lian-mo-xing-zai-yu-yan-li-jie-shang-de-ying-yong.html"> Google基于双向Transformer预训练模型在语言理解上的应用  <small> 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解及源码解析 </small>  </a></h1>
+    <h1><a href="/googleji-yu-shuang-xiang-transformeryu-xun-lian-mo-xing-zai-yu-yan-li-jie-shang-de-ying-yong.html"> Google基于双向Transformer预训练模型在语言理解上的应用  <small> 《BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding》论文讲解 </small>  </a></h1>
     </header>
 </div>
 
@@ -116,6 +116,7 @@
 </ul>
 </li>
 <li><a href="#6">6. 总结</a></li>
+<li><a href="#_1">参考文献</a></li>
 </ul>
 </div>
         </nav>
@@ -268,6 +269,19 @@
 <p><img alt="" src="./images/2018-11-18-21-31-08.jpg"/></p>
 <p>最佳的表现来自将最后四层的输出进行拼接作为输入的方案，得到了96.1%的F1，只比之前的最佳模型96.4%低0.3%。这验证了BERT无论是对于fine-tuning方法还是feature-based的方法都是很有效的。</p>
 <h2 id="6">6. 总结</h2>
+<p>以往的经验都证明，利用大规模无监督语料训练语言模型来进行迁移学习都能提高许多NLU模型的表现。</p>
+<p>BERT模型的出现更是证明了，这种“深度&amp;双向”模型结构的可行性，而这个模型可以从大量无标记数据集中预训练得到。</p>
+<p>既然很多NLP任务都存在数据少的问题，那么从无标注数据中挖掘潜在信息就非常重要。在NLP中，一个常用方法就是利用语言模型，这是常见的预训练任务。但是不同于CV的模型的“深”，NLP模型通常都比较“浅”。比如今年提出的ELMO就是三层的BiLSTM。</p>
+<p>NLP模型开始往“深”的做并且取得好的效果得益于去年提出的Transformer了，尤其是在机器翻译上，几乎已经是标配了。那么有没有基于Transformer的语言模型呢？OpenAI的GPT就是这样的模型，我们知道Transformer是基于encoder-decoder的，语言模型通常只需要decoder就够了，也就是利用上文预测下文。但是decoder也有它的缺点，作为预训练，decoder的部分看到的都是不完整的句子，这对于句子语义的表示是不完整的。因此也就有了BERT，利用transformer的encoder来进行预训练，这个就是BERT很大的一个创新点，比较反直觉，一般人很难想到。</p>
+<p>对比ELMO，它的设置是很符合直觉的。两个方向的语言模型刚好可以用来预训练一个BiLSTM，但是由于LSTM的局限性，网络没办法做的很深。因此就有了GPT模型，但是GPT作为decoder只是捕捉了单向的语义，还不够完美，BERT就创新型得用了两个反直觉的方法：</p>
+<ul>
+<li>用比语言模型更简单的任务来做预训练。直觉上，要做更深的模型，需要设置一个比语言模型更难的任务，而BERT则选择了两个更简单的任务：完形填空和句对预测</li>
+<li>完形填空直观上很难做其他任务的预训练。在cloze中，需要mask一些词，这样预训练的模型是有缺陷的，因为在其他任务中不能mask这些词。而BERT通过随机的方式解决这个缺陷：80%加mask，10%用其他词随机替换，10%保留原词。这样模型就具备了迁移能力。</li>
+</ul>
+<p>总体上，BERT模型的成功还是在于一种表示学习(Representation Learning)，通过一个深层模型来学习得到一个更好的文本特征。BERT也打开了一个思路：可以继续在无标注数据上挖潜，而不仅仅局限在语言模型或是常规的embedding。</p>
+<h2 id="_1">参考文献</h2>
+<p>[1] <a href="https://arxiv.org/abs/1810.04805">BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding</a> - Jacob Devlin, Ming-Wei Chang, Kenton Lee, Kristina Toutanova</p>
+<p>[2] <a href="https://www.zhihu.com/question/298203515">知乎问答社区：如何评价BERT模型？</a></p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
